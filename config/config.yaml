@@ -1,0 +1,43 @@
+# Screening thresholds and paper-LBO assumptions.
+# All thresholds are deliberately configurable — tighten or loosen and re-run.
+
+screening:
+  # Leverage: low current leverage = unused debt capacity (the core of the thesis)
+  max_net_debt_to_ebitda: 2.0        # Net debt / LTM EBITDA must be below this
+  min_interest_coverage: 3.0         # EBITDA / interest expense must exceed this
+
+  # Free cash flow
+  min_consecutive_fcf_years: 3       # FCF must be positive in each of the last N years
+
+  # Profitability
+  min_ebitda_margin: 0.15            # latest-year EBITDA margin floor
+  margin_trend_years: 5              # window used to judge margin stability
+  margin_tolerance_pp: 1.5           # recent avg margin may be at most this many
+                                     # percentage points below the earlier avg
+                                     # and still count as "stable"
+
+  # Ownership (take-private feasibility)
+  min_promoter_holding_pct: 50.0     # promoter needs control to take it private
+  max_promoter_holding_pct: 75.0     # SEBI ceiling on non-public shareholding
+  max_promoter_pledge_pct: 5.0       # high pledge = distressed promoter, excluded
+
+  # Size band: roughly $200M - $2B at ~85 INR/USD
+  min_market_cap_cr: 1700
+  max_market_cap_cr: 17000
+
+lbo:
+  entry_multiple: 8.0                # EV / LTM EBITDA at entry
+  leverage_multiple: 3.0             # debt = this x LTM EBITDA (India-appropriate,
+                                     # not 5-7x US-style; RBI cap is 75% of
+                                     # acquisition value)
+  ebitda_growth: 0.08                # annual EBITDA growth over the hold
+  hold_years: 5
+  interest_rate: 0.095               # blended cost of acquisition debt
+  tax_rate: 0.25                     # ~Indian corporate rate incl. surcharge
+  capex_pct_of_ebitda: 0.25          # maintenance + growth capex assumption
+  wc_pct_of_incremental_ebitda: 0.20 # working-capital build per unit of
+                                     # EBITDA growth (proxy for revenue growth)
+
+sensitivity:
+  entry_multiples: [6.0, 7.0, 8.0, 9.0, 10.0]
+  leverage_multiples: [2.0, 2.5, 3.0, 3.5, 4.0]
