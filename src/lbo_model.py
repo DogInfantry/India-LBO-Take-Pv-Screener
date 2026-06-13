@@ -1,23 +1,29 @@
-"""Paper-LBO with a multi-tranche cash-sweep waterfall: sources & uses, a
-yearly debt schedule, exit at a flat multiple, and an entry-multiple x total
-leverage sensitivity grid.
+"""Revenue-driven paper-LBO with a full three-statement build on a multi-tranche
+cash-sweep waterfall: sources & uses, an Income Statement, Balance Sheet, and
+Cash Flow Statement that articulate (the BS balances every year), exit at a flat
+multiple, and an entry-multiple x total leverage sensitivity grid.
 
-Key mechanics (documented in the README):
+Key mechanics (documented in the README; statement helpers in statements.py):
+- Revenue grows at revenue_growth; EBITDA = revenue x flat entry margin.
 - Debt is an ordered list of tranches (senior first) plus a revolver; sizes
   are turns x LTM EBITDA, total capped at 75% of EV (RBI), scaled proportionally.
-- Levered FCF = EBITDA - cash interest - taxes - capex - change in WC.
-- Capex is modelled as a % of EBITDA and doubles as the D&A proxy in the
-  tax calculation (taxes = tax_rate x max(0, EBITDA - capex - interest)).
-- Working-capital build is a % of incremental EBITDA.
-- Interest accrues on beginning-of-year balances across all tranches.
-- Waterfall: mandatory amortization first, then excess FCF sweeps down the
-  priority stack (revolver -> senior -> mezz); shortfalls draw the revolver.
-  FCF left after all debt is repaid accumulates as cash, returned at exit.
-- Deferred (Phase 2 / later): transaction fees, management rollover, PIK,
-  three-statement articulation. Flat exit multiple = entry.
+- Opening BS is cash-free/debt-free with goodwill as the plug
+  (goodwill = EV - opening PP&E - opening NWC); goodwill held flat.
+- Each year: IS (EBIT = EBITDA - D&A on opening PP&E; taxes on EBT, floored at
+  zero) -> debt waterfall (mandatory amort, then sweep revolver->senior->mezz,
+  shortfalls draw the revolver) -> CFS (CFO = NI + D&A - dNWC; FCF for debt =
+  CFO - capex) -> BS (cash is the CFS plug; PP&E rolls capex - D&A; equity
+  accumulates retained earnings). Interest accrues on opening balances, so the
+  loop is a single forward pass and IRR stays closed-form.
+- The balance check (max_balance_error ~ 0) is a bug detector, not load-bearing
+  accounting (the BS balances by construction).
+- Deferred: transaction fees, management rollover, PIK, AR/inventory/AP days-
+  based working capital, purchase-price write-ups, deferred taxes, NOLs.
+  Flat exit multiple = entry.
 """
 
 import pandas as pd
+from statements import opening_balance_sheet, income_statement_row
 
 
 def _size_tranches(entry_ebitda: float, ev: float, tranches: list[dict],
@@ -47,22 +53,24 @@ def _size_tranches(entry_ebitda: float, ev: float, tranches: list[dict],
     return sized, total_debt
 
 
-def run_lbo(entry_ebitda: float, assumptions: dict,
+def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
             entry_multiple: float | None = None,
             total_leverage: float | None = None) -> dict:
-    """Run the paper LBO for one company with a multi-tranche waterfall.
+    """Run the paper LBO with a full three-statement build.
 
-    `assumptions` is the `lbo` config section. `entry_multiple` and
-    `total_leverage` can be overridden for sensitivity runs; `total_leverage`
-    scales all tranches proportionally. Returns sources & uses (itemized by
-    tranche), the yearly schedule, and MOIC / IRR.
+    Revenue drives the model; EBITDA = revenue x flat entry margin
+    (entry_ebitda / entry_revenue). Each year produces an income statement, the
+    debt waterfall (mandatory amort -> sweep -> revolver), a cash flow statement,
+    and a balance sheet that balances. Interest accrues on opening balances, so
+    the loop is a single forward pass and IRR stays closed-form.
     """
     a = assumptions
     entry_multiple = entry_multiple if entry_multiple is not None else a["entry_multiple"]
+    margin = entry_ebitda / entry_revenue if entry_revenue else 0.0
     ev = entry_ebitda * entry_multiple
 
     sized, total_debt = _size_tranches(entry_ebitda, ev, a["tranches"], total_leverage)
-    equity = ev - total_debt
+    equity = ev - total_debt  # sponsor equity (entry); MOIC denominator
 
     balances = [t["principal"] for t in sized]
     originals = [t["principal"] for t in sized]
@@ -70,65 +78,107 @@ def run_lbo(entry_ebitda: float, assumptions: dict,
     amort_pcts = [t["mandatory_amort_pct"] for t in sized]
     names = [t["name"] for t in sized]
     revolver = 0.0
-    cash = 0.0
-    ebitda = entry_ebitda
 
-    rows = []
+    obs = opening_balance_sheet(entry_revenue, ev, total_debt, equity, a)
+    cash, nwc, ppe, goodwill = obs["cash"], obs["nwc"], obs["ppe"], obs["goodwill"]
+    book_equity = equity            # accumulates retained earnings
+    revenue = entry_revenue
+
+    is_rows, cf_rows, sched_rows = [], [], []
+    bs_rows = [{
+        "year": 0, "cash": cash, "nwc": nwc, "ppe": ppe, "goodwill": goodwill,
+        "assets": cash + nwc + ppe + goodwill, "debt": sum(balances) + revolver,
+        "equity": book_equity,
+        "balance_error": (cash + nwc + ppe + goodwill) - (sum(balances) + revolver + book_equity),
+    }]
+
     for year in range(1, a["hold_years"] + 1):
-        prev_ebitda = ebitda
-        ebitda = prev_ebitda * (1 + a["ebitda_growth"])
-
+        opening_ppe = ppe
+        revenue = revenue * (1 + a["revenue_growth"])
         cash_interest = sum(b * r for b, r in zip(balances, rates)) + revolver * a["revolver_rate"]
-        capex = a["capex_pct_of_ebitda"] * ebitda
-        taxes = a["tax_rate"] * max(0.0, ebitda - capex - cash_interest)  # capex ~ D&A
-        delta_wc = a["wc_pct_of_incremental_ebitda"] * (ebitda - prev_ebitda)
-        fcf = ebitda - cash_interest - taxes - capex - delta_wc
+        isr = income_statement_row(revenue, margin, opening_ppe, cash_interest, a)
 
-        # 1) mandatory amortization (contractual, % of original principal)
+        capex = a["capex_pct_of_revenue"] * revenue
+        new_nwc = a["nwc_pct_of_revenue"] * revenue
+        delta_nwc = new_nwc - nwc
+        cfo = isr["net_income"] + isr["da"] - delta_nwc
+        fcf_for_debt = cfo - capex
+
+        # --- debt waterfall (same mechanism as Phase 1) ---
         mandatory = []
         for i in range(len(balances)):
             amt = min(amort_pcts[i] * originals[i], balances[i])
             balances[i] -= amt
             mandatory.append(amt)
-
-        # 2) sweep excess down the priority stack, or draw the revolver
-        excess = fcf - sum(mandatory)
+        excess = fcf_for_debt - sum(mandatory)
         sweep = [0.0] * len(balances)
+        revolver_draw = 0.0
+        revolver_repaid = 0.0
         if excess > 0:
-            pay = min(revolver, excess)            # revolver swept first
-            revolver -= pay
-            excess -= pay
-            for i in range(len(balances)):          # then tranches by priority
+            revolver_repaid = min(revolver, excess)
+            revolver -= revolver_repaid
+            excess -= revolver_repaid
+            for i in range(len(balances)):
                 pay = min(balances[i], excess)
                 balances[i] -= pay
                 sweep[i] += pay
                 excess -= pay
                 if excess <= 1e-12:
                     break
-            cash += max(excess, 0.0)                # leftover accumulates
         elif excess < 0:
-            revolver += -excess                     # funding gap drawn on revolver
+            revolver_draw = -excess
+            revolver += revolver_draw
 
-        row = {
-            "year": year, "ebitda": ebitda, "interest": cash_interest,
-            "taxes": taxes, "capex": capex, "delta_wc": delta_wc,
-            "levered_fcf": fcf, "revolver": revolver, "cash": cash,
-        }
+        principal_repaid = sum(mandatory) + sum(sweep) + revolver_repaid
+        cff = -principal_repaid + revolver_draw
+        cash = cash + cfo - capex + cff
+
+        # roll forward balances
+        nwc = new_nwc
+        ppe = opening_ppe + capex - isr["da"]
+        book_equity = book_equity + isr["net_income"]
+
+        ending_debt = sum(balances) + revolver
+        assets = cash + nwc + ppe + goodwill
+
+        is_rows.append({"year": year, **isr})
+        cf_rows.append({
+            "year": year, "net_income": isr["net_income"], "da": isr["da"],
+            "delta_nwc": delta_nwc, "cfo": cfo, "capex": capex,
+            "fcf_for_debt": fcf_for_debt, "principal_repaid": principal_repaid,
+            "revolver_draw": revolver_draw, "cff": cff, "ending_cash": cash,
+        })
+        bs_rows.append({
+            "year": year, "cash": cash, "nwc": nwc, "ppe": ppe,
+            "goodwill": goodwill, "assets": assets, "debt": ending_debt,
+            "equity": book_equity, "balance_error": assets - (ending_debt + book_equity),
+        })
+        srow = {"year": year, "ebitda": isr["ebitda"], "interest": cash_interest,
+                "taxes": isr["taxes"], "capex": capex, "delta_nwc": delta_nwc,
+                "fcf_for_debt": fcf_for_debt, "revolver": revolver, "cash": cash}
         for i, nm in enumerate(names):
-            row[f"{nm}_repaid"] = mandatory[i] + sweep[i]
-            row[f"{nm}_ending"] = balances[i]
-        row["ending_debt"] = sum(balances) + revolver
-        rows.append(row)
+            srow[f"{nm}_repaid"] = mandatory[i] + sweep[i]
+            srow[f"{nm}_ending"] = balances[i]
+        srow["ending_debt"] = ending_debt
+        sched_rows.append(srow)
 
-    schedule = pd.DataFrame(rows)
-    exit_ev = ebitda * entry_multiple  # flat exit multiple
+    schedule = pd.DataFrame(sched_rows)
+    income_statement = pd.DataFrame(is_rows)
+    cash_flow = pd.DataFrame(cf_rows)
+    balance_sheet = pd.DataFrame(bs_rows)
+    max_balance_error = balance_sheet["balance_error"].abs().max()
+
+    final_ebitda = is_rows[-1]["ebitda"]
+    exit_ev = final_ebitda * entry_multiple  # flat exit multiple
     ending_debt = sum(balances) + revolver
-    exit_equity = exit_ev - ending_debt + cash
+    exit_net_debt = ending_debt - cash
+    exit_equity = exit_ev - exit_net_debt
     moic = exit_equity / equity if equity > 0 else float("nan")
     irr = moic ** (1 / a["hold_years"]) - 1 if moic > 0 else float("nan")
 
     return {
         "entry_multiple": entry_multiple,
+        "margin": margin,
         "sources_uses": {
             "enterprise_value": ev,
             "debt": total_debt,
@@ -138,15 +188,19 @@ def run_lbo(entry_ebitda: float, assumptions: dict,
             "debt_pct_of_ev": total_debt / ev,
         },
         "schedule": schedule,
+        "income_statement": income_statement,
+        "cash_flow": cash_flow,
+        "balance_sheet": balance_sheet,
+        "max_balance_error": max_balance_error,
         "exit_ev": exit_ev,
-        "exit_net_debt": ending_debt - cash,
+        "exit_net_debt": exit_net_debt,
         "exit_equity": exit_equity,
         "moic": moic,
         "irr": irr,
     }
 
 
-def sensitivity_grid(entry_ebitda: float, assumptions: dict,
+def sensitivity_grid(entry_revenue: float, entry_ebitda: float, assumptions: dict,
                      entry_multiples: list[float],
                      leverage_multiples: list[float]) -> tuple[pd.DataFrame, pd.DataFrame]:
     """IRR and MOIC grids across entry multiple (rows) x total leverage (cols).
@@ -157,7 +211,7 @@ def sensitivity_grid(entry_ebitda: float, assumptions: dict,
     moic = irr.copy()
     for em in entry_multiples:
         for lm in leverage_multiples:
-            result = run_lbo(entry_ebitda, assumptions,
+            result = run_lbo(entry_revenue, entry_ebitda, assumptions,
                              entry_multiple=em, total_leverage=lm)
             irr.loc[em, lm] = result["irr"]
             moic.loc[em, lm] = result["moic"]

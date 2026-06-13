@@ -133,11 +133,12 @@ else:
     lev_mult = col2.number_input("Total leverage (x EBITDA)", 1.0, 6.0,
                                  float(total_turns), 0.5,
                                  help="Scales all debt tranches proportionally.")
-    growth = col3.number_input("EBITDA growth (%)", -5.0, 25.0,
-                               lbo_cfg["ebitda_growth"] * 100, 0.5)
+    growth = col3.number_input("Revenue growth (%)", -5.0, 25.0,
+                               lbo_cfg["revenue_growth"] * 100, 0.5,
+                               help="Margin held flat, so EBITDA grows with revenue.")
 
-    assumptions = {**lbo_cfg, "ebitda_growth": growth / 100}
-    result = run_lbo(row["ebitda_cr"], assumptions,
+    assumptions = {**lbo_cfg, "revenue_growth": growth / 100}
+    result = run_lbo(row["revenue_cr"], row["ebitda_cr"], assumptions,
                      entry_multiple=entry_mult, total_leverage=lev_mult)
 
     su = result["sources_uses"]
@@ -163,11 +164,18 @@ else:
                    f"{result['entry_multiple']:.1f}x Year-5 EBITDA; exit net "
                    f"debt ₹{result['exit_net_debt']:,.0f} cr.")
 
+    if result["max_balance_error"] < 1e-6:
+        st.success("Balance sheet ties ✓ (max imbalance "
+                   f"₹{result['max_balance_error']:.2e} cr)")
+    else:
+        st.error(f"Balance sheet does NOT tie — max imbalance "
+                 f"₹{result['max_balance_error']:,.2f} cr")
+
     st.markdown("**Debt paydown schedule (₹ cr)**")
     base_renames = {
         "year": "Year", "ebitda": "EBITDA", "interest": "Interest",
-        "taxes": "Taxes", "capex": "Capex", "delta_wc": "ΔWC",
-        "levered_fcf": "Levered FCF", "revolver": "Revolver", "cash": "Cash",
+        "taxes": "Taxes", "capex": "Capex", "delta_nwc": "ΔNWC",
+        "fcf_for_debt": "FCF for debt", "revolver": "Revolver", "cash": "Cash",
         "ending_debt": "Ending debt"}
     # Per-tranche columns (e.g. senior_repaid, mezzanine_ending) -> "Senior repaid"
     tranche_renames = {c: c.replace("_", " ").capitalize()
@@ -176,12 +184,27 @@ else:
     sched = result["schedule"].rename(columns={**base_renames, **tranche_renames})
     st.dataframe(sched.style.format("{:,.0f}", subset=sched.columns[1:]),
                  width="stretch", hide_index=True)
-    st.line_chart(sched.set_index("Year")[["Ending debt", "Levered FCF"]])
+    st.line_chart(sched.set_index("Year")[["Ending debt", "FCF for debt"]])
+
+    st.markdown("**Three-statement model (₹ cr)**")
+    tab_is, tab_bs, tab_cf = st.tabs(["Income statement", "Balance sheet", "Cash flow"])
+    with tab_is:
+        st.dataframe(result["income_statement"].style.format(
+            "{:,.0f}", subset=result["income_statement"].columns[1:]),
+            width="stretch", hide_index=True)
+    with tab_bs:
+        st.dataframe(result["balance_sheet"].style.format(
+            "{:,.0f}", subset=result["balance_sheet"].columns[1:]),
+            width="stretch", hide_index=True)
+    with tab_cf:
+        st.dataframe(result["cash_flow"].style.format(
+            "{:,.0f}", subset=result["cash_flow"].columns[1:]),
+            width="stretch", hide_index=True)
 
     st.markdown("**Sensitivity — IRR (entry multiple × leverage)**")
     sens = cfg["sensitivity"]
     irr_grid, moic_grid = sensitivity_grid(
-        row["ebitda_cr"], assumptions,
+        row["revenue_cr"], row["ebitda_cr"], assumptions,
         sens["entry_multiples"], sens["leverage_multiples"])
     st.dataframe(irr_grid.style.format("{:.1%}")
                  .background_gradient(cmap="RdYlGn", axis=None),

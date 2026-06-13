@@ -48,10 +48,16 @@ coverage screens are meaningless for balance-sheet lenders.
 
 ## Paper-LBO assumptions
 
-The model ([src/lbo_model.py](src/lbo_model.py)) is screening-grade, not a
-full three-statement build, but it now models a realistic **multi-tranche debt
-structure serviced by a cash-sweep waterfall**. Assumptions, all configurable:
+The model ([src/lbo_model.py](src/lbo_model.py)) is a **revenue-driven
+three-statement build** — an Income Statement, Balance Sheet, and Cash Flow
+Statement that articulate, with the **balance sheet balancing every year** as
+the integrity check — sitting on top of a **multi-tranche cash-sweep waterfall**.
+It is screening-grade (assumption-driven, single-line working capital), not a
+full underwriting model. Assumptions, all configurable:
 
+- **Driver:** revenue grows at `revenue_growth`; the entry EBITDA margin
+  (`entry_ebitda / entry_revenue`, read from the fundamentals CSV) is held flat,
+  so EBITDA = revenue × margin.
 - **Entry:** EV = LTM EBITDA × 8.0x entry multiple.
 - **Debt tranches:** an ordered list in [config/config.yaml](config/config.yaml),
   index 0 = most senior. Each tranche has a size (`turns` × LTM EBITDA), a
@@ -62,24 +68,33 @@ structure serviced by a cash-sweep waterfall**. Assumptions, all configurable:
 - **Sources & uses:** total debt = Σ(tranche turns) × EBITDA, **capped at RBI's
   75% of acquisition value** — if the cap binds, all tranches scale down
   proportionally. Sponsor equity = EV − total debt. No transaction fees.
-- **Hold:** 5 years; EBITDA grows 8% p.a.
-- **Levered FCF** = EBITDA − cash interest − taxes − capex − ΔWC, where:
-  - interest = the blended cash interest across all tranches + drawn revolver,
-    accrued on beginning-of-year balances;
-  - capex = 25% of EBITDA, and also serves as the D&A proxy in the tax
-    line: taxes = 25% × max(0, EBITDA − capex − interest);
-  - ΔWC = 20% of incremental EBITDA (a proxy for working-capital build as
-    the business grows).
+- **Opening balance sheet:** cash-free / debt-free. Opening PP&E and net working
+  capital are synthesized from config ratios (`ppe_pct_of_revenue`,
+  `nwc_pct_of_revenue` × entry revenue); **goodwill is the plug**:
+  `goodwill = EV − opening PP&E − opening NWC`, so Assets = Liabilities + Equity
+  on Day 1. Goodwill is held flat. *This opening BS is assumption-driven, not a
+  real purchase-price allocation.*
+- **Income statement:** EBIT = EBITDA − D&A (`da_pct_of_ppe` × opening PP&E);
+  EBT = EBIT − cash interest (blended across tranches + revolver, on opening
+  balances); taxes = `tax_rate` × max(0, EBT) (floored at zero, no NOL carry);
+  net income = EBT − taxes.
+- **Cash flow & FCF for debt:** CFO = net income + D&A − ΔNWC (NWC =
+  `nwc_pct_of_revenue` × revenue); capex = `capex_pct_of_revenue` × revenue (now
+  genuinely separate from D&A); **FCF available for debt = CFO − capex**. PP&E
+  rolls forward: PP&E = prior PP&E + capex − D&A.
 - **Waterfall:** each year, **mandatory amortization** is paid first on every
   tranche; remaining FCF is then **swept down the priority stack** — revolver
   first, then senior, then mezzanine — so a junior tranche's principal cannot
   fall via the sweep until every senior tranche is retired. A funding shortfall
-  draws the revolver. FCF left after all debt is repaid accumulates as cash and
-  is returned at exit.
+  draws the revolver.
+- **Balance check:** the cash line is the cash-flow-statement plug and the
+  balance sheet ties every year (`max_balance_error` ≈ 0). The tear sheet shows a
+  "balance sheet ties ✓" indicator.
 - **Exit:** flat multiple — exit EV = entry multiple × Year-5 EBITDA. No
   multiple expansion; returns come from deleveraging and EBITDA growth only.
-- **Returns:** MOIC = exit equity / entry equity. Because there is a single
-  cash flow out at exit, IRR = MOIC^(1/5) − 1 in closed form.
+- **Returns:** MOIC = exit equity / entry equity; exit equity = exit EV − exit
+  net debt (debt − cash). Because there is a single cash flow out at exit,
+  IRR = MOIC^(1/5) − 1 in closed form.
 - **Sensitivity:** IRR and MOIC across a 5×5 grid of entry multiple × **total
   leverage**; each leverage column scales all tranches proportionally.
 
@@ -150,14 +165,14 @@ criteria then fail by design rather than erroring).
   transcription errors are possible, and the screen only covers companies you
   have entered. Screener.in's "operating profit" can differ from reported
   EBITDA for companies with significant other income.
-- **Simplified LBO.** The debt structure is multi-tranche with a real
-  cash-sweep waterfall (Phase 1), but there is still no three-statement model,
-  no transaction/financing fees, no management rollover, and no PIK interest;
-  capex doubles as the D&A tax proxy, working capital is a single ratio, and the
-  exit multiple is held flat by construction. Outputs are screening-grade, not
-  underwriting-grade. A full three-statement (IS/BS/CFS) articulation on top of
-  the tranche structure is planned as Phase 2 — see
-  [docs/superpowers/specs](docs/superpowers/specs).
+- **Simplified LBO.** The model is now a revenue-driven three-statement build
+  (IS/BS/CFS that tie out) on a multi-tranche cash-sweep waterfall, but it stays
+  screening-grade: the opening balance sheet is assumption-driven (goodwill as a
+  plug, not a real purchase-price allocation), working capital is a single
+  net-working-capital ratio rather than AR/inventory/AP days, the exit multiple
+  is held flat by construction, and there are no transaction/financing fees, no
+  management rollover, no PIK interest, no deferred taxes, and no NOL
+  carryforwards. Outputs are screening-grade, not underwriting-grade.
 - **Free-data constraints.** yfinance market caps can be stale or missing for
   thinly traded names; promoter pledge data on Screener.in lags exchange
   filings by up to a quarter.
