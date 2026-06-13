@@ -52,8 +52,9 @@ The model ([src/lbo_model.py](src/lbo_model.py)) is a **revenue-driven
 three-statement build** — an Income Statement, Balance Sheet, and Cash Flow
 Statement that articulate, with the **balance sheet balancing every year** as
 the integrity check — sitting on top of a **multi-tranche cash-sweep waterfall**.
-It is screening-grade (assumption-driven, single-line working capital), not a
-full underwriting model. Assumptions, all configurable:
+It is screening-grade (assumption-driven), not a full underwriting model, but it
+now carries transaction/financing fees and a days-based working-capital build.
+Assumptions, all configurable:
 
 - **Driver:** revenue grows at `revenue_growth`; the entry EBITDA margin
   (`entry_ebitda / entry_revenue`, read from the fundamentals CSV) is held flat,
@@ -67,21 +68,44 @@ full underwriting model. Assumptions, all configurable:
   3.0x. A revolver (`revolver_rate`) catches funding gaps.
 - **Sources & uses:** total debt = Σ(tranche turns) × EBITDA, **capped at RBI's
   75% of acquisition value** — if the cap binds, all tranches scale down
-  proportionally. Sponsor equity = EV − total debt. No transaction fees.
-- **Opening balance sheet:** cash-free / debt-free. Opening PP&E and net working
-  capital are synthesized from config ratios (`ppe_pct_of_revenue`,
-  `nwc_pct_of_revenue` × entry revenue); **goodwill is the plug**:
-  `goodwill = EV − opening PP&E − opening NWC`, so Assets = Liabilities + Equity
-  on Day 1. Goodwill is held flat. *This opening BS is assumption-driven, not a
-  real purchase-price allocation.*
-- **Income statement:** EBIT = EBITDA − D&A (`da_pct_of_ppe` × opening PP&E);
+  proportionally. **Fees** are layered on top of the purchase price:
+  - *Transaction fees* (`txn_fee_pct_of_ev` × EV — M&A/legal/diligence) are
+    **equity-funded and folded into goodwill**. Since the model has no Year-0
+    income statement to expense them through, they are capitalized into goodwill
+    as a simplification rather than run through a P&L.
+  - *Financing fees* (`financing_fee_pct_of_debt` × debt — arrangement/OID) are
+    **capitalized as a deferred-financing-cost (DFC) asset** and amortized
+    straight-line over the hold; the amortization is a non-cash IS expense added
+    back in CFO, creating a small tax shield.
+
+  Both fees are funded by sponsor equity, so
+  **sponsor equity = EV + transaction fees + financing fees − total debt**.
+- **Opening balance sheet:** cash-free / debt-free. Opening PP&E is synthesized
+  from `ppe_pct_of_revenue` × entry revenue and opening working capital from the
+  days-based build below; the DFC asset is seeded at the financing fee.
+  **Goodwill is the plug**:
+  `goodwill = EV + transaction fees − opening PP&E − opening NWC`, so
+  Assets = Liabilities + Equity on Day 1. Goodwill is held flat. *This opening BS
+  is assumption-driven, not a real purchase-price allocation.*
+- **Income statement:** EBIT = EBITDA − D&A (`da_pct_of_ppe` × opening PP&E) −
+  DFC amortization (financing fee ÷ hold years, a non-cash expense);
   EBT = EBIT − cash interest (blended across tranches + revolver, on opening
   balances); taxes = `tax_rate` × max(0, EBT) (floored at zero, no NOL carry);
   net income = EBT − taxes.
-- **Cash flow & FCF for debt:** CFO = net income + D&A − ΔNWC (NWC =
-  `nwc_pct_of_revenue` × revenue); capex = `capex_pct_of_revenue` × revenue (now
-  genuinely separate from D&A); **FCF available for debt = CFO − capex**. PP&E
-  rolls forward: PP&E = prior PP&E + capex − D&A.
+- **Days-based working capital:** opening and each year's working capital are
+  built from days assumptions rather than a single ratio. AR keys off revenue;
+  inventory and AP key off COGS (= `cogs_pct_of_revenue` × revenue):
+  - AR = `dso_days` ÷ 365 × revenue
+  - inventory = `dio_days` ÷ 365 × COGS
+  - AP = `dpo_days` ÷ 365 × COGS
+
+  NWC = AR + inventory − AP. (This replaces the older single net-working-capital
+  ratio.)
+- **Cash flow & FCF for debt:** CFO = net income + D&A + DFC amortization − ΔNWC;
+  capex = `capex_pct_of_revenue` × revenue (genuinely separate from D&A);
+  **FCF available for debt = CFO − capex**. PP&E rolls forward:
+  PP&E = prior PP&E + capex − D&A. The DFC asset amortizes straight-line to zero
+  by the end of the hold.
 - **Waterfall:** each year, **mandatory amortization** is paid first on every
   tranche; remaining FCF is then **swept down the priority stack** — revolver
   first, then senior, then mezzanine — so a junior tranche's principal cannot
@@ -94,7 +118,10 @@ full underwriting model. Assumptions, all configurable:
   multiple expansion; returns come from deleveraging and EBITDA growth only.
 - **Returns:** MOIC = exit equity / entry equity; exit equity = exit EV − exit
   net debt (debt − cash). Because there is a single cash flow out at exit,
-  IRR = MOIC^(1/5) − 1 in closed form.
+  IRR = MOIC^(1/5) − 1 in closed form. At defaults the run now returns
+  **MOIC ≈ 2.09x / IRR ≈ 15.8%**, down from the pre-fee build (~2.18x / ~16.9%):
+  the larger equity cheque from transaction and financing fees drags returns,
+  only partially offset by the DFC amortization tax shield.
 - **Sensitivity:** IRR and MOIC across a 5×5 grid of entry multiple × **total
   leverage**; each leverage column scales all tranches proportionally.
 
@@ -166,12 +193,12 @@ criteria then fail by design rather than erroring).
   have entered. Screener.in's "operating profit" can differ from reported
   EBITDA for companies with significant other income.
 - **Simplified LBO.** The model is now a revenue-driven three-statement build
-  (IS/BS/CFS that tie out) on a multi-tranche cash-sweep waterfall, but it stays
-  screening-grade: the opening balance sheet is assumption-driven (goodwill as a
-  plug, not a real purchase-price allocation), working capital is a single
-  net-working-capital ratio rather than AR/inventory/AP days, the exit multiple
-  is held flat by construction, and there are no transaction/financing fees, no
-  management rollover, no PIK interest, no deferred taxes, and no NOL
+  (IS/BS/CFS that tie out) on a multi-tranche cash-sweep waterfall, with
+  transaction/financing fees and a days-based AR/inventory/AP working-capital
+  build, but it stays screening-grade: the opening balance sheet is
+  assumption-driven (goodwill as a plug, not a real purchase-price allocation),
+  the exit multiple is held flat by construction, and it still omits management
+  rollover, PIK interest, purchase-price write-ups, deferred taxes, and NOL
   carryforwards. Outputs are screening-grade, not underwriting-grade.
 - **Free-data constraints.** yfinance market caps can be stale or missing for
   thinly traded names; promoter pledge data on Screener.in lags exchange
