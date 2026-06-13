@@ -2,9 +2,13 @@ from statements import opening_balance_sheet, income_statement_row
 
 
 def ratios():
-    return {"ppe_pct_of_revenue": 0.40, "nwc_pct_of_revenue": 0.15,
+    return {"ppe_pct_of_revenue": 0.40,
             "da_pct_of_ppe": 0.10, "capex_pct_of_revenue": 0.05,
-            "tax_rate": 0.25}
+            "tax_rate": 0.25,
+            "txn_fee_pct_of_ev": 0.020,
+            "financing_fee_pct_of_debt": 0.025,
+            "cogs_pct_of_revenue": 0.65,
+            "working_capital": {"dso_days": 45, "dio_days": 60, "dpo_days": 40}}
 
 
 def test_opening_balance_sheet_balances():

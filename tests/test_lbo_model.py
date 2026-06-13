@@ -14,9 +14,12 @@ def base_assumptions(**overrides):
         "tax_rate": 0.25,
         "revenue_growth": 0.08,
         "ppe_pct_of_revenue": 0.40,
-        "nwc_pct_of_revenue": 0.15,
         "da_pct_of_ppe": 0.10,
         "capex_pct_of_revenue": 0.05,
+        "txn_fee_pct_of_ev": 0.020,
+        "financing_fee_pct_of_debt": 0.025,
+        "cogs_pct_of_revenue": 0.65,
+        "working_capital": {"dso_days": 45, "dio_days": 60, "dpo_days": 40},
     }
     a.update(overrides)
     return a
