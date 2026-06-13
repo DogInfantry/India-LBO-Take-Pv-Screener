@@ -5,6 +5,19 @@ in run_lbo is a bug detector, not load-bearing accounting.
 """
 
 
+def working_capital(revenue: float, a: dict) -> dict:
+    """Days-based net working capital. AR keys off revenue; inventory and AP
+    key off COGS (cogs_pct_of_revenue x revenue). NWC = AR + Inventory - AP.
+    """
+    wc = a["working_capital"]
+    cogs = a["cogs_pct_of_revenue"] * revenue
+    ar = wc["dso_days"] / 365 * revenue
+    inventory = wc["dio_days"] / 365 * cogs
+    ap = wc["dpo_days"] / 365 * cogs
+    return {"ar": ar, "inventory": inventory, "ap": ap,
+            "nwc": ar + inventory - ap}
+
+
 def opening_balance_sheet(entry_revenue: float, ev: float, total_debt: float,
                           sponsor_equity: float, a: dict) -> dict:
     """Day-1 post-deal balance sheet. Cash-free/debt-free convention: opening

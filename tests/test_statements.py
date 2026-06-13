@@ -83,3 +83,15 @@ def test_goodwill_held_flat():
     res = model()
     gw = res["balance_sheet"]["goodwill"]
     assert gw.nunique() == 1
+
+
+from statements import working_capital
+
+
+def test_working_capital_days_based():
+    a = ratios()  # dso 45, dio 60, dpo 40, cogs 0.65
+    wc = working_capital(10000.0, a)
+    assert abs(wc["ar"] - 45 / 365 * 10000.0) < 1e-9
+    assert abs(wc["inventory"] - 60 / 365 * 0.65 * 10000.0) < 1e-9
+    assert abs(wc["ap"] - 40 / 365 * 0.65 * 10000.0) < 1e-9
+    assert abs(wc["nwc"] - (wc["ar"] + wc["inventory"] - wc["ap"])) < 1e-12
