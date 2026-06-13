@@ -28,15 +28,18 @@ print(results[["ticker", "net_debt_to_ebitda", "interest_coverage",
 for _, row in results.iterrows():
     print("\n" + build_rationale(row, cfg))
 
-# LBO on a 1,000 cr EBITDA company
+# LBO on a 1,000 cr EBITDA company. Default tranches sum to 3.0x, so sources &
+# uses match the old single-3.0x default; returns differ (mezz tranche at 13%).
 res = run_lbo(1000.0, cfg["lbo"])
 su = res["sources_uses"]
 assert abs(su["enterprise_value"] - 8000) < 1e-9
 assert abs(su["debt"] - 3000) < 1e-9
 assert abs(su["sponsor_equity"] - 5000) < 1e-9
+# total debt = sum of itemized tranches
+assert abs(sum(t["amount"] for t in su["tranches"]) - su["debt"]) < 1e-9
 print(f"\nLBO @8x/3x on 1000cr EBITDA: MOIC {res['moic']:.2f}x, IRR {res['irr']:.1%}")
 print(res["schedule"].round(0).to_string(index=False))
-# debt must amortize monotonically with positive FCF
+# total debt must amortize monotonically with positive FCF
 assert res["schedule"]["ending_debt"].is_monotonic_decreasing
 # IRR closed form consistency
 assert abs((1 + res["irr"]) ** 5 - res["moic"]) < 1e-9
@@ -45,9 +48,9 @@ irr_g, moic_g = sensitivity_grid(1000.0, cfg["lbo"],
                                  cfg["sensitivity"]["entry_multiples"],
                                  cfg["sensitivity"]["leverage_multiples"])
 print("\nIRR grid:\n", (irr_g * 100).round(1).to_string())
-# center cell must match the base run
+# center cell (entry 8x, total leverage 3.0x) must match the base run
 assert abs(irr_g.loc[8.0, 3.0] - res["irr"]) < 1e-12
-# RBI cap binds at 6x entry / 4.0x leverage? 4/6=66.7% < 75%, so no; check cap logic directly
-capped = run_lbo(1000.0, cfg["lbo"], entry_multiple=4.0, leverage_multiple=3.5)
+# RBI cap: 3.5x total leverage on a 4.0x EV = 87.5% > 75%, so the cap binds.
+capped = run_lbo(1000.0, cfg["lbo"], entry_multiple=4.0, total_leverage=3.5)
 assert abs(capped["sources_uses"]["debt"] - 0.75 * 4000) < 1e-9
 print("\nAll assertions passed.")
