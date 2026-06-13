@@ -70,3 +70,23 @@ def test_senior_mandatory_amortization_each_year():
         if prev > 1e-6:
             assert r["senior_repaid"] >= min(scheduled, prev) - 1e-6
         prev = r["senior_ending"]
+
+
+def test_rbi_cap_binds_and_scales_tranches_proportionally():
+    # Low entry multiple + high leverage forces the 0.75 x EV cap to bind.
+    a = base_assumptions()
+    res = run_lbo(1000.0, a, entry_multiple=4.0, total_leverage=3.5)
+    ev = 4000.0
+    su = res["sources_uses"]
+    assert abs(su["debt"] - 0.75 * ev) < 1e-9          # total capped at 75% of EV
+    # Pre-cap turns were senior:mezz = 2.0:1.0 scaled to 3.5 total; the cap
+    # scales both by the same factor, so the 2:1 ratio is preserved.
+    senior = next(t for t in su["tranches"] if t["name"] == "senior")
+    mezz = next(t for t in su["tranches"] if t["name"] == "mezzanine")
+    assert abs(senior["amount"] / mezz["amount"] - 2.0) < 1e-9
+
+
+def test_cap_does_not_bind_when_leverage_modest():
+    res = run_lbo(1000.0, base_assumptions())          # 3.0x on 8.0x EV = 37.5%
+    su = res["sources_uses"]
+    assert abs(su["debt"] - 3000.0) < 1e-9
