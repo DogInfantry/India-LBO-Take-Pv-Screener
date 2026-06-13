@@ -113,3 +113,49 @@ def test_working_capital_days_based():
     assert abs(wc["inventory"] - 60 / 365 * 0.65 * 10000.0) < 1e-9
     assert abs(wc["ap"] - 40 / 365 * 0.65 * 10000.0) < 1e-9
     assert abs(wc["nwc"] - (wc["ar"] + wc["inventory"] - wc["ap"])) < 1e-12
+
+
+def test_sources_uses_ties_with_fees():
+    res = model()
+    su = res["sources_uses"]
+    assert abs(su["enterprise_value"] + su["txn_fees"] + su["financing_fees"]
+               - (su["debt"] + su["sponsor_equity"])) < 1e-6
+
+
+def test_fees_raise_equity_check():
+    from test_lbo_model import base_assumptions
+    with_fees = run_lbo(5000.0, 1000.0, base_assumptions())
+    no_fees = run_lbo(5000.0, 1000.0,
+                      base_assumptions(txn_fee_pct_of_ev=0.0,
+                                       financing_fee_pct_of_debt=0.0))
+    delta = (with_fees["sources_uses"]["txn_fees"]
+             + with_fees["sources_uses"]["financing_fees"])
+    assert delta > 0
+    assert abs((with_fees["sources_uses"]["sponsor_equity"]
+                - no_fees["sources_uses"]["sponsor_equity"]) - delta) < 1e-6
+
+
+def test_dfc_rolls_down_to_zero():
+    res = model()
+    bs = res["balance_sheet"].set_index("year")
+    hold = bs.index.max()
+    assert abs(bs.loc[hold, "dfc"]) < 1e-6
+    diffs = bs["dfc"].diff().dropna()
+    assert (diffs < 0).all()
+    assert diffs.nunique() == 1  # straight-line, constant step
+
+
+def test_balance_sheet_still_balances_with_fees_and_days_wc():
+    res = model()
+    assert res["max_balance_error"] < 1e-6
+
+
+def test_balance_sheet_nwc_is_days_based():
+    res = model()
+    bs = res["balance_sheet"].set_index("year")
+    for year in bs.index:
+        if year == 0:
+            continue
+        assert abs(bs.loc[year, "nwc"]
+                   - (bs.loc[year, "ar"] + bs.loc[year, "inventory"]
+                      - bs.loc[year, "ap"])) < 1e-6

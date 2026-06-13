@@ -28,7 +28,7 @@ def base_assumptions(**overrides):
 def test_sources_equal_uses():
     res = run_lbo(5000.0, 1000.0, base_assumptions())
     su = res["sources_uses"]
-    assert abs(su["debt"] + su["sponsor_equity"] - su["enterprise_value"]) < 1e-9
+    assert abs(su["debt"] + su["sponsor_equity"] - (su["enterprise_value"] + su["txn_fees"] + su["financing_fees"])) < 1e-9
     assert abs(sum(t["amount"] for t in su["tranches"]) - su["debt"]) < 1e-9
 
 
