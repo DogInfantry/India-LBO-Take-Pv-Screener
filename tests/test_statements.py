@@ -37,6 +37,18 @@ def test_income_statement_ties():
     assert abs(isr["ebt"] - (880.0 - 300.0)) < 1e-9
     assert abs(isr["taxes"] - 0.25 * 580.0) < 1e-9
     assert abs(isr["net_income"] - (580.0 - 0.25 * 580.0)) < 1e-9
+    assert isr["dfc_amort"] == 0.0
+
+
+def test_income_statement_includes_dfc_amortization():
+    a = ratios()
+    # revenue 5400, margin 0.20, opening PP&E 2000, interest 300, dfc_amort 15.
+    isr = income_statement_row(5400.0, 0.20, 2000.0, 300.0, a, dfc_amort=15.0)
+    assert abs(isr["dfc_amort"] - 15.0) < 1e-9
+    # EBITDA 1080, D&A 200, dfc 15, interest 300 -> EBT = 1080-200-15-300 = 565
+    assert abs(isr["ebt"] - 565.0) < 1e-9
+    assert abs(isr["taxes"] - 0.25 * 565.0) < 1e-9
+    assert abs(isr["net_income"] - (565.0 - 0.25 * 565.0)) < 1e-9
 
 
 def test_income_statement_taxes_floored_at_zero():

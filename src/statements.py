@@ -34,16 +34,17 @@ def opening_balance_sheet(entry_revenue: float, ev: float, total_debt: float,
 
 
 def income_statement_row(revenue: float, margin: float, opening_ppe: float,
-                         cash_interest: float, a: dict) -> dict:
-    """One year of the income statement. D&A is charged on OPENING PP&E; taxes
-    floor at zero in loss years (no NOL carryforward — deferred).
+                         cash_interest: float, a: dict,
+                         dfc_amort: float = 0.0) -> dict:
+    """One year of the income statement. D&A on OPENING PP&E; DFC amortization is
+    a non-cash expense after D&A; taxes floor at zero in loss years (no NOL).
     """
     ebitda = revenue * margin
     da = a["da_pct_of_ppe"] * opening_ppe
-    ebit = ebitda - da
+    ebit = ebitda - da - dfc_amort
     ebt = ebit - cash_interest
     taxes = a["tax_rate"] * max(0.0, ebt)
     net_income = ebt - taxes
-    return {"revenue": revenue, "ebitda": ebitda, "da": da, "ebit": ebit,
-            "interest": cash_interest, "ebt": ebt, "taxes": taxes,
+    return {"revenue": revenue, "ebitda": ebitda, "da": da, "dfc_amort": dfc_amort,
+            "ebit": ebit, "interest": cash_interest, "ebt": ebt, "taxes": taxes,
             "net_income": net_income}
