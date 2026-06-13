@@ -103,9 +103,6 @@ def test_goodwill_held_flat():
     assert gw.nunique() == 1
 
 
-from statements import working_capital
-
-
 def test_working_capital_days_based():
     a = ratios()  # dso 45, dio 60, dpo 40, cogs 0.65
     wc = working_capital(10000.0, a)
