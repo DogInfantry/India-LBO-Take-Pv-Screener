@@ -1,16 +1,20 @@
-"""Simplified paper-LBO: sources & uses, a yearly debt schedule with a 100%
-cash sweep, exit at a flat multiple, and an entry-multiple x leverage
-sensitivity grid.
+"""Paper-LBO with a multi-tranche cash-sweep waterfall: sources & uses, a
+yearly debt schedule, exit at a flat multiple, and an entry-multiple x total
+leverage sensitivity grid.
 
-Key simplifications (documented in the README):
+Key mechanics (documented in the README):
+- Debt is an ordered list of tranches (senior first) plus a revolver; sizes
+  are turns x LTM EBITDA, total capped at 75% of EV (RBI), scaled proportionally.
 - Levered FCF = EBITDA - cash interest - taxes - capex - change in WC.
 - Capex is modelled as a % of EBITDA and doubles as the D&A proxy in the
   tax calculation (taxes = tax_rate x max(0, EBITDA - capex - interest)).
 - Working-capital build is a % of incremental EBITDA.
-- Interest accrues on beginning-of-year debt.
-- 100% cash sweep; FCF left over after debt is fully repaid accumulates as
-  cash and is returned to the sponsor at exit.
-- No transaction fees, no management rollover, flat exit multiple = entry.
+- Interest accrues on beginning-of-year balances across all tranches.
+- Waterfall: mandatory amortization first, then excess FCF sweeps down the
+  priority stack (revolver -> senior -> mezz); shortfalls draw the revolver.
+  FCF left after all debt is repaid accumulates as cash, returned at exit.
+- Deferred (Phase 2 / later): transaction fees, management rollover, PIK,
+  three-statement articulation. Flat exit multiple = entry.
 """
 
 import pandas as pd
