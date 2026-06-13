@@ -1,20 +1,25 @@
-"""Paper-LBO with a multi-tranche cash-sweep waterfall: sources & uses, a
-yearly debt schedule, exit at a flat multiple, and an entry-multiple x total
-leverage sensitivity grid.
+"""Revenue-driven paper-LBO with a full three-statement build on a multi-tranche
+cash-sweep waterfall: sources & uses, an Income Statement, Balance Sheet, and
+Cash Flow Statement that articulate (the BS balances every year), exit at a flat
+multiple, and an entry-multiple x total leverage sensitivity grid.
 
-Key mechanics (documented in the README):
+Key mechanics (documented in the README; statement helpers in statements.py):
+- Revenue grows at revenue_growth; EBITDA = revenue x flat entry margin.
 - Debt is an ordered list of tranches (senior first) plus a revolver; sizes
   are turns x LTM EBITDA, total capped at 75% of EV (RBI), scaled proportionally.
-- Levered FCF = EBITDA - cash interest - taxes - capex - change in WC.
-- Capex is modelled as a % of EBITDA and doubles as the D&A proxy in the
-  tax calculation (taxes = tax_rate x max(0, EBITDA - capex - interest)).
-- Working-capital build is a % of incremental EBITDA.
-- Interest accrues on beginning-of-year balances across all tranches.
-- Waterfall: mandatory amortization first, then excess FCF sweeps down the
-  priority stack (revolver -> senior -> mezz); shortfalls draw the revolver.
-  FCF left after all debt is repaid accumulates as cash, returned at exit.
-- Deferred (Phase 2 / later): transaction fees, management rollover, PIK,
-  three-statement articulation. Flat exit multiple = entry.
+- Opening BS is cash-free/debt-free with goodwill as the plug
+  (goodwill = EV - opening PP&E - opening NWC); goodwill held flat.
+- Each year: IS (EBIT = EBITDA - D&A on opening PP&E; taxes on EBT, floored at
+  zero) -> debt waterfall (mandatory amort, then sweep revolver->senior->mezz,
+  shortfalls draw the revolver) -> CFS (CFO = NI + D&A - dNWC; FCF for debt =
+  CFO - capex) -> BS (cash is the CFS plug; PP&E rolls capex - D&A; equity
+  accumulates retained earnings). Interest accrues on opening balances, so the
+  loop is a single forward pass and IRR stays closed-form.
+- The balance check (max_balance_error ~ 0) is a bug detector, not load-bearing
+  accounting (the BS balances by construction).
+- Deferred: transaction fees, management rollover, PIK, AR/inventory/AP days-
+  based working capital, purchase-price write-ups, deferred taxes, NOLs.
+  Flat exit multiple = entry.
 """
 
 import pandas as pd
