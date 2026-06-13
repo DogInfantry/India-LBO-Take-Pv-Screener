@@ -42,3 +42,15 @@ def test_sources_equal_uses():
     su = res["sources_uses"]
     assert abs(su["debt"] + su["sponsor_equity"] - su["enterprise_value"]) < 1e-9
     assert abs(sum(t["amount"] for t in su["tranches"]) - su["debt"]) < 1e-9
+
+
+def test_mezz_principal_untouched_by_sweep_while_senior_outstanding():
+    # Mezz has no mandatory amort, so any drop in its balance must be the sweep.
+    res = run_lbo(1000.0, base_assumptions())
+    sched = res["schedule"]
+    for _, r in sched.iterrows():
+        if r["senior_ending"] > 1e-6:
+            # While senior is outstanding, mezz must not be swept at all.
+            assert r["mezzanine_repaid"] < 1e-6, (
+                f"year {r['year']}: mezz repaid {r['mezzanine_repaid']} "
+                f"while senior still {r['senior_ending']}")
