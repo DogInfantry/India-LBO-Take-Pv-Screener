@@ -1,4 +1,4 @@
-from statements import opening_balance_sheet, income_statement_row
+from statements import opening_balance_sheet, income_statement_row, working_capital
 
 
 def ratios():
@@ -11,14 +11,20 @@ def ratios():
             "working_capital": {"dso_days": 45, "dio_days": 60, "dpo_days": 40}}
 
 
-def test_opening_balance_sheet_balances():
-    # EV 8000, debt 3000, equity 5000, entry revenue 5000.
-    bs = opening_balance_sheet(5000.0, 8000.0, 3000.0, 5000.0, ratios())
+def test_opening_balance_sheet_balances_with_fees():
+    a = ratios()
+    # EV 8000, debt 3000, entry revenue 5000, txn 160 (2% of EV), fin 75 (2.5% of debt).
+    txn_fees, financing_fees = 160.0, 75.0
+    equity = 8000.0 + txn_fees + financing_fees - 3000.0  # uses - debt
+    bs = opening_balance_sheet(5000.0, 8000.0, 3000.0, equity, a,
+                               txn_fees=txn_fees, financing_fees=financing_fees)
+    wc = working_capital(5000.0, a)
     assert bs["cash"] == 0.0
-    assert abs(bs["ppe"] - 2000.0) < 1e-9          # 0.40 * 5000
-    assert abs(bs["nwc"] - 750.0) < 1e-9           # 0.15 * 5000
-    assert abs(bs["goodwill"] - (8000.0 - 2000.0 - 750.0)) < 1e-9
-    assets = bs["cash"] + bs["nwc"] + bs["ppe"] + bs["goodwill"]
+    assert abs(bs["ppe"] - 2000.0) < 1e-9                 # 0.40 * 5000
+    assert abs(bs["nwc"] - wc["nwc"]) < 1e-9              # days-based
+    assert abs(bs["dfc"] - financing_fees) < 1e-9
+    assert abs(bs["goodwill"] - (8000.0 + txn_fees - 2000.0 - wc["nwc"])) < 1e-9
+    assets = bs["cash"] + bs["nwc"] + bs["ppe"] + bs["goodwill"] + bs["dfc"]
     assert abs(assets - (bs["debt"] + bs["equity"])) < 1e-9   # balances
 
 

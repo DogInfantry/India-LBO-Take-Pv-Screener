@@ -19,15 +19,18 @@ def working_capital(revenue: float, a: dict) -> dict:
 
 
 def opening_balance_sheet(entry_revenue: float, ev: float, total_debt: float,
-                          sponsor_equity: float, a: dict) -> dict:
-    """Day-1 post-deal balance sheet. Cash-free/debt-free convention: opening
-    cash is zero and goodwill is the plug that makes Assets = Liabilities + Equity.
+                          sponsor_equity: float, a: dict,
+                          txn_fees: float = 0.0, financing_fees: float = 0.0) -> dict:
+    """Day-1 post-deal balance sheet. Cash-free/debt-free: opening cash is zero.
+    Transaction fees roll into goodwill (equity-funded); financing fees are a
+    capitalized deferred-financing-cost (DFC) asset. Goodwill is the plug that
+    makes Assets = Liabilities + Equity.
     """
     ppe = a["ppe_pct_of_revenue"] * entry_revenue
-    nwc = a["nwc_pct_of_revenue"] * entry_revenue
-    goodwill = ev - (ppe + nwc)
+    nwc = working_capital(entry_revenue, a)["nwc"]
+    goodwill = ev + txn_fees - (ppe + nwc)
     return {"cash": 0.0, "nwc": nwc, "ppe": ppe, "goodwill": goodwill,
-            "debt": total_debt, "equity": sponsor_equity}
+            "dfc": financing_fees, "debt": total_debt, "equity": sponsor_equity}
 
 
 def income_statement_row(revenue: float, margin: float, opening_ppe: float,
