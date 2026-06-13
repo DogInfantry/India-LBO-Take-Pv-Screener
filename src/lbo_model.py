@@ -195,7 +195,7 @@ def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
     }
 
 
-def sensitivity_grid(entry_ebitda: float, assumptions: dict,
+def sensitivity_grid(entry_revenue: float, entry_ebitda: float, assumptions: dict,
                      entry_multiples: list[float],
                      leverage_multiples: list[float]) -> tuple[pd.DataFrame, pd.DataFrame]:
     """IRR and MOIC grids across entry multiple (rows) x total leverage (cols).
@@ -206,7 +206,7 @@ def sensitivity_grid(entry_ebitda: float, assumptions: dict,
     moic = irr.copy()
     for em in entry_multiples:
         for lm in leverage_multiples:
-            result = run_lbo(entry_ebitda, assumptions,
+            result = run_lbo(entry_revenue, entry_ebitda, assumptions,
                              entry_multiple=em, total_leverage=lm)
             irr.loc[em, lm] = result["irr"]
             moic.loc[em, lm] = result["moic"]
