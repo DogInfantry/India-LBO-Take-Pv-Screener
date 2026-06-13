@@ -31,11 +31,13 @@ lbo:
     - {name: senior,    turns: 2.0, rate: 0.090, mandatory_amort_pct: 0.10}
     - {name: mezzanine, turns: 1.0, rate: 0.130, mandatory_amort_pct: 0.0}
   revolver_rate: 0.085               # interest on drawn revolver balance
-  ebitda_growth: 0.08                # annual EBITDA growth over the hold
   hold_years: 5
   tax_rate: 0.25                     # ~Indian corporate rate incl. surcharge
-  capex_pct_of_ebitda: 0.25          # maintenance + growth capex assumption
-  wc_pct_of_incremental_ebitda: 0.20 # working-capital build per unit of EBITDA growth
+  revenue_growth: 0.08               # annual revenue growth (margin held flat)
+  ppe_pct_of_revenue: 0.40           # opening PP&E as a share of entry revenue
+  nwc_pct_of_revenue: 0.15           # net working capital as a share of revenue
+  da_pct_of_ppe: 0.10                # D&A as a share of opening PP&E each year
+  capex_pct_of_revenue: 0.05         # capex as a share of revenue (~= D&A so PP&E stays ~flat)
 
 sensitivity:
   entry_multiples: [6.0, 7.0, 8.0, 9.0, 10.0]
