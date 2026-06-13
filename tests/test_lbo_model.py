@@ -54,3 +54,19 @@ def test_mezz_principal_untouched_by_sweep_while_senior_outstanding():
             assert r["mezzanine_repaid"] < 1e-6, (
                 f"year {r['year']}: mezz repaid {r['mezzanine_repaid']} "
                 f"while senior still {r['senior_ending']}")
+
+
+def test_senior_mandatory_amortization_each_year():
+    a = base_assumptions()
+    senior = a["tranches"][0]
+    original = senior["turns"] * 1000.0           # 2.0x * 1000 EBITDA = 2000
+    scheduled = senior["mandatory_amort_pct"] * original  # 10% * 2000 = 200
+    res = run_lbo(1000.0, a)
+    sched = res["schedule"]
+    # Each year senior still has a balance, it must repay at least the
+    # scheduled mandatory amount (sweep can add more on top).
+    prev = original
+    for _, r in sched.iterrows():
+        if prev > 1e-6:
+            assert r["senior_repaid"] >= min(scheduled, prev) - 1e-6
+        prev = r["senior_ending"]
