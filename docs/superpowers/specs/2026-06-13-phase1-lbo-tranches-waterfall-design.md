@@ -44,8 +44,9 @@ lbo:
 
 - `turns` — tranche size as a multiple of LTM EBITDA.
 - `rate` — cash interest rate on the tranche.
-- `mandatory_amort_pct` — fraction of *original* principal repaid contractually each year
-  (0.0 = bullet).
+- `mandatory_amort_pct` — fraction of original principal repaid contractually each year
+  (0.0 = bullet). "Original principal" = the tranche's *funded entry quantum after any RBI
+  cap-scaling*, fixed for the life of the schedule.
 - `revolver_rate` — interest on drawn revolver balance.
 
 ## Sources & uses
@@ -114,8 +115,12 @@ RBI cap still applies per cell. The existing 5×5 grid stays meaningful.
 
 Extend `smoke_test.py` to assert:
 
-1. **Default-equivalence** — a single 3.0x senior tranche (no mezz, no amort) reproduces the
-   pre-change MOIC/IRR within tolerance.
+1. **Default-equivalence (regression guard)** — a *contrived* single-tranche config (one
+   tranche at 3.0x, rate 0.095, `mandatory_amort_pct: 0.0`, no revolver draw) reproduces the
+   pre-change MOIC/IRR within tolerance. Note this is NOT the shipped default config, which
+   now carries a mezz tranche at a higher rate and so legitimately produces different (lower)
+   returns than today — the equivalence test exists only to prove the new engine reduces to
+   the old one when given equivalent inputs.
 2. **Sources = uses** — Σ tranche debt + sponsor equity = EV.
 3. **Priority invariant** — across the schedule, mezz principal does not fall via sweep while
    senior balance > 0.
