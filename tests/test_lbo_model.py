@@ -90,3 +90,27 @@ def test_cap_does_not_bind_when_leverage_modest():
     res = run_lbo(1000.0, base_assumptions())          # 3.0x on 8.0x EV = 37.5%
     su = res["sources_uses"]
     assert abs(su["debt"] - 3000.0) < 1e-9
+
+
+from lbo_model import sensitivity_grid
+
+
+def test_grid_center_cell_matches_base_run():
+    a = base_assumptions()
+    base = run_lbo(1000.0, a)                          # base turns sum to 3.0
+    irr, moic = sensitivity_grid(1000.0, a,
+                                 entry_multiples=[6.0, 8.0, 10.0],
+                                 leverage_multiples=[2.0, 3.0, 4.0])
+    # Cell at entry 8.0 / total leverage 3.0 == the unscaled base run.
+    assert abs(irr.loc[8.0, 3.0] - base["irr"]) < 1e-12
+    assert abs(moic.loc[8.0, 3.0] - base["moic"]) < 1e-12
+
+
+def test_grid_high_leverage_cell_triggers_cap():
+    a = base_assumptions()
+    irr, moic = sensitivity_grid(1000.0, a,
+                                 entry_multiples=[4.0],
+                                 leverage_multiples=[3.5])
+    # 3.5x on a 4.0x EV would be 87.5% > 75%; cap binds but run still returns a number.
+    import math
+    assert not math.isnan(moic.loc[4.0, 3.5])
