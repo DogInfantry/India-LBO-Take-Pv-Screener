@@ -148,12 +148,16 @@ else:
         su_rows = [(t["name"].capitalize() + " debt", t["amount"])
                    for t in su["tranches"]]
         su_rows += [("Total debt", su["debt"]),
+                    ("Transaction fees", su["txn_fees"]),
+                    ("Financing fees (capitalized)", su["financing_fees"]),
                     ("Sponsor equity", su["sponsor_equity"]),
                     ("Enterprise value", su["enterprise_value"])]
         st.table(pd.DataFrame(su_rows, columns=["Item", "₹ cr"])
                  .style.format({"₹ cr": "{:,.0f}"}))
         st.caption(f"Total debt = {su['debt_pct_of_ev']:.0%} of EV "
                    f"(RBI cap: 75% of acquisition value).")
+        st.caption(f"Equity check includes ₹{su['txn_fees'] + su['financing_fees']:,.0f} cr "
+                   "of fees (transaction expensed into goodwill; financing capitalized & amortized).")
     with right:
         st.markdown("**Returns (5-yr hold, flat exit multiple)**")
         m1, m2, m3 = st.columns(3)
