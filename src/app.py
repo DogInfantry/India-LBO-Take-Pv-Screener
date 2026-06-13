@@ -127,26 +127,31 @@ else:
     st.subheader("Paper LBO")
     lbo_cfg = cfg["lbo"]
     col1, col2, col3 = st.columns(3)
+    total_turns = sum(t["turns"] for t in lbo_cfg["tranches"])
     entry_mult = col1.number_input("Entry multiple (x EBITDA)", 4.0, 15.0,
                                    float(lbo_cfg["entry_multiple"]), 0.5)
-    lev_mult = col2.number_input("Leverage (x EBITDA)", 1.0, 6.0,
-                                 float(lbo_cfg["leverage_multiple"]), 0.5)
+    lev_mult = col2.number_input("Total leverage (x EBITDA)", 1.0, 6.0,
+                                 float(total_turns), 0.5,
+                                 help="Scales all debt tranches proportionally.")
     growth = col3.number_input("EBITDA growth (%)", -5.0, 25.0,
                                lbo_cfg["ebitda_growth"] * 100, 0.5)
 
     assumptions = {**lbo_cfg, "ebitda_growth": growth / 100}
     result = run_lbo(row["ebitda_cr"], assumptions,
-                     entry_multiple=entry_mult, leverage_multiple=lev_mult)
+                     entry_multiple=entry_mult, total_leverage=lev_mult)
 
     su = result["sources_uses"]
     left, right = st.columns(2)
     with left:
         st.markdown("**Sources & uses (₹ cr)**")
-        st.table(pd.DataFrame({
-            "Sources": ["Acquisition debt", "Sponsor equity", "Total"],
-            "₹ cr": [su["debt"], su["sponsor_equity"], su["enterprise_value"]],
-        }).style.format({"₹ cr": "{:,.0f}"}))
-        st.caption(f"Debt = {su['debt_pct_of_ev']:.0%} of EV "
+        su_rows = [(t["name"].capitalize() + " debt", t["amount"])
+                   for t in su["tranches"]]
+        su_rows += [("Total debt", su["debt"]),
+                    ("Sponsor equity", su["sponsor_equity"]),
+                    ("Enterprise value", su["enterprise_value"])]
+        st.table(pd.DataFrame(su_rows, columns=["Item", "₹ cr"])
+                 .style.format({"₹ cr": "{:,.0f}"}))
+        st.caption(f"Total debt = {su['debt_pct_of_ev']:.0%} of EV "
                    f"(RBI cap: 75% of acquisition value).")
     with right:
         st.markdown("**Returns (5-yr hold, flat exit multiple)**")
@@ -159,11 +164,16 @@ else:
                    f"debt ₹{result['exit_net_debt']:,.0f} cr.")
 
     st.markdown("**Debt paydown schedule (₹ cr)**")
-    sched = result["schedule"].rename(columns={
+    base_renames = {
         "year": "Year", "ebitda": "EBITDA", "interest": "Interest",
         "taxes": "Taxes", "capex": "Capex", "delta_wc": "ΔWC",
-        "levered_fcf": "Levered FCF", "debt_repaid": "Debt repaid",
-        "ending_debt": "Ending debt", "ending_cash": "Ending cash"})
+        "levered_fcf": "Levered FCF", "revolver": "Revolver", "cash": "Cash",
+        "ending_debt": "Ending debt"}
+    # Per-tranche columns (e.g. senior_repaid, mezzanine_ending) -> "Senior repaid"
+    tranche_renames = {c: c.replace("_", " ").capitalize()
+                       for c in result["schedule"].columns
+                       if c.endswith("_repaid") or c.endswith("_ending")}
+    sched = result["schedule"].rename(columns={**base_renames, **tranche_renames})
     st.dataframe(sched.style.format("{:,.0f}", subset=sched.columns[1:]),
                  width="stretch", hide_index=True)
     st.line_chart(sched.set_index("Year")[["Ending debt", "Levered FCF"]])

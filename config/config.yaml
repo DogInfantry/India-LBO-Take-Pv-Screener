@@ -27,16 +27,15 @@ screening:
 
 lbo:
   entry_multiple: 8.0                # EV / LTM EBITDA at entry
-  leverage_multiple: 3.0             # debt = this x LTM EBITDA (India-appropriate,
-                                     # not 5-7x US-style; RBI cap is 75% of
-                                     # acquisition value)
+  tranches:                          # ordered: index 0 = most senior (swept first)
+    - {name: senior,    turns: 2.0, rate: 0.090, mandatory_amort_pct: 0.10}
+    - {name: mezzanine, turns: 1.0, rate: 0.130, mandatory_amort_pct: 0.0}
+  revolver_rate: 0.085               # interest on drawn revolver balance
   ebitda_growth: 0.08                # annual EBITDA growth over the hold
   hold_years: 5
-  interest_rate: 0.095               # blended cost of acquisition debt
   tax_rate: 0.25                     # ~Indian corporate rate incl. surcharge
   capex_pct_of_ebitda: 0.25          # maintenance + growth capex assumption
-  wc_pct_of_incremental_ebitda: 0.20 # working-capital build per unit of
-                                     # EBITDA growth (proxy for revenue growth)
+  wc_pct_of_incremental_ebitda: 0.20 # working-capital build per unit of EBITDA growth
 
 sensitivity:
   entry_multiples: [6.0, 7.0, 8.0, 9.0, 10.0]

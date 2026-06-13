@@ -48,28 +48,40 @@ coverage screens are meaningless for balance-sheet lenders.
 
 ## Paper-LBO assumptions
 
-The model ([src/lbo_model.py](src/lbo_model.py)) is deliberately simplified —
-no three-statement build. Assumptions, all configurable:
+The model ([src/lbo_model.py](src/lbo_model.py)) is screening-grade, not a
+full three-statement build, but it now models a realistic **multi-tranche debt
+structure serviced by a cash-sweep waterfall**. Assumptions, all configurable:
 
 - **Entry:** EV = LTM EBITDA × 8.0x entry multiple.
-- **Sources & uses:** Debt = 3.0x LTM EBITDA (capped at RBI's 75% of
-  acquisition value); sponsor equity = EV − debt. No transaction fees.
+- **Debt tranches:** an ordered list in [config/config.yaml](config/config.yaml),
+  index 0 = most senior. Each tranche has a size (`turns` × LTM EBITDA), a
+  cash interest `rate`, and a `mandatory_amort_pct` (fraction of original
+  principal repaid contractually each year; 0 = bullet). The default stack is
+  senior (2.0x @ 9.0%, 10% amort) + mezzanine (1.0x @ 13.0%, bullet), totalling
+  3.0x. A revolver (`revolver_rate`) catches funding gaps.
+- **Sources & uses:** total debt = Σ(tranche turns) × EBITDA, **capped at RBI's
+  75% of acquisition value** — if the cap binds, all tranches scale down
+  proportionally. Sponsor equity = EV − total debt. No transaction fees.
 - **Hold:** 5 years; EBITDA grows 8% p.a.
 - **Levered FCF** = EBITDA − cash interest − taxes − capex − ΔWC, where:
-  - interest = 9.5% on beginning-of-year debt;
+  - interest = the blended cash interest across all tranches + drawn revolver,
+    accrued on beginning-of-year balances;
   - capex = 25% of EBITDA, and also serves as the D&A proxy in the tax
     line: taxes = 25% × max(0, EBITDA − capex − interest);
   - ΔWC = 20% of incremental EBITDA (a proxy for working-capital build as
     the business grows).
-- **100% cash sweep:** all positive FCF repays debt; FCF after debt is fully
-  repaid accumulates as cash and is returned at exit. Negative FCF is drawn
-  back onto debt (revolver-style).
+- **Waterfall:** each year, **mandatory amortization** is paid first on every
+  tranche; remaining FCF is then **swept down the priority stack** — revolver
+  first, then senior, then mezzanine — so a junior tranche's principal cannot
+  fall via the sweep until every senior tranche is retired. A funding shortfall
+  draws the revolver. FCF left after all debt is repaid accumulates as cash and
+  is returned at exit.
 - **Exit:** flat multiple — exit EV = entry multiple × Year-5 EBITDA. No
   multiple expansion; returns come from deleveraging and EBITDA growth only.
 - **Returns:** MOIC = exit equity / entry equity. Because there is a single
   cash flow out at exit, IRR = MOIC^(1/5) − 1 in closed form.
-- **Sensitivity:** IRR and MOIC across a 5×5 grid of entry multiple ×
-  leverage multiple.
+- **Sensitivity:** IRR and MOIC across a 5×5 grid of entry multiple × **total
+  leverage**; each leverage column scales all tranches proportionally.
 
 ## Data sources
 
@@ -138,10 +150,14 @@ criteria then fail by design rather than erroring).
   transcription errors are possible, and the screen only covers companies you
   have entered. Screener.in's "operating profit" can differ from reported
   EBITDA for companies with significant other income.
-- **Simplified LBO.** No three-statement model, no fees, no management
-  rollover, capex doubles as the D&A tax proxy, working capital is a single
-  ratio, and the exit multiple is held flat by construction. Outputs are
-  screening-grade, not underwriting-grade.
+- **Simplified LBO.** The debt structure is multi-tranche with a real
+  cash-sweep waterfall (Phase 1), but there is still no three-statement model,
+  no transaction/financing fees, no management rollover, and no PIK interest;
+  capex doubles as the D&A tax proxy, working capital is a single ratio, and the
+  exit multiple is held flat by construction. Outputs are screening-grade, not
+  underwriting-grade. A full three-statement (IS/BS/CFS) articulation on top of
+  the tranche structure is planned as Phase 2 — see
+  [docs/superpowers/specs](docs/superpowers/specs).
 - **Free-data constraints.** yfinance market caps can be stale or missing for
   thinly traded names; promoter pledge data on Screener.in lags exchange
   filings by up to a quarter.
