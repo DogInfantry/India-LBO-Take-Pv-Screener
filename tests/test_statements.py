@@ -35,3 +35,47 @@ def test_income_statement_taxes_floored_at_zero():
     assert isr["ebt"] < 0
     assert isr["taxes"] == 0.0
     assert abs(isr["net_income"] - isr["ebt"]) < 1e-9
+
+
+# conftest.py puts src/ on the path; pytest's prepend import mode puts tests/ there.
+from lbo_model import run_lbo
+from test_lbo_model import base_assumptions  # reuse the Phase 2 fixture
+
+
+def model():
+    return run_lbo(5000.0, 1000.0, base_assumptions())
+
+
+def test_cash_flow_reconciles_to_balance_sheet_cash():
+    res = model()
+    cf = res["cash_flow"].set_index("year")
+    bs = res["balance_sheet"].set_index("year")
+    for year in cf.index:
+        assert abs(cf.loc[year, "ending_cash"] - bs.loc[year, "cash"]) < 1e-6
+
+
+def test_ppe_roll_forward():
+    res = model()
+    bs = res["balance_sheet"].set_index("year")
+    cf = res["cash_flow"].set_index("year")
+    is_ = res["income_statement"].set_index("year")
+    for year in cf.index:
+        expected = bs.loc[year - 1, "ppe"] + cf.loc[year, "capex"] - is_.loc[year, "da"]
+        assert abs(bs.loc[year, "ppe"] - expected) < 1e-6
+
+
+def test_retained_earnings_accumulate():
+    res = model()
+    bs = res["balance_sheet"].set_index("year")
+    is_ = res["income_statement"].set_index("year")
+    sponsor_equity = res["sources_uses"]["sponsor_equity"]
+    cumulative = sponsor_equity
+    for year in is_.index:
+        cumulative += is_.loc[year, "net_income"]
+        assert abs(bs.loc[year, "equity"] - cumulative) < 1e-6
+
+
+def test_goodwill_held_flat():
+    res = model()
+    gw = res["balance_sheet"]["goodwill"]
+    assert gw.nunique() == 1
