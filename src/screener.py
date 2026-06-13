@@ -61,7 +61,7 @@ def compute_metrics(fundamentals: pd.DataFrame, market: pd.DataFrame,
             "promoter_pledge_pct": latest["promoter_pledge_pct"],
             # Headroom to the modelled LBO leverage level — the thesis metric.
             "unused_debt_capacity_cr": max(
-                0.0, lbo["leverage_multiple"] * ebitda - net_debt),
+                0.0, sum(t["turns"] for t in lbo["tranches"]) * ebitda - net_debt),
         })
 
     metrics = pd.DataFrame(rows)
