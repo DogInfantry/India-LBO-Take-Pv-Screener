@@ -328,8 +328,7 @@ Expected: FAIL — `KeyError: 'txn_fees'` / missing `ar`/`dfc` BS columns.
 
   **(c) Year-0 BS row — add `ar`/`inventory`/`ap`/`dfc`; include `dfc` in assets and balance_error.** Compute opening WC components once:
 ```python
-    from statements import working_capital  # already importable; or add to top import
-    wc0 = working_capital(entry_revenue, a)
+    wc0 = working_capital(entry_revenue, a)  # working_capital added to top-of-file import (see below)
     bs_rows = [{
         "year": 0, "cash": cash, "ar": wc0["ar"], "inventory": wc0["inventory"],
         "ap": wc0["ap"], "nwc": nwc, "ppe": ppe, "goodwill": goodwill, "dfc": dfc,
@@ -453,7 +452,7 @@ git commit -m "feat: tear sheet shows fees, DFC, and AR/Inventory/AP breakout"
 - Modify: `smoke_test.py`
 - Modify: `README.md`
 
-- [ ] **Step 1: Update `smoke_test.py`** — add assertions: Sources & Uses ties with fees (`EV + txn + fin == debt + equity`), `txn_fees > 0` and `financing_fees > 0`, DFC at final year ≈ 0, and keep the existing balance-error and net-deleverage checks. Print the fee lines and a sample BS row showing `ar`/`inventory`/`ap`/`dfc`.
+- [ ] **Step 1: Update `smoke_test.py`** — **first FIX the existing hardcoded assertions that fees will break:** the `assert abs(su["sponsor_equity"] - 5000) < 1e-9` line (equity now grows by the fees) and any implicit `EV == debt + equity` identity. Rewrite the S&U check as `assert abs((su["enterprise_value"] + su["txn_fees"] + su["financing_fees"]) - (su["debt"] + su["sponsor_equity"])) < 1e-6`. Then ADD assertions: `txn_fees > 0` and `financing_fees > 0`, DFC at final year ≈ 0; KEEP the existing balance-error and net-deleverage checks. Print the fee lines and a sample BS row showing `ar`/`inventory`/`ap`/`dfc`. (Read the current `smoke_test.py` first to locate the exact assertion lines — do not assume line numbers.)
 
 - [ ] **Step 2: Run the smoke test**
 
