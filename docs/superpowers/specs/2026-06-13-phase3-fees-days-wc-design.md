@@ -56,7 +56,10 @@ Arrangement and underwriting fees on the debt raised. New config
   RBI-capped, post-scaling `total_debt`, so the grid scales it automatically).
 - Capitalized as a **deferred financing cost (DFC) asset** on the opening BS,
   amortized **straight-line over `hold_years`**:
-  `dfc_amort = financing_fees / hold_years` each year.
+  `dfc_amort = financing_fees / hold_years` each year. Straight-line over the full
+  hold means the DFC reaches exactly 0 at year `hold_years`, so `dfc_amort` is
+  simply constant; carry the roll-down as `dfc = max(0, dfc − dfc_amort)` purely
+  as a defensive floor (it never actually clamps under these assumptions).
 - DFC amortization is a **non-cash expense on the IS** (reduces EBT → small tax
   shield) and is **added back in CFO** like D&A. The DFC asset rolls down
   `DFC_t = DFC_{t−1} − dfc_amort`, reaching ~0 at exit.
@@ -122,8 +125,11 @@ verifies and documents the resulting opening NWC.
   - `income_statement_row(...)` gains a `dfc_amort` param: it is subtracted after
     D&A and before interest (a non-cash operating-ish expense), so EBT and the tax
     shield reflect it. Returned row gains `dfc_amort`.
-- **`src/lbo_model.py`** — `run_lbo` computes `txn_fees`/`financing_fees` after
-  sizing tranches, threads them into the opening BS and the equity check, carries
+- **`src/lbo_model.py`** — `run_lbo` follows a strict order of operations: size
+  tranches → apply the RBI 75%-of-EV cap → compute **both** fees off the final
+  post-cap `total_debt` and `ev` (`txn_fees = pct × ev`, `financing_fees =
+  pct × total_debt`) → compute the equity check. It threads the fees into the
+  opening BS and the equity check, carries
   `dfc` as a rolled-down asset in the BS (and in the balance-error term), and adds
   `dfc_amort` back in CFO. `sources_uses` gains `txn_fees`, `financing_fees`, and
   the larger `sponsor_equity`. The waterfall, `_size_tranches`, exit/returns, and
@@ -131,8 +137,11 @@ verifies and documents the resulting opening NWC.
 - **`config/config.yaml`** — add `txn_fee_pct_of_ev`, `financing_fee_pct_of_debt`,
   a `working_capital:` block, and `cogs_pct_of_revenue`; remove
   `nwc_pct_of_revenue`.
-- **`src/screener.py`** — no change expected (it reads tranche turns, not WC/fees);
-  verify the `nwc_pct_of_revenue` key is not referenced anywhere before removing it.
+- **`src/screener.py`** — no change expected (it reads tranche turns, not WC/fees).
+  Before removing `nwc_pct_of_revenue` from config, grep the whole tree for it:
+  today it is read in `opening_balance_sheet` and the yearly loop in `run_lbo`, and
+  the working-capital deferral note in the `lbo_model.py` docstring (lines ~21-22)
+  must be updated to reflect that days-based WC is now implemented.
 
 ## Yearly articulation (deltas from Phase 2)
 
