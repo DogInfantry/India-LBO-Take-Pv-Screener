@@ -182,12 +182,45 @@ building materials, chemicals, pharma, industrials and QSR.
 ## How to run
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt        # runtime deps (what the live app uses)
 streamlit run src/app.py
 ```
 
+For tests and dev tooling, install the dev extras instead:
+
+```bash
+pip install -r requirements-dev.txt    # adds pytest + ponytail
+pytest -q                              # 22 tests
+```
+
 `python smoke_test.py` runs an offline sanity check of the full pipeline
-(loader → screen → LBO → sensitivity) against the bundled example data.
+(loader → screen → LBO → sensitivity) against the live fundamentals data.
+
+### Watching the app logs live (ponytail)
+
+Run the app through a thin logger and tail it with
+[ponytail](https://github.com/linsomniac/ponytail) (a rotation-safe `tail -F`):
+
+```bash
+python tools/run_app_logged.py   # terminal 1: runs the app, logs to logs/app.log
+python tools/follow_log.py       # terminal 2: streams the log live
+```
+
+### Live demo / deploying to Streamlit Community Cloud
+
+The app is a single Streamlit entrypoint (`src/app.py`) with a root
+`requirements.txt`, so it deploys to [Streamlit Community
+Cloud](https://share.streamlit.io) with no extra config:
+
+1. Push to GitHub (already done).
+2. On share.streamlit.io, **New app** → pick this repo/branch → main file
+   path `src/app.py` → **Deploy**.
+3. The dark theme in `.streamlit/config.toml` and the universe/fundamentals
+   CSVs are committed, so the deployed app runs the real 46-name screen.
+
+Once deployed, drop the URL here:
+
+> **Live demo:** _add your share.streamlit.io link_
 
 The dashboard has two views:
 
