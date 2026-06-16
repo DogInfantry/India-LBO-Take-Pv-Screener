@@ -26,7 +26,8 @@ screening:
   max_market_cap_cr: 17000
 
 lbo:
-  entry_multiple: 8.0                # EV / LTM EBITDA at entry
+  entry_multiple: 8.0                # EV / LTM EBITDA at entry (fixed-multiple mode only)
+  control_premium_pct: 25.0          # take-private premium over market cap (delisting via reverse book-building typically clears 20-40%)
   tranches:                          # ordered: index 0 = most senior (swept first)
     - {name: senior,    turns: 2.0, rate: 0.090, mandatory_amort_pct: 0.10}
     - {name: mezzanine, turns: 1.0, rate: 0.130, mandatory_amort_pct: 0.0}
@@ -48,3 +49,4 @@ lbo:
 sensitivity:
   entry_multiples: [6.0, 7.0, 8.0, 9.0, 10.0]
   leverage_multiples: [2.0, 2.5, 3.0, 3.5, 4.0]
+  premiums_pct: [0.0, 10.0, 20.0, 30.0, 40.0]   # take-private premium axis (market mode)

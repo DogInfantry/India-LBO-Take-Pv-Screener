@@ -49,8 +49,15 @@ def _size_tranches(entry_ebitda: float, ev: float, tranches: list[dict],
         "principal": t["turns"] * scale * entry_ebitda,
     } for t in tranches]
 
-    total_debt = sum(t["principal"] for t in sized)
     cap = 0.75 * ev
+    if cap <= 0:
+        # Near-zero or negative EV (e.g. a net-cash company trading below its
+        # cash): nothing to lever. Honest answer is no acquisition debt.
+        for t in sized:
+            t["principal"] = 0.0
+        return sized, 0.0
+
+    total_debt = sum(t["principal"] for t in sized)
     if total_debt > cap and total_debt > 0:
         cap_scale = cap / total_debt
         for t in sized:
@@ -61,8 +68,17 @@ def _size_tranches(entry_ebitda: float, ev: float, tranches: list[dict],
 
 def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
             entry_multiple: float | None = None,
-            total_leverage: float | None = None) -> dict:
+            total_leverage: float | None = None,
+            entry_ev: float | None = None) -> dict:
     """Run the paper LBO with a full three-statement build.
+
+    Entry price is set one of two ways:
+    - `entry_ev` given (market take-private): EV is the actual cost of the deal
+      — equity purchase price (market cap x (1 + control premium)) plus assumed
+      net debt — and the entry multiple FALLS OUT as entry_ev / EBITDA.
+    - otherwise (fixed multiple): EV = EBITDA x entry_multiple, the legacy path.
+    The exit reuses the (implied or fixed) entry multiple, so returns come from
+    deleveraging and EBITDA growth, never multiple expansion.
 
     Revenue drives the model; EBITDA = revenue x flat entry margin
     (entry_ebitda / entry_revenue). Each year produces an income statement, the
@@ -71,9 +87,13 @@ def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
     the loop is a single forward pass and IRR stays closed-form.
     """
     a = assumptions
-    entry_multiple = entry_multiple if entry_multiple is not None else a["entry_multiple"]
     margin = entry_ebitda / entry_revenue if entry_revenue else 0.0
-    ev = entry_ebitda * entry_multiple
+    if entry_ev is not None:
+        ev = entry_ev
+        entry_multiple = ev / entry_ebitda if entry_ebitda else 0.0
+    else:
+        entry_multiple = entry_multiple if entry_multiple is not None else a["entry_multiple"]
+        ev = entry_ebitda * entry_multiple
 
     sized, total_debt = _size_tranches(entry_ebitda, ev, a["tranches"], total_leverage)
     txn_fees = a["txn_fee_pct_of_ev"] * ev
@@ -237,5 +257,30 @@ def sensitivity_grid(entry_revenue: float, entry_ebitda: float, assumptions: dic
     irr.index.name = "entry_multiple"
     irr.columns.name = "total_leverage"
     moic.index.name = "entry_multiple"
+    moic.columns.name = "total_leverage"
+    return irr, moic
+
+
+def sensitivity_grid_premium(
+        entry_revenue: float, entry_ebitda: float, assumptions: dict,
+        market_cap: float, net_debt: float,
+        premiums_pct: list[float],
+        leverage_multiples: list[float]) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """IRR and MOIC grids across control premium (rows) x total leverage (cols)
+    for a market take-private. Each row prices the deal at
+    EV = market_cap x (1 + premium) + net_debt, the actual acquisition cost.
+    """
+    irr = pd.DataFrame(index=premiums_pct, columns=leverage_multiples, dtype=float)
+    moic = irr.copy()
+    for prem in premiums_pct:
+        entry_ev = market_cap * (1 + prem / 100.0) + net_debt
+        for lm in leverage_multiples:
+            result = run_lbo(entry_revenue, entry_ebitda, assumptions,
+                             entry_ev=entry_ev, total_leverage=lm)
+            irr.loc[prem, lm] = result["irr"]
+            moic.loc[prem, lm] = result["moic"]
+    irr.index.name = "premium_pct"
+    irr.columns.name = "total_leverage"
+    moic.index.name = "premium_pct"
     moic.columns.name = "total_leverage"
     return irr, moic

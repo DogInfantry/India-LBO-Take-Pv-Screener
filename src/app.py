@@ -15,7 +15,7 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # allow running from any cwd
 
 from data_loader import load_config, load_fundamentals, load_universe, fetch_market_data
-from lbo_model import run_lbo, sensitivity_grid
+from lbo_model import run_lbo, sensitivity_grid, sensitivity_grid_premium
 from screener import apply_screen, build_rationale, compute_metrics
 
 st.set_page_config(page_title="India LBO Screener", layout="wide")
@@ -246,20 +246,57 @@ else:
     st.divider()
     st.subheader("Paper LBO")
     lbo_cfg = cfg["lbo"]
-    col1, col2, col3 = st.columns(3)
     total_turns = sum(t["turns"] for t in lbo_cfg["tranches"])
-    entry_mult = col1.number_input("Entry multiple (x EBITDA)", 4.0, 15.0,
-                                   float(lbo_cfg["entry_multiple"]), 0.5)
+    have_mcap = pd.notna(row["market_cap_cr"]) and pd.notna(row["net_debt_cr"])
+
+    mode = st.radio(
+        "Entry pricing", ["Market take-private", "Fixed multiple"],
+        horizontal=True, index=0 if have_mcap else 1,
+        help="Market mode prices the deal at the actual market cap plus a control "
+             "premium, so the entry multiple falls out of real prices. Fixed mode "
+             "uses an abstract EV/EBITDA multiple for every company.")
+    if mode == "Market take-private" and not have_mcap:
+        st.info("Live market cap unavailable — falling back to fixed multiple. "
+                "Enable live market data in the sidebar for market pricing.")
+        mode = "Fixed multiple"
+
+    col1, col2, col3 = st.columns(3)
     lev_mult = col2.number_input("Total leverage (x EBITDA)", 1.0, 6.0,
                                  float(total_turns), 0.5,
                                  help="Scales all debt tranches proportionally.")
     growth = col3.number_input("Revenue growth (%)", -5.0, 25.0,
                                lbo_cfg["revenue_growth"] * 100, 0.5,
                                help="Margin held flat, so EBITDA grows with revenue.")
-
     assumptions = {**lbo_cfg, "revenue_growth": growth / 100}
-    result = run_lbo(row["revenue_cr"], row["ebitda_cr"], assumptions,
-                     entry_multiple=entry_mult, total_leverage=lev_mult)
+
+    premium = None
+    if mode == "Market take-private":
+        premium = col1.number_input(
+            "Control premium (%)", 0.0, 100.0,
+            float(lbo_cfg.get("control_premium_pct", 25.0)), 5.0,
+            help="Premium over market cap to take the company private; India "
+                 "delisting via reverse book-building typically clears 20-40%.")
+        equity_offer = row["market_cap_cr"] * (1 + premium / 100)
+        entry_ev = equity_offer + row["net_debt_cr"]
+        result = run_lbo(row["revenue_cr"], row["ebitda_cr"], assumptions,
+                         entry_ev=entry_ev, total_leverage=lev_mult)
+        st.caption(
+            f"Implied entry **{result['entry_multiple']:.1f}x** EBITDA  ·  equity "
+            f"offer ₹{equity_offer:,.0f} cr (₹{row['market_cap_cr']:,.0f} cr market "
+            f"cap +{premium:.0f}%) + net debt ₹{row['net_debt_cr']:,.0f} cr = entry "
+            f"EV ₹{entry_ev:,.0f} cr.")
+    else:
+        entry_mult = col1.number_input("Entry multiple (x EBITDA)", 4.0, 15.0,
+                                       float(lbo_cfg["entry_multiple"]), 0.5)
+        result = run_lbo(row["revenue_cr"], row["ebitda_cr"], assumptions,
+                         entry_multiple=entry_mult, total_leverage=lev_mult)
+
+    degenerate = result["sources_uses"]["enterprise_value"] <= 0.05 * row["ebitda_cr"]
+    if degenerate:
+        st.warning(
+            f"Entry EV of ₹{result['sources_uses']['enterprise_value']:,.0f} cr is "
+            "near zero or negative — the company trades at or below its net cash, "
+            "so there is nothing to lever. The returns below are not meaningful (n.m.).")
 
     su = result["sources_uses"]
     st.markdown("**Sources & uses — EV-to-equity bridge (₹ cr)**")
@@ -286,9 +323,10 @@ else:
     with right:
         st.markdown("**Returns (5-yr hold, flat exit multiple)**")
         m1, m2, m3 = st.columns(3)
-        m1.metric("MOIC", f"{result['moic']:.2f}x")
-        m2.metric("IRR", f"{result['irr']:.1%}")
-        m3.metric("Exit equity", f"₹{result['exit_equity']:,.0f} cr")
+        m1.metric("MOIC", "n.m." if degenerate else f"{result['moic']:.2f}x")
+        m2.metric("IRR", "n.m." if degenerate else f"{result['irr']:.1%}")
+        m3.metric("Exit equity",
+                  "n.m." if degenerate else f"₹{result['exit_equity']:,.0f} cr")
         st.caption(f"Exit EV ₹{result['exit_ev']:,.0f} cr at "
                    f"{result['entry_multiple']:.1f}x Year-5 EBITDA; exit net "
                    f"debt ₹{result['exit_net_debt']:,.0f} cr.")
@@ -330,18 +368,32 @@ else:
             "{:,.0f}", subset=result["cash_flow"].columns[1:]),
             width="stretch", hide_index=True)
 
-    st.markdown("**Sensitivity — IRR (entry multiple × leverage)**")
     sens = cfg["sensitivity"]
-    irr_grid, moic_grid = sensitivity_grid(
-        row["revenue_cr"], row["ebitda_cr"], assumptions,
-        sens["entry_multiples"], sens["leverage_multiples"])
-    st.dataframe(irr_grid.style.format("{:.1%}")
+    if mode == "Market take-private":
+        st.markdown("**Sensitivity — IRR (control premium × leverage)**")
+        irr_grid, moic_grid = sensitivity_grid_premium(
+            row["revenue_cr"], row["ebitda_cr"], assumptions,
+            row["market_cap_cr"], row["net_debt_cr"],
+            sens["premiums_pct"], sens["leverage_multiples"])
+        irr_grid.index = [f"{p:.0f}%" for p in irr_grid.index]
+        moic_grid.index = [f"{p:.0f}%" for p in moic_grid.index]
+        irr_grid.index.name = moic_grid.index.name = "Premium"
+        flat_note = ("Each row prices the take-private at market cap + that premium, "
+                     "exiting at the implied entry multiple — returns come from debt "
+                     "paydown and EBITDA growth, not multiple expansion.")
+    else:
+        st.markdown("**Sensitivity — IRR (entry multiple × leverage)**")
+        irr_grid, moic_grid = sensitivity_grid(
+            row["revenue_cr"], row["ebitda_cr"], assumptions,
+            sens["entry_multiples"], sens["leverage_multiples"])
+        flat_note = ("Exit multiple held flat at the entry multiple in every "
+                     "scenario — returns come from debt paydown and EBITDA growth, "
+                     "not multiple expansion.")
+    st.dataframe(irr_grid.style.format("{:.1%}", na_rep="—")
                  .background_gradient(cmap="RdYlGn", axis=None),
                  width="stretch")
     st.markdown("**Sensitivity — MOIC**")
-    st.dataframe(moic_grid.style.format("{:.2f}x")
+    st.dataframe(moic_grid.style.format("{:.2f}x", na_rep="—")
                  .background_gradient(cmap="RdYlGn", axis=None),
                  width="stretch")
-    st.caption("Exit multiple held flat at the entry multiple in every "
-               "scenario — returns come from debt paydown and EBITDA growth, "
-               "not multiple expansion.")
+    st.caption(flat_note)
