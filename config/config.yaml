@@ -35,9 +35,15 @@ lbo:
   tax_rate: 0.25                     # ~Indian corporate rate incl. surcharge
   revenue_growth: 0.08               # annual revenue growth (margin held flat)
   ppe_pct_of_revenue: 0.40           # opening PP&E as a share of entry revenue
-  nwc_pct_of_revenue: 0.15           # net working capital as a share of revenue
   da_pct_of_ppe: 0.10                # D&A as a share of opening PP&E each year
   capex_pct_of_revenue: 0.05         # capex as a share of revenue (~= D&A so PP&E stays ~flat)
+  txn_fee_pct_of_ev: 0.020           # M&A/legal/diligence fees, % of EV (equity-funded, into goodwill)
+  financing_fee_pct_of_debt: 0.025   # arrangement/OID fees, % of debt (capitalized, amortized over hold)
+  cogs_pct_of_revenue: 0.65          # COGS base for inventory & payables days
+  working_capital:
+    dso_days: 45                     # receivables days, against revenue
+    dio_days: 60                     # inventory days, against COGS
+    dpo_days: 40                     # payables days, against COGS
 
 sensitivity:
   entry_multiples: [6.0, 7.0, 8.0, 9.0, 10.0]

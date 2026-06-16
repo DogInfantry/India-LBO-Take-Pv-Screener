@@ -14,9 +14,12 @@ def base_assumptions(**overrides):
         "tax_rate": 0.25,
         "revenue_growth": 0.08,
         "ppe_pct_of_revenue": 0.40,
-        "nwc_pct_of_revenue": 0.15,
         "da_pct_of_ppe": 0.10,
         "capex_pct_of_revenue": 0.05,
+        "txn_fee_pct_of_ev": 0.020,
+        "financing_fee_pct_of_debt": 0.025,
+        "cogs_pct_of_revenue": 0.65,
+        "working_capital": {"dso_days": 45, "dio_days": 60, "dpo_days": 40},
     }
     a.update(overrides)
     return a
@@ -25,7 +28,7 @@ def base_assumptions(**overrides):
 def test_sources_equal_uses():
     res = run_lbo(5000.0, 1000.0, base_assumptions())
     su = res["sources_uses"]
-    assert abs(su["debt"] + su["sponsor_equity"] - su["enterprise_value"]) < 1e-9
+    assert abs(su["debt"] + su["sponsor_equity"] - (su["enterprise_value"] + su["txn_fees"] + su["financing_fees"])) < 1e-9
     assert abs(sum(t["amount"] for t in su["tranches"]) - su["debt"]) < 1e-9
 
 

@@ -29,21 +29,37 @@ for _, row in results.iterrows():
     print("\n" + build_rationale(row, cfg))
 
 # LBO on a company with 5,000 cr revenue / 1,000 cr EBITDA (20% margin). Default
-# tranches sum to 3.0x EBITDA, so sources & uses are EV 8000 / debt 3000 / equity 5000.
+# tranches sum to 3.0x EBITDA, so EV 8000 / debt 3000. Transaction and financing
+# fees are now layered in: txn fees fold into goodwill and are funded by sponsor
+# equity, financing fees are capitalized as a DFC asset and also equity-funded, so
+# sponsor equity = EV + txn_fees + financing_fees - debt (5235 at defaults).
 res = run_lbo(5000.0, 1000.0, cfg["lbo"])
 su = res["sources_uses"]
 assert abs(su["enterprise_value"] - 8000) < 1e-9
 assert abs(su["debt"] - 3000) < 1e-9
-assert abs(su["sponsor_equity"] - 5000) < 1e-9
+# fees are positive and flow into the sources & uses
+assert su["txn_fees"] > 0
+assert su["financing_fees"] > 0
+# fee-aware sources & uses identity: EV + fees (uses) = debt + equity (sources)
+assert abs((su["enterprise_value"] + su["txn_fees"] + su["financing_fees"])
+           - (su["debt"] + su["sponsor_equity"])) < 1e-6
 # total debt = sum of itemized tranches
 assert abs(sum(t["amount"] for t in su["tranches"]) - su["debt"]) < 1e-9
 print(f"\nLBO @8x/3x on 5000cr rev / 1000cr EBITDA: MOIC {res['moic']:.2f}x, "
       f"IRR {res['irr']:.1%}, max balance error {res['max_balance_error']:.1e}")
+print(f"  transaction fees (into goodwill, equity-funded): {su['txn_fees']:.1f} cr")
+print(f"  financing fees (capitalized DFC, amortized):     {su['financing_fees']:.1f} cr")
 print(res["schedule"].round(0).to_string(index=False))
 print("\nBalance sheet (₹ cr):")
 print(res["balance_sheet"].round(0).to_string(index=False))
+opening_bs = res["balance_sheet"].iloc[0]
+print(f"\nOpening WC/DFC sample (₹ cr): ar {opening_bs['ar']:.1f}, "
+      f"inventory {opening_bs['inventory']:.1f}, ap {opening_bs['ap']:.1f}, "
+      f"dfc {opening_bs['dfc']:.1f}")
 # the balance sheet must tie out every year
 assert res["max_balance_error"] < 1e-6
+# the DFC asset must fully amortize to zero by the end of the hold
+assert abs(res["balance_sheet"].iloc[-1]["dfc"]) < 1e-6
 # the structure must net-deleverage over the hold (FCF may not be strictly
 # monotonic year-on-year once real taxes/NWC are in the cash flow)
 assert res["schedule"]["ending_debt"].iloc[-1] < su["debt"]

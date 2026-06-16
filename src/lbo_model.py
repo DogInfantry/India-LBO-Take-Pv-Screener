@@ -7,23 +7,29 @@ Key mechanics (documented in the README; statement helpers in statements.py):
 - Revenue grows at revenue_growth; EBITDA = revenue x flat entry margin.
 - Debt is an ordered list of tranches (senior first) plus a revolver; sizes
   are turns x LTM EBITDA, total capped at 75% of EV (RBI), scaled proportionally.
+- Sources & uses carry transaction fees (% of EV, equity-funded into goodwill)
+  and financing fees (% of debt), both funded by additional sponsor equity.
 - Opening BS is cash-free/debt-free with goodwill as the plug
-  (goodwill = EV - opening PP&E - opening NWC); goodwill held flat.
-- Each year: IS (EBIT = EBITDA - D&A on opening PP&E; taxes on EBT, floored at
-  zero) -> debt waterfall (mandatory amort, then sweep revolver->senior->mezz,
-  shortfalls draw the revolver) -> CFS (CFO = NI + D&A - dNWC; FCF for debt =
-  CFO - capex) -> BS (cash is the CFS plug; PP&E rolls capex - D&A; equity
-  accumulates retained earnings). Interest accrues on opening balances, so the
-  loop is a single forward pass and IRR stays closed-form.
+  (goodwill = EV + txn_fees - opening PP&E - opening NWC); goodwill held flat.
+  Financing fees are capitalized as a deferred-financing-cost (DFC) asset and
+  amortized straight-line over the hold, rolling down to zero at exit.
+- Working capital is days-based (DSO on revenue; DIO/DPO on COGS); NWC =
+  AR + Inventory - AP.
+- Each year: IS (EBIT = EBITDA - D&A on opening PP&E - DFC amort; taxes on EBT,
+  floored at zero) -> debt waterfall (mandatory amort, then sweep
+  revolver->senior->mezz, shortfalls draw the revolver) -> CFS (CFO = NI + D&A +
+  DFC amort - dNWC; FCF for debt = CFO - capex) -> BS (cash is the CFS plug;
+  PP&E rolls capex - D&A; DFC rolls down by amort; equity accumulates retained
+  earnings). Interest accrues on opening balances, so the loop is a single
+  forward pass and IRR stays closed-form.
 - The balance check (max_balance_error ~ 0) is a bug detector, not load-bearing
   accounting (the BS balances by construction).
-- Deferred: transaction fees, management rollover, PIK, AR/inventory/AP days-
-  based working capital, purchase-price write-ups, deferred taxes, NOLs.
-  Flat exit multiple = entry.
+- Deferred: management rollover, PIK, purchase-price write-ups, deferred taxes,
+  NOLs. Flat exit multiple = entry.
 """
 
 import pandas as pd
-from statements import opening_balance_sheet, income_statement_row
+from statements import opening_balance_sheet, income_statement_row, working_capital
 
 
 def _size_tranches(entry_ebitda: float, ev: float, tranches: list[dict],
@@ -70,7 +76,10 @@ def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
     ev = entry_ebitda * entry_multiple
 
     sized, total_debt = _size_tranches(entry_ebitda, ev, a["tranches"], total_leverage)
-    equity = ev - total_debt  # sponsor equity (entry); MOIC denominator
+    txn_fees = a["txn_fee_pct_of_ev"] * ev
+    financing_fees = a["financing_fee_pct_of_debt"] * total_debt
+    dfc_amort = financing_fees / a["hold_years"] if a["hold_years"] else 0.0
+    equity = ev + txn_fees + financing_fees - total_debt  # sponsor equity (entry); MOIC denominator
 
     balances = [t["principal"] for t in sized]
     originals = [t["principal"] for t in sized]
@@ -79,29 +88,35 @@ def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
     names = [t["name"] for t in sized]
     revolver = 0.0
 
-    obs = opening_balance_sheet(entry_revenue, ev, total_debt, equity, a)
+    obs = opening_balance_sheet(entry_revenue, ev, total_debt, equity, a,
+                                txn_fees=txn_fees, financing_fees=financing_fees)
     cash, nwc, ppe, goodwill = obs["cash"], obs["nwc"], obs["ppe"], obs["goodwill"]
+    dfc = obs["dfc"]
     book_equity = equity            # accumulates retained earnings
     revenue = entry_revenue
 
     is_rows, cf_rows, sched_rows = [], [], []
+    wc0 = working_capital(entry_revenue, a)
     bs_rows = [{
-        "year": 0, "cash": cash, "nwc": nwc, "ppe": ppe, "goodwill": goodwill,
-        "assets": cash + nwc + ppe + goodwill, "debt": sum(balances) + revolver,
-        "equity": book_equity,
-        "balance_error": (cash + nwc + ppe + goodwill) - (sum(balances) + revolver + book_equity),
+        "year": 0, "cash": cash, "ar": wc0["ar"], "inventory": wc0["inventory"],
+        "ap": wc0["ap"], "nwc": nwc, "ppe": ppe, "goodwill": goodwill, "dfc": dfc,
+        "assets": cash + nwc + ppe + goodwill + dfc,
+        "debt": sum(balances) + revolver, "equity": book_equity,
+        "balance_error": (cash + nwc + ppe + goodwill + dfc)
+                         - (sum(balances) + revolver + book_equity),
     }]
 
     for year in range(1, a["hold_years"] + 1):
         opening_ppe = ppe
         revenue = revenue * (1 + a["revenue_growth"])
+        wc = working_capital(revenue, a)
         cash_interest = sum(b * r for b, r in zip(balances, rates)) + revolver * a["revolver_rate"]
-        isr = income_statement_row(revenue, margin, opening_ppe, cash_interest, a)
+        isr = income_statement_row(revenue, margin, opening_ppe, cash_interest, a,
+                                   dfc_amort=dfc_amort)
 
         capex = a["capex_pct_of_revenue"] * revenue
-        new_nwc = a["nwc_pct_of_revenue"] * revenue
-        delta_nwc = new_nwc - nwc
-        cfo = isr["net_income"] + isr["da"] - delta_nwc
+        delta_nwc = wc["nwc"] - nwc
+        cfo = isr["net_income"] + isr["da"] + isr["dfc_amort"] - delta_nwc
         fcf_for_debt = cfo - capex
 
         # --- debt waterfall (same mechanism as Phase 1) ---
@@ -134,12 +149,13 @@ def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
         cash = cash + cfo - capex + cff
 
         # roll forward balances
-        nwc = new_nwc
+        nwc = wc["nwc"]
         ppe = opening_ppe + capex - isr["da"]
+        dfc = max(0.0, dfc - dfc_amort)
         book_equity = book_equity + isr["net_income"]
 
         ending_debt = sum(balances) + revolver
-        assets = cash + nwc + ppe + goodwill
+        assets = cash + nwc + ppe + goodwill + dfc
 
         is_rows.append({"year": year, **isr})
         cf_rows.append({
@@ -149,9 +165,10 @@ def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
             "revolver_draw": revolver_draw, "cff": cff, "ending_cash": cash,
         })
         bs_rows.append({
-            "year": year, "cash": cash, "nwc": nwc, "ppe": ppe,
-            "goodwill": goodwill, "assets": assets, "debt": ending_debt,
-            "equity": book_equity, "balance_error": assets - (ending_debt + book_equity),
+            "year": year, "cash": cash, "ar": wc["ar"], "inventory": wc["inventory"],
+            "ap": wc["ap"], "nwc": nwc, "ppe": ppe, "goodwill": goodwill, "dfc": dfc,
+            "assets": assets, "debt": ending_debt, "equity": book_equity,
+            "balance_error": assets - (ending_debt + book_equity),
         })
         srow = {"year": year, "ebitda": isr["ebitda"], "interest": cash_interest,
                 "taxes": isr["taxes"], "capex": capex, "delta_nwc": delta_nwc,
@@ -184,6 +201,8 @@ def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
             "debt": total_debt,
             "tranches": [{"name": t["name"], "amount": t["principal"],
                           "pct_of_ev": t["principal"] / ev} for t in sized],
+            "txn_fees": txn_fees,
+            "financing_fees": financing_fees,
             "sponsor_equity": equity,
             "debt_pct_of_ev": total_debt / ev,
         },
