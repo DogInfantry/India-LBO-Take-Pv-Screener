@@ -6,3 +6,8 @@ venv/
 *.egg-info/
 dist/
 .DS_Store
+
+# runtime logs (tailed by tools/follow_log.py)
+logs/
+*.log
+*.offset
