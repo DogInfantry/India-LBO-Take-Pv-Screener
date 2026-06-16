@@ -8,6 +8,7 @@ Run from the project root:  streamlit run src/app.py
 import sys
 from pathlib import Path
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -73,10 +74,71 @@ view = st.sidebar.radio("View", ["Shortlist", "Company tear sheet"])
 
 # ---------------------------------------------------------------- shortlist
 if view == "Shortlist":
-    st.subheader("Screen results")
+    st.subheader("Screen overview")
     passed = results[results["passes_screen"]]
     st.metric("Candidates passing all criteria", f"{len(passed)} / {len(results)}")
 
+    # ---- visual summary ------------------------------------------------
+    n_criteria = sum(c.startswith("pass_") for c in results.columns)
+    chart_df = results.assign(
+        name=results["ticker"].str.replace(".NS", "", regex=False),
+        verdict=results["passes_screen"].map({True: "Passes all", False: "Falls short"}),
+    )
+    verdict_scale = alt.Scale(domain=["Passes all", "Falls short"],
+                              range=["#2e8b57", "#b0b7c0"])
+
+    st.markdown(f"**Leaderboard** — criteria cleared (out of {n_criteria})")
+    bars = (
+        alt.Chart(chart_df)
+        .mark_bar()
+        .encode(
+            x=alt.X("criteria_passed:Q", title=f"Criteria cleared (of {n_criteria})",
+                    scale=alt.Scale(domain=[0, n_criteria])),
+            y=alt.Y("name:N", sort="-x", title=None),
+            color=alt.Color("verdict:N", scale=verdict_scale, title=None),
+            tooltip=[
+                alt.Tooltip("name:N", title="Company"),
+                alt.Tooltip("criteria_passed:Q", title="Criteria cleared"),
+                alt.Tooltip("net_debt_to_ebitda:Q", title="Net debt/EBITDA", format=".2f"),
+                alt.Tooltip("fcf_yield:Q", title="FCF yield", format=".1%"),
+                alt.Tooltip("unused_debt_capacity_cr:Q", title="Unused debt cap (₹cr)", format=",.0f"),
+            ],
+        )
+        .properties(height=max(180, 22 * len(chart_df)))
+    )
+    st.altair_chart(bars, use_container_width=True)
+
+    st.markdown("**Sweet spot** — cheap cash flow × room to lever up")
+    bubble_df = chart_df.dropna(subset=["fcf_yield", "unused_debt_capacity_cr"])
+    if bubble_df.empty:
+        st.caption("Enable live market data to plot FCF yield (needs market cap).")
+    else:
+        bubble = (
+            alt.Chart(bubble_df)
+            .mark_circle(opacity=0.75, stroke="#33373d", strokeWidth=0.5)
+            .encode(
+                x=alt.X("unused_debt_capacity_cr:Q", title="Unused debt capacity (₹cr)"),
+                y=alt.Y("fcf_yield:Q", title="FCF yield", axis=alt.Axis(format="%")),
+                size=alt.Size("ebitda_cr:Q", title="EBITDA (₹cr)",
+                              scale=alt.Scale(range=[60, 1200])),
+                color=alt.Color("verdict:N", scale=verdict_scale, title=None),
+                tooltip=[
+                    alt.Tooltip("name:N", title="Company"),
+                    alt.Tooltip("fcf_yield:Q", title="FCF yield", format=".1%"),
+                    alt.Tooltip("unused_debt_capacity_cr:Q", title="Unused debt cap (₹cr)", format=",.0f"),
+                    alt.Tooltip("ebitda_cr:Q", title="EBITDA (₹cr)", format=",.0f"),
+                    alt.Tooltip("net_debt_to_ebitda:Q", title="Net debt/EBITDA", format=".2f"),
+                ],
+            )
+            .properties(height=380)
+            .interactive()
+        )
+        st.altair_chart(bubble, use_container_width=True)
+        st.caption("Top-right is the thesis sweet spot: high FCF yield (cheap cash flow) "
+                   "and large unused debt capacity (room to lever up in a take-private). "
+                   "Bubble size = EBITDA.")
+
+    st.subheader("Screen results")
     display_cols = {
         "ticker": "Ticker",
         "market_cap_cr": "Mkt cap (₹cr)",
