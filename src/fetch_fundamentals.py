@@ -136,8 +136,10 @@ def main(argv: list[str]) -> None:
     df.to_csv(OUTPUT_PATH, index=False)
     covered = df["ticker"].nunique()
     print(f"\nWrote {len(df)} rows for {covered} ticker(s) to {OUTPUT_PATH}")
-    print("Promoter holding/pledge left blank - fill from Screener.in to enable "
-          "the promoter & pledge screen filters.")
+    print("Promoter holding/pledge left blank — now run "
+          "`python src/fetch_promoter_data.py` to fill holding from yfinance and "
+          "apply the sourced pledge overrides (this script overwrites the CSV, "
+          "so always run it BEFORE the promoter fetch).")
 
 
 if __name__ == "__main__":

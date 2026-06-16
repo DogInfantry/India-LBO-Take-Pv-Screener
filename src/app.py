@@ -109,11 +109,19 @@ if n_covered < n_universe:
         f"Fundamentals cover {n_covered} of {n_universe} universe names. "
         "Re-run `python src/fetch_fundamentals.py` to refresh from yfinance.")
 
-if fundamentals["promoter_holding_pct"].isna().any():
+# Promoter holding is auto-filled from yfinance; pledge is sourced by hand for
+# names that clear the other criteria. Flag only the actionable gap: a name that
+# passes everything except pledge but has no pledge figure yet.
+_pass_cols = [c for c in results.columns if c.startswith("pass_")]
+_others = [c for c in _pass_cols if c != "pass_pledge"]
+_needs_pledge = results[results[_others].all(axis=1)
+                        & results["promoter_pledge_pct"].isna()]
+if not _needs_pledge.empty:
+    _names = ", ".join(_needs_pledge["ticker"].str.replace(".NS", "", regex=False))
     st.sidebar.warning(
-        "Promoter holding & pledge are blank for some names (yfinance doesn't "
-        "carry them). Those rows fail the promoter/pledge filters until you fill "
-        "the two columns in data/fundamentals.csv from Screener.in.")
+        f"Pledge % missing for names that clear every other criterion: {_names}. "
+        "Add them to PLEDGE_OVERRIDES in src/fetch_promoter_data.py "
+        "(source: Screener.in / Trendlyne) to complete the screen.")
 
 view = st.sidebar.radio("View", ["Shortlist", "Company tear sheet"])
 
