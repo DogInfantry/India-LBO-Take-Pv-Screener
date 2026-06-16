@@ -33,6 +33,51 @@ def load_inputs():
     return load_universe(), load_fundamentals()
 
 
+def sources_uses_waterfall(su: dict) -> alt.Chart:
+    """Bridge from enterprise value to the sponsor equity check: EV plus fees,
+    less each debt tranche, leaves the equity the sponsor must write."""
+    steps = [("Enterprise value", su["enterprise_value"], "total"),
+             ("Transaction fees", su["txn_fees"], "inc"),
+             ("Financing fees", su["financing_fees"], "inc")]
+    steps += [(t["name"].capitalize() + " debt", -t["amount"], "dec")
+              for t in su["tranches"]]
+    steps.append(("Sponsor equity", su["sponsor_equity"], "total"))
+
+    rows, running = [], 0.0
+    for label, amount, kind in steps:
+        if kind == "total":
+            start, end, running = 0.0, amount, amount
+        else:
+            start, end = running, running + amount
+            running = end
+        rows.append({"label": label, "amount": amount, "kind": kind,
+                     "lo": min(start, end), "hi": max(start, end)})
+    wf = pd.DataFrame(rows)
+    order = wf["label"].tolist()
+
+    color = alt.Color(
+        "kind:N",
+        scale=alt.Scale(domain=["total", "inc", "dec"],
+                        range=["#3b6ea5", "#c25b5b", "#2e8b57"]),
+        legend=alt.Legend(title=None, orient="top",
+            labelExpr="datum.label == 'total' ? 'EV / equity' "
+                      ": datum.label == 'inc' ? 'Fees (add)' : 'Debt (fund)'"))
+    return (
+        alt.Chart(wf)
+        .mark_bar()
+        .encode(
+            x=alt.X("label:N", sort=order, title=None,
+                    axis=alt.Axis(labelAngle=-30)),
+            y=alt.Y("lo:Q", title="₹ cr"),
+            y2="hi:Q",
+            color=color,
+            tooltip=[alt.Tooltip("label:N", title="Item"),
+                     alt.Tooltip("amount:Q", title="₹ cr", format=",.0f")],
+        )
+        .properties(height=360)
+    )
+
+
 universe, fundamentals = load_inputs()
 
 st.title("India LBO & Take-Private Screener")
@@ -209,6 +254,11 @@ else:
                      entry_multiple=entry_mult, total_leverage=lev_mult)
 
     su = result["sources_uses"]
+    st.markdown("**Sources & uses — EV-to-equity bridge (₹ cr)**")
+    st.altair_chart(sources_uses_waterfall(su), use_container_width=True)
+    st.caption("Enterprise value plus fees, less each debt tranche, leaves the "
+               "sponsor equity check — the residual on the right.")
+
     left, right = st.columns(2)
     with left:
         st.markdown("**Sources & uses (₹ cr)**")
