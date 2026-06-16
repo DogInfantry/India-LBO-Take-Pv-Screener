@@ -78,6 +78,41 @@ def sources_uses_waterfall(su: dict) -> alt.Chart:
     )
 
 
+def base_case_returns(passed: pd.DataFrame, cfg: dict) -> pd.DataFrame:
+    """Run the base-case market take-private LBO (config control premium, base
+    leverage, config growth) for each screen survivor and rank by IRR.
+
+    Skips names without live market data. Flags degenerate (near-zero/negative
+    EV) names — they trade at/below net cash and can't be levered — with NaN
+    returns so they rank last and render as 'n.m.'.
+    """
+    lbo_cfg = cfg["lbo"]
+    prem = lbo_cfg.get("control_premium_pct", 25.0)
+    base_lev = sum(t["turns"] for t in lbo_cfg["tranches"])
+    rows = []
+    for _, r in passed.iterrows():
+        if pd.isna(r["market_cap_cr"]) or pd.isna(r["net_debt_cr"]):
+            continue
+        entry_ev = r["market_cap_cr"] * (1 + prem / 100) + r["net_debt_cr"]
+        out = run_lbo(r["revenue_cr"], r["ebitda_cr"], lbo_cfg,
+                      entry_ev=entry_ev, total_leverage=base_lev)
+        degenerate = entry_ev <= 0.05 * r["ebitda_cr"]
+        rows.append({
+            "name": r["ticker"].replace(".NS", ""),
+            "implied_mult": out["entry_multiple"],
+            "irr": float("nan") if degenerate else out["irr"],
+            "moic": float("nan") if degenerate else out["moic"],
+            "equity_cr": out["sources_uses"]["sponsor_equity"],
+            "entry_ev_cr": entry_ev,
+            "degenerate": degenerate,
+        })
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return df
+    return df.sort_values("irr", ascending=False, na_position="last") \
+             .reset_index(drop=True)
+
+
 universe, fundamentals = load_inputs()
 
 st.title("India LBO & Take-Private Screener")
@@ -130,6 +165,57 @@ if view == "Shortlist":
     st.subheader("Screen overview")
     passed = results[results["passes_screen"]]
     st.metric("Candidates passing all criteria", f"{len(passed)} / {len(results)}")
+
+    # ---- best buyouts by base-case returns -----------------------------
+    st.markdown("**Best buyouts — base-case IRR**")
+    _lbo = cfg["lbo"]
+    _prem = _lbo.get("control_premium_pct", 25.0)
+    _lev = sum(t["turns"] for t in _lbo["tranches"])
+    ret = base_case_returns(passed, cfg)
+    if ret.empty:
+        st.info("No ranked returns yet — needs at least one screen survivor with "
+                "live market data. Enable live market data in the sidebar.")
+    else:
+        rankable = ret.dropna(subset=["irr"])
+        if not rankable.empty:
+            irr_bars = (
+                alt.Chart(rankable)
+                .mark_bar(color="#2e8b57")
+                .encode(
+                    x=alt.X("irr:Q", title="Base-case IRR", axis=alt.Axis(format="%")),
+                    y=alt.Y("name:N", sort="-x", title=None),
+                    tooltip=[
+                        alt.Tooltip("name:N", title="Company"),
+                        alt.Tooltip("irr:Q", title="IRR", format=".1%"),
+                        alt.Tooltip("moic:Q", title="MOIC", format=".2f"),
+                        alt.Tooltip("implied_mult:Q", title="Implied entry (x)", format=".1f"),
+                        alt.Tooltip("equity_cr:Q", title="Equity check (₹cr)", format=",.0f"),
+                    ],
+                )
+                .properties(height=max(140, 34 * len(rankable)))
+            )
+            hurdle = (
+                alt.Chart(pd.DataFrame({"h": [0.20]}))
+                .mark_rule(color="#c25b5b", strokeDash=[4, 4])
+                .encode(x="h:Q")
+            )
+            st.altair_chart(irr_bars + hurdle, use_container_width=True)
+        st.caption(
+            f"Base case: market take-private at {_prem:.0f}% control premium, "
+            f"{_lev:.1f}x leverage, {_lbo['revenue_growth'] * 100:.0f}% revenue "
+            "growth, flat exit. Dashed line = 20% IRR (typical PE hurdle). "
+            "Tune any deal on its tear sheet.")
+        show = ret.rename(columns={
+            "name": "Company", "implied_mult": "Implied entry (x)",
+            "irr": "IRR", "moic": "MOIC", "equity_cr": "Equity check (₹cr)"})
+        st.dataframe(
+            show[["Company", "Implied entry (x)", "IRR", "MOIC",
+                  "Equity check (₹cr)"]].style.format({
+                      "Implied entry (x)": "{:.1f}x", "IRR": "{:.1%}",
+                      "MOIC": "{:.2f}x", "Equity check (₹cr)": "{:,.0f}"},
+                  na_rep="n.m."),
+            width="stretch", hide_index=True)
+    st.divider()
 
     # ---- visual summary ------------------------------------------------
     n_criteria = sum(c.startswith("pass_") for c in results.columns)
