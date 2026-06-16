@@ -157,7 +157,7 @@ else:
         st.caption(f"Total debt = {su['debt_pct_of_ev']:.0%} of EV "
                    f"(RBI cap: 75% of acquisition value).")
         st.caption(f"Equity check includes ₹{su['txn_fees'] + su['financing_fees']:,.0f} cr "
-                   "of fees (transaction expensed into goodwill; financing capitalized & amortized).")
+                   "of fees (transaction folded into goodwill; financing capitalized & amortized).")
     with right:
         st.markdown("**Returns (5-yr hold, flat exit multiple)**")
         m1, m2, m3 = st.columns(3)
