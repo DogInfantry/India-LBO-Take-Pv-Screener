@@ -127,28 +127,42 @@ Assumptions, all configurable:
 
 ## Data sources
 
-- **yfinance** is used *only* for live price, market cap and shares
-  outstanding (`.NS` tickers). Its historical financial statements are capped
-  at ~4 years and have known alignment bugs, so they are not used.
-- **Fundamentals are manual CSV input** — 10 years of consolidated figures
-  per company, populated by hand from Screener.in.
+- **yfinance** supplies both live market data (price, market cap, shares
+  outstanding) *and* the historical financials. `src/fetch_fundamentals.py`
+  pulls ~4–5 recent fiscal years of revenue, EBITDA, net debt, interest and
+  free cash flow for every universe ticker and writes
+  [data/fundamentals.csv](data/fundamentals.csv). That depth covers the screen's
+  5-year margin-trend and 3-year FCF tests.
+- **Promoter holding & pledge are not in yfinance** (India-specific shareholding
+  filings), so those two columns are left blank and filled by hand from
+  Screener.in. Until they are populated, the promoter and pledge filters fail by
+  design (a blank counts as a fail), so no name clears the *full* screen — every
+  other criterion still computes and shows on the tear sheet.
+- [data/fundamentals_template.csv](data/fundamentals_template.csv) keeps two
+  hand-entered 10-year examples (INFY, TCS) as a format reference and is the
+  fallback the loader uses when `fundamentals.csv` is absent.
 
-### Populating the fundamentals CSV from Screener.in
+### Refreshing the financials
 
-1. Open the company page on [screener.in](https://www.screener.in) (logged
-   in), switch to **Consolidated** figures, and use **Export to Excel**.
-2. For each fiscal year, fill one row in
-   [data/fundamentals_template.csv](data/fundamentals_template.csv):
+```bash
+python src/fetch_fundamentals.py            # all universe tickers
+python src/fetch_fundamentals.py CYIENT.NS  # a subset, for spot checks
+```
 
-   | Column | Screener.in source |
-   |---|---|
-   | `revenue_cr` | P&L → Sales |
-   | `ebitda_cr` | P&L → Operating profit (+ other operating income if material) |
-   | `net_debt_cr` | Balance sheet → Borrowings − cash & investments (negative = net cash) |
-   | `interest_expense_cr` | P&L → Interest |
-   | `fcf_cr` | Cash flow → CFO − capex (Screener shows "Free cash flow" in the cash-flow section) |
-   | `promoter_holding_pct` | Shareholding pattern (latest quarter) |
-   | `promoter_pledge_pct` | Shareholding pattern → pledged % of promoter holding |
+This overwrites `data/fundamentals.csv`. Net debt is computed as total debt −
+cash (incl. short-term investments), so a net-cash company is negative; the
+fiscal-year label is the calendar year of the March-end reporting date.
+
+### Filling promoter data from Screener.in
+
+For each name, open the company page on [screener.in](https://www.screener.in),
+read the latest **Shareholding pattern**, and fill the two columns in
+`data/fundamentals.csv`:
+
+| Column | Screener.in source |
+|---|---|
+| `promoter_holding_pct` | Shareholding pattern → Promoters (latest quarter) |
+| `promoter_pledge_pct` | Shareholding pattern → pledged % of promoter holding |
 
 3. All ₹ figures are in **crore**; `year` uses `FY16`-style labels;
    promoter columns can simply repeat the latest values on every row of a
