@@ -1,10 +1,11 @@
-"""Load the universe list, manually-populated fundamentals CSV, and live
-market data (price / market cap / shares outstanding) from yfinance.
+"""Load the universe list, the fundamentals CSV, and live market data
+(price / market cap / shares outstanding) from yfinance.
 
-yfinance is used ONLY for live market data. Historical financial statements
-come from the fundamentals CSV, populated by hand from Screener.in exports —
-yfinance's statement history is capped at ~4 years and has known
-data-alignment issues, so it is not used for fundamentals.
+Fundamentals are produced by fetch_fundamentals.py, which pulls ~4-5 recent
+fiscal years of financials from yfinance into data/fundamentals.csv. The two
+promoter columns (holding / pledge) are not in yfinance and are filled by hand
+from Screener.in. load_fundamentals prefers fundamentals.csv and falls back to
+the bundled template (INFY/TCS examples) when it is absent.
 """
 
 from pathlib import Path
@@ -33,12 +34,17 @@ def load_universe(path: Path | str = PROJECT_ROOT / "data" / "universe.csv") -> 
     return df
 
 
-def load_fundamentals(path: Path | str = PROJECT_ROOT / "data" / "fundamentals_template.csv") -> pd.DataFrame:
+def load_fundamentals(path: Path | str | None = None) -> pd.DataFrame:
     """Long-format fundamentals: one row per company-year.
 
-    Sorted by ticker then fiscal year so that "latest year" logic in the
-    screener can simply take the last row per ticker.
+    Defaults to the real data file (data/fundamentals.csv, produced by
+    fetch_fundamentals.py) when present, falling back to the bundled template
+    (INFY/TCS examples) so a fresh clone still loads. Sorted by ticker then
+    fiscal year so the screener's "latest year" logic can take the last row.
     """
+    if path is None:
+        real = PROJECT_ROOT / "data" / "fundamentals.csv"
+        path = real if real.exists() else PROJECT_ROOT / "data" / "fundamentals_template.csv"
     df = pd.read_csv(path)
     missing = set(FUNDAMENTALS_COLUMNS) - set(df.columns)
     if missing:

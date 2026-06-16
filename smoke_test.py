@@ -12,12 +12,14 @@ fund = load_fundamentals()
 print(f"universe: {len(uni)} names, fundamentals: {len(fund)} rows, "
       f"{fund['ticker'].nunique()} companies")
 
-# offline market frame, with a fake mcap for INFY to exercise the mcap branch
+# offline market frame: in-band mcaps for two real names exercise the mcap
+# branch; a None mcap exercises the missing-data branch. Other universe names
+# get NaN mcap on merge and fail pass_mcap by design.
 market = pd.DataFrame({
-    "ticker": ["INFY.NS", "TCS.NS"],
-    "price": [1600.0, None],
-    "market_cap_cr": [660000.0, None],
-    "shares_outstanding": [4.15e9, None],
+    "ticker": ["CYIENT.NS", "NATCOPHARM.NS", "INDIAMART.NS"],
+    "price": [1700.0, 950.0, None],
+    "market_cap_cr": [9000.0, 14000.0, None],
+    "shares_outstanding": [1.1e8, 1.8e8, None],
 })
 metrics = compute_metrics(fund, market, cfg)
 results = apply_screen(metrics, cfg)

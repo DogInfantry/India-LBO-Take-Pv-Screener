@@ -60,9 +60,14 @@ n_covered = len(results)
 n_universe = len(universe)
 if n_covered < n_universe:
     st.sidebar.info(
-        f"Fundamentals CSV covers {n_covered} of {n_universe} universe names. "
-        "Populate data/fundamentals_template.csv from Screener.in exports to "
-        "widen coverage.")
+        f"Fundamentals cover {n_covered} of {n_universe} universe names. "
+        "Re-run `python src/fetch_fundamentals.py` to refresh from yfinance.")
+
+if fundamentals["promoter_holding_pct"].isna().any():
+    st.sidebar.warning(
+        "Promoter holding & pledge are blank for some names (yfinance doesn't "
+        "carry them). Those rows fail the promoter/pledge filters until you fill "
+        "the two columns in data/fundamentals.csv from Screener.in.")
 
 view = st.sidebar.radio("View", ["Shortlist", "Company tear sheet"])
 
