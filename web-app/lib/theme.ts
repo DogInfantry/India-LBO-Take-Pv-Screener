@@ -9,6 +9,7 @@ export const MIDNIGHT = {
 // Base ECharts option fragment every chart spreads in for consistent styling.
 export const baseOption = {
   backgroundColor: "transparent",
+  animation: false,   // static report: instant render, screenshot-friendly
   textStyle: { color: MIDNIGHT.muted, fontFamily: "ui-monospace, monospace" },
   grid: { left: 8, right: 12, top: 16, bottom: 8, containLabel: true },
   tooltip: { trigger: "item" as const, backgroundColor: MIDNIGHT.panel,
