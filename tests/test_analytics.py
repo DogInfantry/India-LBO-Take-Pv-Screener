@@ -143,3 +143,13 @@ def test_iso_frontier_points_hit_target():
                       entry_ev=ev, total_leverage=inp["total_leverage"],
                       exit_multiple=pt["exit_multiple"])["irr"]
         assert irr == pytest.approx(0.20, abs=5e-3)
+
+
+def test_feasibility_score_range_and_pledge_monotonicity():
+    cfg = base_cfg(); row = sample_row()
+    s_low_pledge = analytics.feasibility_score(row, cfg)
+    high = row.copy(); high["promoter_pledge_pct"] = 20.0
+    s_high_pledge = analytics.feasibility_score(high, cfg)
+    assert 0 <= s_low_pledge["score"] <= 100
+    assert s_high_pledge["score"] < s_low_pledge["score"]   # more pledge -> less feasible
+    assert set(s_low_pledge["components"]) >= {"holding", "pledge", "float", "valuation"}

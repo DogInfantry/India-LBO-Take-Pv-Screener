@@ -236,3 +236,32 @@ def iso_irr_frontier(inp: dict, target_irr: float = HURDLE_IRR,
             else: hi = mid
         points.append({"exit_multiple": xm, "premium_pct": round(lo, 2)})
     return {"target_irr": target_irr, "points": points}
+
+
+def _band_score(x, lo, hi):
+    """100 inside [lo,hi], decaying linearly outside (width = the band)."""
+    if x is None: return 0.0
+    if lo <= x <= hi: return 100.0
+    width = (hi - lo) or 1.0
+    d = (lo - x) if x < lo else (x - hi)
+    return max(0.0, 100.0 - 100.0 * d / width)
+
+
+def feasibility_score(row: pd.Series, cfg: dict) -> dict:
+    scr = cfg["screening"]
+    holding = row.get("promoter_holding_pct")
+    pledge = row.get("promoter_pledge_pct")
+    # holding in the controllable sweet spot (>= min, <= SEBI ceiling)
+    s_holding = _band_score(holding, scr["min_promoter_holding_pct"], scr["max_promoter_holding_pct"])
+    # pledge: 100 at 0, 0 at the screen's max
+    s_pledge = max(0.0, 100.0 * (1 - (pledge or 0.0) / max(scr["max_promoter_pledge_pct"], 1e-9)))
+    s_pledge = min(100.0, s_pledge)
+    # enough public float to actually clear the 90% delisting threshold
+    public_float = 100.0 - (holding or 0.0)
+    s_float = _band_score(public_float, 10.0, 50.0)
+    # valuation: higher fcf_yield = cheaper = more feasible (cap at 12%)
+    s_val = min(100.0, max(0.0, (row.get("fcf_yield") or 0.0) / 0.12 * 100.0))
+    weights = {"holding": 0.40, "pledge": 0.25, "float": 0.20, "valuation": 0.15}
+    comps = {"holding": s_holding, "pledge": s_pledge, "float": s_float, "valuation": s_val}
+    score = round(sum(weights[k] * comps[k] for k in weights))
+    return {"score": int(score), "components": comps, "weights": weights}
