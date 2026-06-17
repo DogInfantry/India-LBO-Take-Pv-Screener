@@ -238,6 +238,27 @@ def iso_irr_frontier(inp: dict, target_irr: float = HURDLE_IRR,
     return {"target_irr": target_irr, "points": points}
 
 
+def sensitivity_grid_premium_exit(inp: dict, premiums_pct: list[float],
+                                  exit_multiples: list[float]) -> dict:
+    """IRR grid over entry premium (rows) x exit multiple (cols), at base leverage.
+
+    Each cell prices the take-private at entry_ev = market_cap*(1+prem/100)+net_debt
+    and exits at the given multiple. The iso_irr_frontier is the target-IRR contour
+    through this surface (same axes), so the two render as one panel.
+    """
+    grid = []
+    for prem in premiums_pct:
+        ev = inp["market_cap"] * (1 + prem / 100.0) + inp["net_debt"]
+        row = []
+        for xm in exit_multiples:
+            res = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],
+                          entry_ev=ev, total_leverage=inp["total_leverage"],
+                          exit_multiple=xm)
+            row.append(res["irr"])
+        grid.append(row)
+    return {"premiums_pct": premiums_pct, "exit_multiples": exit_multiples, "irr": grid}
+
+
 def _band_score(x, lo, hi):
     """100 inside [lo,hi], decaying linearly outside (width = the band)."""
     if x is None: return 0.0
@@ -371,7 +392,10 @@ def build_company_block(row: pd.Series, cfg: dict) -> dict:
                     "irr_bridge": irr_bridge(inp), "value_bridge": value_bridge(inp)},
         "montecarlo": mc,
         "downside": downside_risk(mc),
-        "sensitivity": {"iso_frontier": iso_irr_frontier(inp)},
+        "sensitivity": {"iso_frontier": iso_irr_frontier(inp),
+                        "grid": sensitivity_grid_premium_exit(
+                            inp, cfg["sensitivity"]["premiums_pct"],
+                            [round(_entry_multiple(inp) - 2 + i, 1) for i in range(5)])},
         "solvers": {"max_bid": max_bid_solver(inp),
                     "debt_capacity": debt_capacity_solver(
                         inp, cfg["screening"]["min_interest_coverage"]),

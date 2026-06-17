@@ -224,3 +224,33 @@ def test_degenerate_company_block_is_flagged_not_absurd():
     assert block["montecarlo"] is None and block["solvers"] is None
     import json
     json.dumps(block)                                       # serializes cleanly
+
+
+def test_sensitivity_grid_premium_exit_shape_and_monotonicity():
+    cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
+    premiums = [0.0, 10.0, 20.0, 30.0]
+    em = inp["entry_ev"] / inp["entry_ebitda"]
+    exits = [round(em - 1, 1), round(em, 1), round(em + 1, 1)]
+    g = analytics.sensitivity_grid_premium_exit(inp, premiums, exits)
+    assert g["premiums_pct"] == premiums
+    assert g["exit_multiples"] == exits
+    assert len(g["irr"]) == len(premiums)              # rows = premiums
+    assert all(len(row) == len(exits) for row in g["irr"])
+    # IRR falls as premium rises (more expensive entry), holding exit fixed
+    col0 = [g["irr"][i][0] for i in range(len(premiums))]
+    assert col0[0] > col0[-1]
+    # IRR matches a direct run_lbo at a sampled cell
+    ev = inp["market_cap"] * (1 + premiums[1] / 100.0) + inp["net_debt"]
+    direct = analytics.run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],
+                               entry_ev=ev, total_leverage=inp["total_leverage"],
+                               exit_multiple=exits[2])["irr"]
+    assert g["irr"][1][2] == pytest.approx(direct, abs=1e-9)
+
+
+def test_company_block_sensitivity_has_grid():
+    cfg = base_cfg(); block = analytics.build_company_block(sample_row(), cfg)
+    assert "iso_frontier" in block["sensitivity"]
+    g = block["sensitivity"]["grid"]
+    assert len(g["premiums_pct"]) == len(cfg["sensitivity"]["premiums_pct"])
+    assert len(g["exit_multiples"]) == 5
+    assert len(g["irr"]) == len(g["premiums_pct"])
