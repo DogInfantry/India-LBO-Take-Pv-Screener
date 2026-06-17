@@ -14,6 +14,3 @@ logs/
 
 # brainstorming visual companion scratch files
 .superpowers/
-
-# generated data contract (rebuilt by tools/export_data.py / weekly CI)
-web-app/public/data/results.json
