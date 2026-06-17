@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ name }} — LBO tear sheet{% endblock %}
+{% block content %}
+<div class="crumbs"><a href="{{ rel }}index.html">← All candidates</a></div>
+
+<header class="site">
+  <h1>{{ name }} <span style="color:var(--muted);font-weight:400;font-size:1rem;">· tear sheet</span></h1>
+  <div class="meta"><span class="pill">{{ verdict_pill }}</span><span class="pill">Data as of {{ data_date }}</span></div>
+</header>
+
+<div class="rationale">{{ rationale }}</div>
+
+<div class="metrics">
+  {% for m in metrics %}
+  <div class="metric"><div class="label">{{ m.label }}</div><div class="value">{{ m.value }}</div></div>
+  {% endfor %}
+</div>
+
+<h2>Paper LBO — market take-private base case</h2>
+<p class="section-note">{{ entry_note }}</p>
+
+<div class="panel">
+  <h3>Sources &amp; uses — EV-to-equity bridge (₹ cr)</h3>
+  <div class="chart" data-spec="waterfall"></div>
+  <p class="section-note">Enterprise value plus fees, less each debt tranche, leaves the sponsor equity check — the residual on the right.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+  <div class="panel">
+    <h3>Sources &amp; uses (₹ cr)</h3>
+    <table class="data">
+      <tbody>
+        {% for label, val in su_rows %}
+        <tr><td>{{ label }}</td><td>{{ val }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="section-note">{{ su_note }}</p>
+  </div>
+  <div class="panel">
+    <h3>Returns (5-yr hold, {{ returns.exit_label }})</h3>
+    <div class="metrics" style="grid-template-columns:repeat(3,1fr);">
+      <div class="metric"><div class="label">MOIC</div><div class="value">{{ returns.moic }}</div></div>
+      <div class="metric"><div class="label">IRR</div><div class="value">{{ returns.irr }}</div></div>
+      <div class="metric"><div class="label">Exit equity</div><div class="value">{{ returns.exit_equity }}</div></div>
+    </div>
+    <p class="section-note">{{ returns.note }}</p>
+    <p class="section-note">{{ balance_note }}</p>
+  </div>
+</div>
+
+<h2>Debt paydown schedule (₹ cr)</h2>
+<div class="panel scroll-x">
+  {{ schedule_table }}
+</div>
+
+<h2>Three-statement model (₹ cr)</h2>
+<div class="panel" data-tabgroup="stmt">
+  <div class="tabs">
+    {% for s in statements %}
+    <button class="{{ 'active' if loop.first else '' }}" onclick="showTab('stmt', {{ loop.index0 }})">{{ s.name }}</button>
+    {% endfor %}
+  </div>
+  {% for s in statements %}
+  <div class="tabpane {{ 'active' if loop.first else '' }} scroll-x">{{ s.table }}</div>
+  {% endfor %}
+</div>
+
+<h2>{{ sens.title }}</h2>
+<div class="panel scroll-x">
+  <h3>IRR</h3>
+  {{ sens.irr_table }}
+  <h3>MOIC</h3>
+  {{ sens.moic_table }}
+  <p class="section-note">{{ sens.note }}</p>
+</div>
+{% endblock %}

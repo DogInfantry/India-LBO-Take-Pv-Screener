@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="site">
+  <h1>India LBO &amp; Take-Private Screener</h1>
+  <p class="tagline">
+    Screens NSE mid/small-caps for take-private deleveraging candidates —
+    low-levered, cash-generative, promoter-controlled companies with unused debt
+    capacity under RBI's 2026 acquisition-finance regime — then runs a simplified
+    paper LBO on each.
+  </p>
+  <div class="meta">
+    <span class="pill">{{ n_pass }} of {{ n_total }} names pass all criteria</span>
+    <span class="pill">Data as of {{ data_date }}</span>
+    <a href="{{ live_app_url }}">Interactive version →</a>
+  </div>
+</header>
+
+<h2>Buyout candidates — ranked by base-case IRR</h2>
+<p class="section-note">{{ base_note }}</p>
+
+<div class="candidate-grid">
+  {% for c in candidates %}
+  <div class="card">
+    <div class="rank">#{{ loop.index }}</div>
+    <a class="name" href="{{ c.href }}">{{ c.name }} →</a>
+    <div class="kpis">
+      <span>IRR <b>{{ c.irr }}</b></span>
+      <span>MOIC <b>{{ c.moic }}</b></span>
+      <span>Implied entry <b>{{ c.implied_mult }}</b></span>
+      <span>Equity check <b>{{ c.equity }}</b></span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="panel">
+  <h3>Best buyouts — base-case IRR</h3>
+  <div class="chart" data-spec="irr"></div>
+  <p class="section-note">Dashed line = 20% IRR (typical PE hurdle). Hover any bar for detail.</p>
+</div>
+
+<div class="panel">
+  <h3>Leaderboard — criteria cleared (of {{ n_criteria }})</h3>
+  <div class="chart" data-spec="criteria"></div>
+</div>
+
+{% if has_bubble %}
+<div class="panel">
+  <h3>Sweet spot — cheap cash flow × room to lever up</h3>
+  <div class="chart" data-spec="bubble"></div>
+  <p class="section-note">
+    Top-right is the thesis sweet spot: high FCF yield (cheap cash flow) and large
+    unused debt capacity (room to lever up). Bubble size = EBITDA.
+  </p>
+</div>
+{% endif %}
+
+<h2>Full screen results</h2>
+<div class="panel scroll-x">
+  <table class="data">
+    <thead>
+      <tr>
+        <th>Ticker</th><th>Mkt cap (₹cr)</th><th>EBITDA (₹cr)</th>
+        <th>EBITDA margin</th><th>Net debt/EBITDA</th><th>Int. cov.</th>
+        <th>FCF yield</th><th>Unused debt cap (₹cr)</th><th>Promoter %</th>
+        <th>Pledge %</th><th>Cleared</th><th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in results %}
+      <tr class="{{ 'pass' if r.passes else '' }}">
+        <td>{{ r.ticker }}</td><td>{{ r.market_cap }}</td><td>{{ r.ebitda }}</td>
+        <td>{{ r.margin }}</td><td>{{ r.nd_ebitda }}</td><td>{{ r.coverage }}</td>
+        <td>{{ r.fcf_yield }}</td><td>{{ r.unused }}</td><td>{{ r.promoter }}</td>
+        <td>{{ r.pledge }}</td><td>{{ r.cleared }}</td>
+        <td>{% if r.passes %}<span class="tag pass">passes</span>{% else %}<span class="tag fail">{{ r.cleared }}</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

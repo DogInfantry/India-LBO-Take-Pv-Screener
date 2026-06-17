@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}India LBO & Take-Private Screener{% endblock %}</title>
+  <meta name="description" content="A screen for NSE mid/small-cap take-private deleveraging candidates with a paper LBO on each — static showcase.">
+  <link rel="stylesheet" href="{{ rel }}assets/style.css">
+  {% for src in vega_scripts %}<script src="{{ src }}"></script>
+  {% endfor %}
+</head>
+<body>
+  <div class="wrap">
+    {% block content %}{% endblock %}
+    <footer class="site">
+      <p>
+        India LBO &amp; Take-Private Screener — static snapshot generated
+        {{ generated_at }}. Figures are a point-in-time snapshot, not live.
+        For the interactive model (tune leverage, premium, exit re-rating):
+        <a href="{{ live_app_url }}">live Streamlit app</a> ·
+        <a href="{{ repo_url }}">source</a>.
+      </p>
+      <p class="disclaimer">
+        Educational / portfolio illustration. Not investment advice. Market data
+        via yfinance; promoter pledge via Screener.in / Trendlyne.
+      </p>
+    </footer>
+  </div>
+
+  <script type="application/json" id="chart-specs">{{ specs_json }}</script>
+  <script>
+    // Render every embedded Vega-Lite spec into its matching container.
+    (function () {
+      var specs = JSON.parse(document.getElementById("chart-specs").textContent || "{}");
+      var opts = { actions: false, renderer: "svg" };
+      document.querySelectorAll(".chart[data-spec]").forEach(function (el) {
+        var key = el.getAttribute("data-spec");
+        if (specs[key]) {
+          vegaEmbed(el, specs[key], opts).catch(function (e) {
+            el.innerHTML = '<p class="disclaimer">chart failed to render</p>';
+            console.error(key, e);
+          });
+        }
+      });
+    })();
+
+    // Tear-sheet statement tabs.
+    function showTab(group, idx) {
+      document.querySelectorAll('[data-tabgroup="' + group + '"] .tabpane')
+        .forEach(function (p, i) { p.classList.toggle("active", i === idx); });
+      document.querySelectorAll('[data-tabgroup="' + group + '"] .tabs button')
+        .forEach(function (b, i) { b.classList.toggle("active", i === idx); });
+    }
+  </script>
+</body>
+</html>
