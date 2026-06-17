@@ -130,3 +130,16 @@ def test_sobol_indices_keys_and_ranges():
     # total-order >= first-order (within numerical noise) for each driver
     for k in s["first_order"]:
         assert s["total_order"][k] >= s["first_order"][k] - 0.05
+
+
+def test_iso_frontier_points_hit_target():
+    cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
+    fr = analytics.iso_irr_frontier(inp, target_irr=0.20)
+    assert fr["target_irr"] == 0.20
+    from lbo_model import run_lbo
+    for pt in fr["points"]:
+        ev = inp["market_cap"] * (1 + pt["premium_pct"] / 100.0) + inp["net_debt"]
+        irr = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],
+                      entry_ev=ev, total_leverage=inp["total_leverage"],
+                      exit_multiple=pt["exit_multiple"])["irr"]
+        assert irr == pytest.approx(0.20, abs=5e-3)

@@ -213,3 +213,26 @@ def optimal_exit(inp: dict) -> dict:
     valid = [r for r in by_year if r["irr"] is not None and math.isfinite(r["irr"])]
     best = max(valid, key=lambda r: r["irr"])["year"] if valid else None
     return {"by_year": by_year, "best_year": best}
+
+
+def iso_irr_frontier(inp: dict, target_irr: float = HURDLE_IRR,
+                     exit_multiples: list[float] | None = None) -> dict:
+    em = _entry_multiple(inp)
+    if exit_multiples is None:
+        exit_multiples = [round(em - 2 + i, 1) for i in range(5)]  # em-2 .. em+2
+    points = []
+    for xm in exit_multiples:
+        lo, hi = 0.0, 100.0
+        def irr_at(p, xm=xm):
+            ev = inp["market_cap"] * (1 + p / 100.0) + inp["net_debt"]
+            return run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],
+                           entry_ev=ev, total_leverage=inp["total_leverage"],
+                           exit_multiple=xm)["irr"]
+        if irr_at(lo) < target_irr or irr_at(hi) > target_irr:
+            continue                       # no crossing in range for this exit multiple
+        while hi - lo > 1e-2:
+            mid = (lo + hi) / 2.0
+            if irr_at(mid) >= target_irr: lo = mid
+            else: hi = mid
+        points.append({"exit_multiple": xm, "premium_pct": round(lo, 2)})
+    return {"target_irr": target_irr, "points": points}
