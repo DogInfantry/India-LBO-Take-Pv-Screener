@@ -191,3 +191,18 @@ def test_build_results_is_json_safe_and_consistent():
     assert "NaN" not in text and "Infinity" not in text
     # every passer summary has a matching company block
     assert set(c["ticker"] for c in payload["passers"]) == set(payload["companies"])
+
+
+# ---------------------------------------------------------------------------
+# Task 13: tools/export_data.py CLI
+# ---------------------------------------------------------------------------
+
+
+def test_export_data_writes_valid_json(tmp_path):
+    import sys, pathlib, json, subprocess
+    out = tmp_path / "results.json"
+    root = pathlib.Path(__file__).resolve().parent.parent
+    subprocess.run([sys.executable, str(root / "tools" / "export_data.py"),
+                    "--no-fetch", "--out", str(out)], check=True, cwd=root)
+    data = json.loads(out.read_text(encoding="utf-8"))
+    assert "passers" in data and "companies" in data and data["as_of"]
