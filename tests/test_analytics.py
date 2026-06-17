@@ -120,3 +120,13 @@ def test_optimal_exit_within_range():
     years = [r["year"] for r in sol["by_year"]]
     assert years == [1, 2, 3, 4, 5]
     assert 1 <= sol["best_year"] <= 5
+
+
+def test_sobol_indices_keys_and_ranges():
+    cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
+    s = analytics.sobol_indices(inp, n=256)   # small N for test speed
+    for k in ("revenue_growth", "ebitda_shock", "exit_multiple"):
+        assert k in s["total_order"] and k in s["first_order"]
+    # total-order >= first-order (within numerical noise) for each driver
+    for k in s["first_order"]:
+        assert s["total_order"][k] >= s["first_order"][k] - 0.05

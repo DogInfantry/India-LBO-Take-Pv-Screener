@@ -13,6 +13,8 @@ import numpy as np
 import pandas as pd
 
 from lbo_model import run_lbo
+from SALib.sample import saltelli
+from SALib.analyze import sobol as sobol_analyze
 
 HURDLE_IRR = 0.20
 MC_N = 5000
@@ -176,6 +178,29 @@ def debt_capacity_solver(inp: dict, min_coverage: float,
             hi = mid
     return {"converged": True, "max_leverage": lo,
             "min_coverage_at_max": _min_coverage(inp, lo)}
+
+
+def sobol_indices(inp: dict, n: int = SOBOL_N) -> dict:
+    a = inp["assumptions"]; base_g = a["revenue_growth"]; em = _entry_multiple(inp)
+    problem = {
+        "num_vars": 3,
+        "names": ["revenue_growth", "ebitda_shock", "exit_multiple"],
+        "bounds": [[max(0.0, base_g - 0.06), base_g + 0.06],
+                   [0.85, 1.15],
+                   [max(1.0, em - 3), em + 3]],
+    }
+    X = saltelli.sample(problem, n, calc_second_order=False)
+    Y = np.empty(X.shape[0])
+    for i, (g, s, xm) in enumerate(X):
+        Y[i] = run_lbo(inp["entry_revenue"], inp["entry_ebitda"] * s,
+                       {**a, "revenue_growth": float(g)},
+                       entry_ev=inp["entry_ev"], total_leverage=inp["total_leverage"],
+                       exit_multiple=float(xm))["irr"]
+    Y = np.nan_to_num(Y, nan=float(np.nanmean(Y)))
+    Si = sobol_analyze.analyze(problem, Y, calc_second_order=False)
+    names = problem["names"]
+    return {"first_order": {n_: float(v) for n_, v in zip(names, Si["S1"])},
+            "total_order": {n_: float(v) for n_, v in zip(names, Si["ST"])}}
 
 
 def optimal_exit(inp: dict) -> dict:
