@@ -46,8 +46,10 @@ Phase 4 (weekly CI + `vercel.json` repoint) remains separate.
   `sensitivity = null`.
 - Re-export `web-app/public/data/results.json` via
   `python tools/export_data.py --no-fetch`.
-- Axes pulled from `cfg["sensitivity"]` (`premiums_pct`, and a new/derived set of
-  `exit_multiples` around the entry multiple — finalized in the plan).
+- Axes: `premiums_pct` from `cfg["sensitivity"]`; `exit_multiples` **derived per
+  company** as `[entry_multiple−2 … entry_multiple+2]` (5 steps) — the same range
+  `iso_irr_frontier` already uses, so the frontier overlay sits naturally on the
+  heatmap. No config change needed.
 
 This is the only Python change in Phase 3. It is additive: existing keys are
 untouched, so Phase 2's loader/types still parse.
@@ -56,8 +58,9 @@ untouched, so Phase 2's loader/types still parse.
 
 Replaces the Phase 2 stub at `web-app/app/t/[ticker]/page.tsx`.
 
-1. **Header + summary** — name, ticker, as-of; IRR / MOIC / optimal-exit year /
-   feasibility; Sources & Uses (EV, debt tranches, fees, sponsor equity).
+1. **Header + summary** — name, ticker, as-of; IRR / MOIC / optimal-exit year
+   (from `solvers.optimal_exit.best_year`) / feasibility; Sources & Uses (EV,
+   debt tranches, fees, sponsor equity).
 2. **Returns attribution** — IRR bridge (deleveraging / EBITDA growth / multiple
    re-rating → total) as a waterfall; value bridge (entry equity → … → exit
    equity, ₹cr) as a waterfall.
@@ -65,7 +68,10 @@ Replaces the Phase 2 stub at `web-app/app/t/[ticker]/page.tsx`.
    stat cards (P-beat-hurdle, P-loss, 5% VaR, CVaR on MOIC).
 4. **Sensitivity** — premium×exit IRR heatmap with the iso-frontier contour;
    Sobol total-order drivers.
-5. **Operating model** — IS / CF / BS as full-width tables (5 years).
+5. **Operating model** — IS / CF / BS as full-width tables. Note the shapes
+   differ: IS and CF carry years 1–5 (5 rows); the **balance sheet carries years
+   0–5** (6 rows — year 0 is the opening balance). `StatementTable` takes the
+   rows + a `startYear` (0 or 1) so it handles both.
 6. **Debt** — per-tranche paydown waterfall (senior/mezzanine/revolver over the
    hold) + the debt schedule table + the debt-capacity solver result (max
    leverage, binding coverage).
@@ -145,11 +151,9 @@ detail types: `IncomeRow`/`CashFlowRow`/`BalanceRow`, `DebtScheduleRow`,
 
 ## Risks / open questions
 
-- **Exit-multiple axis for the grid:** `cfg["sensitivity"]` has `premiums_pct`
-  and `leverage_multiples` but no exit-multiple axis. The plan derives one around
-  each name's entry multiple (e.g. entry−2 … entry+2) or adds a config key —
-  decided in the plan. Keep the grid modest (≈5×5) so the weekly export stays
-  fast.
+- **Exit-multiple axis for the grid:** RESOLVED — derived per company as
+  `[entry_multiple−2 … entry_multiple+2]` (5 steps), no config change, matching
+  the iso-frontier range. Grid is ≈5×5 so the weekly export stays fast.
 - **results.json size:** adding a 5×5 grid per company is negligible (~25 floats
   × 6 names). No per-ticker split needed.
 - **Tear-sheet page size:** many chart leaves on one route — all hydrate from
