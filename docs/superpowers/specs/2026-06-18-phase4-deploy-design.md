@@ -114,16 +114,24 @@ never publishes a broken screen.
   passers>0 check) to prove the CI logic, without doing a live fetch.
 - **Build:** `cd web-app && npm run build` succeeds against the committed
   `results.json` (already verified in Phase 2/3).
-- **Vercel:** the user confirms via a **preview deploy from the branch** before
-  merging — the agent cannot drive the user's Vercel account. The spec/plan call
-  this out as a user-side verification step.
+- **Vercel (agent-verified via MCP):** the Vercel project is connected (project
+  `india-lbo-take-pv-screener`, `prj_MZSkV8xzfrUZuEBBvB15j1nkHcLh`, team
+  `team_4pgfqRkIU2W9etJoOiEwg250`, framework `null`, Node 24.x, deploys from
+  `main`). Pushing `feat/phase4-deploy` triggers a Vercel **preview** deployment
+  (production is untouched — preview uses the branch's `vercel.json`; prod keeps
+  the old one until merge). The agent reads the preview build logs
+  (`get_deployment_build_logs` / `list_deployments`) to confirm the new app
+  builds on Vercel before the user merges. The **only** user-side action is the
+  final merge to `main`, which flips production.
 
 ## Risks / open questions
 
-- **Vercel build form vs Root Directory:** the `buildCommand`/`outputDirectory`
-  approach assumes the project's Root Directory is the repo root. If Vercel's
-  Next.js detection interferes, the documented fallback is to set Root Directory
-  to `web-app`. Surfaced to the user; confirmed via preview deploy.
+- **Vercel build form vs Root Directory:** CONFIRMED feasible — the project's
+  framework is `null` and Root Directory is the repo root today (it serves
+  `web/` via the current `vercel.json`), so the `buildCommand`/`outputDirectory`
+  form is the right fit. The preview-build verification (above) catches any
+  surprise before merge; the documented fallback (set Root Directory to
+  `web-app`) remains if needed.
 - **yfinance in CI:** can be rate-limited or blocked from GitHub runners. The
   validate-before-commit fail-safe handles this (no publish on a bad fetch); a
   persistently failing fetch simply leaves the site on the last good data and
