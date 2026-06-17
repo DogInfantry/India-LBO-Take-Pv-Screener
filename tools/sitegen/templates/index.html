@@ -20,7 +20,7 @@
 
 <div class="candidate-grid">
   {% for c in candidates %}
-  <div class="card{% if loop.first %} rank-top{% endif %}">
+  <div class="card{% if loop.first %} rank-top{% endif %}{% if c.degenerate %} degen{% endif %}">
     <div class="rank">#{{ loop.index }}</div>
     <a class="name" href="{{ c.href }}">{{ c.name }} →</a>
     <div class="kpis">
@@ -29,6 +29,7 @@
       <span>Implied entry <b>{{ c.implied_mult }}</b></span>
       <span>Equity check <b>{{ c.equity }}</b></span>
     </div>
+    {% if c.degenerate %}<p class="degen-note">Net cash &gt; market cap — negative EV; LBO not computable</p>{% endif %}
   </div>
   {% endfor %}
 </div>

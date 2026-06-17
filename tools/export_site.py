@@ -280,8 +280,9 @@ def build_index_context(results: pd.DataFrame, cfg: dict, data_date: str) -> tup
         "href": f"t/{r['name']}.html",
         "irr": "n.m." if pd.isna(r["irr"]) else pct1(r["irr"]),
         "moic": "n.m." if pd.isna(r["moic"]) else mult2(r["moic"]),
-        "implied_mult": mult1(r["implied_mult"]),
-        "equity": f"₹{cr0(r['equity_cr'])} cr",
+        "implied_mult": "n.m." if r["degenerate"] else mult1(r["implied_mult"]),
+        "equity": "n.m." if r["degenerate"] else f"₹{cr0(r['equity_cr'])} cr",
+        "degenerate": bool(r["degenerate"]),
     } for _, r in ret.iterrows()]
 
     n_criteria = sum(c.startswith("pass_") for c in results.columns)

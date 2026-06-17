@@ -218,6 +218,16 @@ table.data tr.pass td { color: #d7f5e3; }
 .card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--sh-accent); }
 .card:hover::before { opacity: 1; }
 
+/* degenerate case — negative EV, LBO not computable */
+.card.degen { border-color: rgba(251,191,36,.2); opacity: .75; }
+.degen-note {
+  margin: 10px 0 0;
+  font-size: .73rem;
+  color: rgba(251,191,36,.65);
+  font-style: italic;
+  line-height: 1.45;
+}
+
 /* #1 card — gold accent */
 .card.rank-top {
   border-color: rgba(251,191,36,.35);
