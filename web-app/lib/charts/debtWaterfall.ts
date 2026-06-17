@@ -5,7 +5,7 @@ import type { DebtScheduleRow } from "@/lib/types";
 export function buildDebtWaterfallOption(sched: DebtScheduleRow[]): EChartsOption {
   const years = sched.map((r) => `Y${r.year}`);
   const mk = (name: string, key: keyof DebtScheduleRow, color: string) =>
-    ({ name, type: "bar", stack: "d", data: sched.map((r) => r[key] as number), itemStyle: { color } });
+    ({ name, type: "bar" as const, stack: "d", data: sched.map((r) => r[key] as number), itemStyle: { color } });
   return {
     ...baseOption,
     legend: { textStyle: { color: MIDNIGHT.muted }, top: 0, right: 0 },

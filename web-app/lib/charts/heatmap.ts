@@ -31,9 +31,10 @@ export function buildHeatmapOption(
              axisLabel: { color: MIDNIGHT.axis }, splitArea: { show: true } },
     yAxis: { type: "category", data: grid.premiums_pct.map((p) => `${p}%`), name: "premium",
              axisLabel: { color: MIDNIGHT.axis }, splitArea: { show: true } },
-    visualMap: { min, max, calculable: false, orient: "horizontal", left: "center", bottom: 0,
+    visualMap: { type: "continuous" as const, min, max, calculable: false, orient: "horizontal" as const,
+      left: "center", bottom: 0,
       inRange: { color: ["#b91c1c", "#ef4444", "#fbbf24", "#34d399", "#059669"] },
-      textStyle: { color: MIDNIGHT.axis }, formatter: (v: number) => `${(v * 100) | 0}%` },
+      textStyle: { color: MIDNIGHT.axis }, formatter: (v: any) => `${(Number(v) * 100) | 0}%` },
     series: [
       { type: "heatmap", data: cells,
         label: { show: true, color: "#0b0f17", fontSize: 9, formatter: (p: any) => `${(p.value[2] * 100).toFixed(0)}` } },

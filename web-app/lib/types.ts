@@ -7,13 +7,14 @@ export interface Passer {
 }
 
 export interface IncomeRow { year:number; revenue:number; ebitda:number; da:number;
-  dfc_amort:number; ebit:number; interest:number; ebt:number; taxes:number; net_income:number; }
+  dfc_amort:number; ebit:number; interest:number; ebt:number; taxes:number; net_income:number;
+  [k:string]:number; }
 export interface CashFlowRow { year:number; net_income:number; da:number; delta_nwc:number;
   cfo:number; capex:number; fcf_for_debt:number; principal_repaid:number;
-  revolver_draw:number; cff:number; ending_cash:number; }
+  revolver_draw:number; cff:number; ending_cash:number; [k:string]:number; }
 export interface BalanceRow { year:number; cash:number; ar:number; inventory:number; ap:number;
   nwc:number; ppe:number; goodwill:number; dfc:number; assets:number; debt:number;
-  equity:number; balance_error:number; }
+  equity:number; balance_error:number; [k:string]:number; }
 export interface DebtScheduleRow { year:number; ebitda:number; interest:number; revolver:number;
   cash:number; senior_repaid:number; senior_ending:number; mezzanine_repaid:number;
   mezzanine_ending:number; ending_debt:number; [k:string]:number; }
