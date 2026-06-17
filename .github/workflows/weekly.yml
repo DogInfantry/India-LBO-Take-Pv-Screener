@@ -1,0 +1,41 @@
+name: weekly-refresh
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # Mondays 06:00 UTC
+  workflow_dispatch: {}    # manual "run now"
+
+permissions:
+  contents: write          # push the refreshed contract to main
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Export contract (live yfinance fetch)
+        run: python tools/export_data.py
+
+      - name: Validate (passers > 0) — fail-safe, no publish on a bad fetch
+        run: |
+          python -c "import json,sys; d=json.load(open('web-app/public/data/results.json')); print('passed', d['universe']['passed']); sys.exit(0 if d['universe']['passed']>0 else 1)"
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "DogInfantry"
+          git config user.email "ankleshrawat5@gmail.com"
+          git add web-app/public/data/results.json data/market_snapshot.csv
+          if git diff --cached --quiet; then
+            echo "No data change this week."
+          else
+            git commit -m "chore: weekly results.json refresh ($(date -u +%Y-%m-%d))"
+            git push
+          fi
