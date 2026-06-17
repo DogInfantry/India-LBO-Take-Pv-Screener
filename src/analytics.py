@@ -290,6 +290,38 @@ COMPANY_KEYS = ["ticker", "name", "statements", "debt_schedule", "sources_uses",
                 "sobol", "feasibility", "delisting"]
 
 
+def _json_safe(obj):
+    if isinstance(obj, float):
+        return obj if math.isfinite(obj) else None
+    if isinstance(obj, dict):
+        return {k: _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_json_safe(v) for v in obj]
+    if isinstance(obj, (np.floating,)):
+        v = float(obj); return v if math.isfinite(v) else None
+    if isinstance(obj, (np.integer,)):
+        return int(obj)
+    return obj
+
+
+def build_results(results_df: pd.DataFrame, cfg: dict, as_of: str) -> dict:
+    passed = results_df[results_df["passes_screen"]]   # apply_screen sets this bool col
+    companies, passers = {}, []
+    for _, row in passed.iterrows():
+        block = build_company_block(row, cfg)
+        companies[row["ticker"]] = block
+        passers.append({"ticker": row["ticker"], "name": block["name"],
+                        "irr": block["returns"]["irr"], "moic": block["returns"]["moic"],
+                        "feasibility": block["feasibility"]["score"],
+                        "max_bid_premium_pct": block["solvers"]["max_bid"].get("max_premium_pct")})
+    payload = {"as_of": as_of,
+               "config": {"hurdle_irr": HURDLE_IRR, "hold_years": cfg["lbo"]["hold_years"],
+                          "control_premium_pct": cfg["lbo"]["control_premium_pct"]},
+               "universe": {"screened": int(len(results_df)), "passed": int(len(passed))},
+               "passers": passers, "companies": companies}
+    return _json_safe(payload)
+
+
 def build_company_block(row: pd.Series, cfg: dict) -> dict:
     inp = company_inputs(row, cfg)
     res = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],

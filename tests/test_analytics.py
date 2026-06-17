@@ -171,3 +171,23 @@ def test_company_block_has_canonical_keys():
     assert set(block) == set(analytics.COMPANY_KEYS)
     assert block["returns"]["irr"] is not None
     assert "income" in block["statements"]
+
+
+# ---------------------------------------------------------------------------
+# Task 12: build_results + JSON-safe serialization
+# ---------------------------------------------------------------------------
+import json
+
+
+def test_build_results_is_json_safe_and_consistent():
+    # uses the committed snapshot (no network): gather(no_fetch=True)
+    import sys, pathlib
+    from datetime import date
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "tools"))
+    from export_site import gather
+    cfg, _universe, results_df = gather(no_fetch=True)   # NB: (cfg, universe, results)
+    payload = analytics.build_results(results_df, cfg, date.today().isoformat())
+    text = json.dumps(payload)                       # must not raise
+    assert "NaN" not in text and "Infinity" not in text
+    # every passer summary has a matching company block
+    assert set(c["ticker"] for c in payload["passers"]) == set(payload["companies"])
