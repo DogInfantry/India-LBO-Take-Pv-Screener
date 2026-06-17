@@ -97,6 +97,9 @@ the Vega-Lite spec and writes it as JSON for vega-embed.
    (premium/leverage/growth from config), renders templates, writes `web/`.
    CLI: `python tools/export_site.py [--no-fetch]` (`--no-fetch` uses a cached
    `data/market_snapshot.csv` for offline/deterministic runs and tests).
+   The snapshot **must carry the exact columns `fetch_market_data` produces** —
+   `ticker, price, market_cap_cr, shares_outstanding` — so `--no-fetch` is a
+   drop-in for the live path into `compute_metrics`.
 
 2. **`tools/site/charts.py`** — pure Altair chart builders (the 3b rebuilds) +
    a `chart_to_spec(chart) -> dict` helper. No Streamlit import.
@@ -161,6 +164,10 @@ name shows "n.m." for return metrics rather than misleading numbers.
 - **Parity:** IRR/MOIC rendered per name equal `base_case_returns` /
   `run_lbo` outputs to the displayed precision (guards against the 3b copies
   drifting numerically from `src/`).
+- **Waterfall data parity:** the EV→equity bridge *amounts* feeding the locally
+  rebuilt sources & uses waterfall equal `run_lbo`'s `sources_uses` dict — so a
+  future edit to the local chart copy that corrupts the bridge math (not just
+  styling) is caught, even though the chart styling itself is cosmetic-only.
 - Degenerate name (if present in snapshot) renders "n.m.", not a number.
 
 A `data/market_snapshot.csv` is captured once from a live fetch and committed so
