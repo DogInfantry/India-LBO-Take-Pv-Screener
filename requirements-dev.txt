@@ -5,3 +5,4 @@
 pytest>=8.0
 ponytail>=0.9   # live log tailing for tools/follow_log.py
 Jinja2>=3.1     # templating for tools/export_site.py (static site build)
+SALib>=1.4      # Sobol global-sensitivity indices for tools/export_data.py
