@@ -1,5 +1,7 @@
 # India LBO & Take-Private Screener
 
+**▶ [Live demo](https://india-lbo-take-pv-screener-7hv5yfvgmabjk5rnuyqdqj.streamlit.app/)** (Streamlit Community Cloud)
+
 A screening tool for NSE-listed mid/small-cap companies that identifies
 **take-private deleveraging candidates** and runs a simplified paper LBO on
 each. Built as an analyst's screen with an explicit investment thesis, not a
@@ -220,7 +222,7 @@ Cloud](https://share.streamlit.io) with no extra config:
 
 Once deployed, drop the URL here:
 
-> **Live demo:** _add your share.streamlit.io link_
+> **Live demo:** https://india-lbo-take-pv-screener-7hv5yfvgmabjk5rnuyqdqj.streamlit.app/
 
 The dashboard has two views:
 
