@@ -4,9 +4,9 @@
 
 **Goal:** Build the `web-app/` Next.js dashboard (`/`) — KPI band + dense-grid panels (IRR leaderboard, iso-IRR frontier, feasibility, Sobol drivers) in the Midnight-terminal theme — reading the Phase 1 `results.json` contract, plus a stub `/t/[ticker]` page so links resolve.
 
-**Architecture:** Next.js App Router with `output: 'export'` (pure static → Vercel). `results.json` is read at build time by a typed server-side loader (`lib/data.ts`). Each chart is a pure ECharts **option-builder** function (Vitest-tested) wrapped by a thin `"use client"` React component using `echarts-for-react`. The page (server component) loads data once and passes typed slices down.
+**Architecture:** Next.js App Router with `output: 'export'` (pure static → Vercel). `results.json` is read at build time by a typed server-side loader (`lib/data.ts`). Each chart is a pure ECharts **option-builder** function (Vitest-tested) wrapped by a thin `"use client"` `<EChart>` component that drives `echarts` core directly via a `useEffect` hook (no `echarts-for-react` — it relies on the removed `ReactDOM.render` and breaks under React 19). The page (server component) loads data once and passes typed slices down.
 
-**Tech Stack:** Next.js 15, React 19, TypeScript, Tailwind CSS v3, ECharts + echarts-for-react, Vitest + @testing-library/react (jsdom).
+**Tech Stack:** Next.js 15, React 19, TypeScript, Tailwind CSS v3, ECharts 5 (core, used directly), Vitest + @testing-library/react (jsdom).
 
 ---
 
@@ -92,8 +92,7 @@ components in `components/` are thin `"use client"` wrappers: build option → `
     "next": "15.1.6",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "echarts": "5.5.1",
-    "echarts-for-react": "3.0.2"
+    "echarts": "5.5.1"
   },
   "devDependencies": {
     "typescript": "5.7.3",
@@ -377,21 +376,24 @@ export const baseOption = {
 };
 ```
 
-`web-app/components/EChart.tsx`:
+`web-app/components/EChart.tsx` (drives echarts core directly — React-19-safe, no echarts-for-react):
 ```tsx
 "use client";
-import ReactECharts from "echarts-for-react";
+import { useEffect, useRef } from "react";
+import * as echarts from "echarts";
 import type { EChartsOption } from "echarts";
 
 export function EChart({ option, height = 200 }: { option: EChartsOption; height?: number }) {
-  return (
-    <ReactECharts
-      option={option}
-      style={{ height, width: "100%" }}
-      opts={{ renderer: "svg" }}      // crisp + works in static export
-      notMerge
-    />
-  );
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    const chart = echarts.init(ref.current, undefined, { renderer: "svg" }); // crisp, export-safe
+    chart.setOption(option);
+    const ro = new ResizeObserver(() => chart.resize());
+    ro.observe(ref.current);
+    return () => { ro.disconnect(); chart.dispose(); };
+  }, [option]);
+  return <div ref={ref} style={{ height, width: "100%" }} />;
 }
 ```
 
@@ -453,9 +455,9 @@ export function buildLeaderboardOption(passers: Passer[], hurdle: number): EChar
              axisLabel: { color: MIDNIGHT.muted } },
     series: [{
       type: "bar", barWidth: 14,
-      data: live.map((p) => ({ value: p.irr,
-        itemStyle: { color: new (0 as any), borderRadius: [0, 3, 3, 0] } })),
-      itemStyle: { color: MIDNIGHT.emerald },
+      // object form ({value}) so tests can read d.value; color is series-level
+      data: live.map((p) => ({ value: p.irr })),
+      itemStyle: { color: MIDNIGHT.emerald, borderRadius: [0, 3, 3, 0] },
       markLine: { silent: true, symbol: "none",
         lineStyle: { color: MIDNIGHT.danger, type: "dashed" },
         data: [{ xAxis: hurdle }], label: { formatter: "hurdle", color: MIDNIGHT.danger } },
@@ -463,9 +465,9 @@ export function buildLeaderboardOption(passers: Passer[], hurdle: number): EChar
   };
 }
 ```
-> Implementation note: drop the bogus `new (0 as any)` placeholder — set the bar
-> color via the series-level `itemStyle.color = MIDNIGHT.emerald` (already there);
-> per-datum `itemStyle` is unnecessary. Keep `data` as plain `p.irr` values.
+> Note: `data` is in object form `{ value: p.irr }` (not bare numbers) so the
+> Step-1 test's `data.map(d => d.value)` works; bar color is set once at the
+> series level, not per datum.
 
 `web-app/components/IrrLeaderboard.tsx`:
 ```tsx
@@ -778,7 +780,9 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 
 export default function Page() {
   const r = loadResults();
-  const top = r.passers.find((p) => !p.degenerate) ?? r.passers[0];
+  // highest-IRR live name drives the single-company panels (order-independent)
+  const top = [...r.passers].filter((p) => !p.degenerate && p.irr != null)
+                .sort((a, b) => b.irr! - a.irr!)[0] ?? r.passers[0];
   const topCo = r.companies[top.ticker];
   return (
     <main className="mx-auto max-w-6xl p-6">
