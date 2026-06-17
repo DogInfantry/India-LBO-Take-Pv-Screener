@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 from lbo_model import run_lbo
-from SALib.sample import saltelli
+from SALib.sample import sobol as sobol_sample   # non-deprecated Saltelli sampler
 from SALib.analyze import sobol as sobol_analyze
 
 HURDLE_IRR = 0.20
@@ -189,7 +189,7 @@ def sobol_indices(inp: dict, n: int = SOBOL_N) -> dict:
                    [0.85, 1.15],
                    [max(1.0, em - 3), em + 3]],
     }
-    X = saltelli.sample(problem, n, calc_second_order=False)
+    X = sobol_sample.sample(problem, n, calc_second_order=False)
     Y = np.empty(X.shape[0])
     for i, (g, s, xm) in enumerate(X):
         Y[i] = run_lbo(inp["entry_revenue"], inp["entry_ebitda"] * s,
@@ -310,10 +310,12 @@ def build_results(results_df: pd.DataFrame, cfg: dict, as_of: str) -> dict:
     for _, row in passed.iterrows():
         block = build_company_block(row, cfg)
         companies[row["ticker"]] = block
+        max_bid = (block["solvers"] or {}).get("max_bid") or {}   # None for degenerate names
         passers.append({"ticker": row["ticker"], "name": block["name"],
                         "irr": block["returns"]["irr"], "moic": block["returns"]["moic"],
+                        "degenerate": block["returns"]["degenerate"],
                         "feasibility": block["feasibility"]["score"],
-                        "max_bid_premium_pct": block["solvers"]["max_bid"].get("max_premium_pct")})
+                        "max_bid_premium_pct": max_bid.get("max_premium_pct")})
     payload = {"as_of": as_of,
                "config": {"hurdle_irr": HURDLE_IRR, "hold_years": cfg["lbo"]["hold_years"],
                           "control_premium_pct": cfg["lbo"]["control_premium_pct"]},
@@ -322,21 +324,50 @@ def build_results(results_df: pd.DataFrame, cfg: dict, as_of: str) -> dict:
     return _json_safe(payload)
 
 
+def _is_degenerate(res: dict, entry_ebitda: float) -> bool:
+    """Net-cash / negative-EV name: enterprise value at or below ~5% of EBITDA.
+
+    Sponsor equity is then near-zero, so run_lbo returns a finite but absurd
+    MOIC (e.g. JUSTDIAL's 8680x). The LBO is not meaningfully computable; mirror
+    the static site's flag (tools/sitegen/returns.py, export_site.py) and surface
+    nothing rather than fake returns. Same 0.05 * EBITDA cutoff as the site.
+    """
+    return res["sources_uses"]["enterprise_value"] <= 0.05 * entry_ebitda
+
+
 def build_company_block(row: pd.Series, cfg: dict) -> dict:
     inp = company_inputs(row, cfg)
     res = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],
                   entry_ev=inp["entry_ev"], total_leverage=inp["total_leverage"])
+    name = str(row["ticker"]).replace(".NS", "")  # screener rows carry no display name
+
+    if _is_degenerate(res, inp["entry_ebitda"]):
+        # LBO not computable — return a flagged stub. Every COMPANY_KEYS key is
+        # present (null where the LBO math is meaningless); the heavy analytics
+        # (MC, Sobol, solvers) are skipped — they'd be garbage and slow. Feasibility
+        # and delisting stay: they're promoter/float signals, not LBO returns.
+        return {
+            "ticker": row["ticker"], "name": name,
+            "statements": None, "debt_schedule": None,
+            "sources_uses": res["sources_uses"],
+            "returns": {"irr": None, "moic": None, "degenerate": True,
+                        "irr_bridge": None, "value_bridge": None},
+            "montecarlo": None, "downside": None, "sensitivity": None, "solvers": None,
+            "sobol": None,
+            "feasibility": feasibility_score(row, cfg),
+            "delisting": delisting_model(inp, row, cfg),
+        }
+
     mc = monte_carlo(inp)
     return {
         "ticker": row["ticker"],
-        # screener rows carry no display name; derive it like export_site.py / returns.py
-        "name": str(row["ticker"]).replace(".NS", ""),
+        "name": name,
         "statements": {"income": res["income_statement"].to_dict("records"),
                        "cash_flow": res["cash_flow"].to_dict("records"),
                        "balance_sheet": res["balance_sheet"].to_dict("records")},
         "debt_schedule": res["schedule"].to_dict("records"),
         "sources_uses": res["sources_uses"],
-        "returns": {"irr": res["irr"], "moic": res["moic"],
+        "returns": {"irr": res["irr"], "moic": res["moic"], "degenerate": False,
                     "irr_bridge": irr_bridge(inp), "value_bridge": value_bridge(inp)},
         "montecarlo": mc,
         "downside": downside_risk(mc),

@@ -206,3 +206,21 @@ def test_export_data_writes_valid_json(tmp_path):
                     "--no-fetch", "--out", str(out)], check=True, cwd=root)
     data = json.loads(out.read_text(encoding="utf-8"))
     assert "passers" in data and "companies" in data and data["as_of"]
+
+
+def test_degenerate_company_block_is_flagged_not_absurd():
+    # Net cash > market cap -> negative EV (the JUSTDIAL case). The LBO is not
+    # computable; the block must flag it and null the returns, not emit 8680x.
+    cfg = base_cfg()
+    row = sample_row().copy()
+    row["ticker"] = "NETCASH.NS"
+    row["market_cap_cr"] = 1000.0
+    row["net_debt_cr"] = -2000.0
+    block = analytics.build_company_block(row, cfg)
+    assert set(block) == set(analytics.COMPANY_KEYS)        # contract shape preserved
+    assert block["returns"]["degenerate"] is True
+    assert block["returns"]["irr"] is None
+    assert block["returns"]["moic"] is None
+    assert block["montecarlo"] is None and block["solvers"] is None
+    import json
+    json.dumps(block)                                       # serializes cleanly
