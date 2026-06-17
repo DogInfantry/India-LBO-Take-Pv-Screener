@@ -50,3 +50,22 @@ def test_company_inputs_prices_take_private_ev():
     assert inp["total_leverage"] == pytest.approx(3.0)   # 2.0 + 1.0 turns
     assert inp["premium_pct"] == 25.0
     assert inp["assumptions"] is base_cfg()["lbo"] or "tranches" in inp["assumptions"]
+
+
+def test_monte_carlo_reproducible_and_bounded():
+    cfg = base_cfg()
+    inp = analytics.company_inputs(sample_row(), cfg)
+    a = analytics.monte_carlo(inp, n=500, seed=7)
+    b = analytics.monte_carlo(inp, n=500, seed=7)
+    assert a["irr"][:5] == b["irr"][:5]            # same seed -> same draws
+    assert len(a["irr"]) == len(a["moic"]) == 500
+    assert 0.0 <= a["p_beat_hurdle"] <= 1.0
+
+
+def test_downside_risk_ordering():
+    cfg = base_cfg()
+    inp = analytics.company_inputs(sample_row(), cfg)
+    mc = analytics.monte_carlo(inp, n=2000, seed=1)
+    d = analytics.downside_risk(mc)
+    assert 0.0 <= d["p_loss"] <= 1.0
+    assert d["cvar5_moic"] <= d["var5_moic"]        # tail mean <= the 5% quantile

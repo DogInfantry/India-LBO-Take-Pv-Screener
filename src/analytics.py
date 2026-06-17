@@ -38,3 +38,50 @@ def company_inputs(row: pd.Series, cfg: dict) -> dict:
         "total_leverage": total_leverage,
         "entry_ev": entry_ev,
     }
+
+
+def _entry_multiple(inp: dict) -> float:
+    return inp["entry_ev"] / inp["entry_ebitda"] if inp["entry_ebitda"] else 0.0
+
+
+def monte_carlo(inp: dict, n: int = MC_N, seed: int = SEED,
+                hurdle: float = HURDLE_IRR) -> dict:
+    """Distribution of IRR/MOIC over growth, EBITDA-margin and exit-multiple draws."""
+    rng = np.random.default_rng(seed)
+    a = inp["assumptions"]
+    base_g = a["revenue_growth"]
+    em = _entry_multiple(inp)
+
+    growth = np.clip(rng.normal(base_g, 0.03, n), 0.0, 2 * base_g)
+    shock = np.clip(rng.normal(1.0, 0.05, n), 0.7, 1.3)
+    exit_mult = np.clip(rng.normal(em, 1.0, n), max(1.0, em - 3), em + 3)
+
+    irrs, moics = [], []
+    for g, s, xm in zip(growth, shock, exit_mult):
+        res = run_lbo(inp["entry_revenue"], inp["entry_ebitda"] * s,
+                      {**a, "revenue_growth": float(g)},
+                      entry_ev=inp["entry_ev"], total_leverage=inp["total_leverage"],
+                      exit_multiple=float(xm))
+        irrs.append(res["irr"])
+        moics.append(res["moic"])
+
+    irr_arr = np.array(irrs, dtype=float)
+    finite = irr_arr[np.isfinite(irr_arr)]
+    p_beat = float((finite >= hurdle).mean()) if finite.size else 0.0
+    return {"irr": [None if not math.isfinite(x) else float(x) for x in irrs],
+            "moic": [None if not math.isfinite(x) else float(x) for x in moics],
+            "p_beat_hurdle": p_beat,
+            "params": {"n": n, "seed": seed, "hurdle": hurdle,
+                       "growth_sd": 0.03, "ebitda_shock_sd": 0.05, "exit_mult_sd": 1.0}}
+
+
+def downside_risk(mc: dict, hurdle: float = HURDLE_IRR) -> dict:
+    """P(capital impairment), 5% VaR and CVaR (expected shortfall) on MOIC."""
+    moic = np.array([m for m in mc["moic"] if m is not None], dtype=float)
+    if moic.size == 0:
+        return {"p_loss": None, "var5_moic": None, "cvar5_moic": None}
+    var5 = float(np.percentile(moic, 5))
+    tail = moic[moic <= var5]
+    return {"p_loss": float((moic < 1.0).mean()),
+            "var5_moic": var5,
+            "cvar5_moic": float(tail.mean()) if tail.size else var5}
