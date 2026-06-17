@@ -265,3 +265,21 @@ def feasibility_score(row: pd.Series, cfg: dict) -> dict:
     comps = {"holding": s_holding, "pledge": s_pledge, "float": s_float, "valuation": s_val}
     score = round(sum(weights[k] * comps[k] for k in weights))
     return {"score": int(score), "components": comps, "weights": weights}
+
+
+def delisting_model(inp: dict, row: pd.Series, cfg: dict) -> dict:
+    """Indicative SEBI reverse-book-building structure (NOT a price prediction)."""
+    holding = float(row.get("promoter_holding_pct") or 0.0)
+    threshold = 90.0
+    indicative_premium = inp["premium_pct"]
+    discovered_ev = inp["market_cap"] * (1 + indicative_premium / 100.0) + inp["net_debt"]
+    return {
+        "indicative": True,
+        "acceptance_threshold_pct": threshold,
+        "promoter_holding_pct": holding,
+        "float_to_tender_pct": max(0.0, threshold - holding),
+        "indicative_premium_pct": indicative_premium,
+        "indicative_discovered_ev_cr": discovered_ev,
+        "assumptions": "Premium = config control_premium_pct; assumes full tender of "
+                       "required float at the discovered price. Illustrative only.",
+    }

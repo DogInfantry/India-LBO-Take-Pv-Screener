@@ -153,3 +153,13 @@ def test_feasibility_score_range_and_pledge_monotonicity():
     assert 0 <= s_low_pledge["score"] <= 100
     assert s_high_pledge["score"] < s_low_pledge["score"]   # more pledge -> less feasible
     assert set(s_low_pledge["components"]) >= {"holding", "pledge", "float", "valuation"}
+
+
+def test_delisting_model_structure():
+    cfg = base_cfg(); row = sample_row()
+    inp = analytics.company_inputs(row, cfg)
+    d = analytics.delisting_model(inp, row, cfg)
+    assert d["acceptance_threshold_pct"] == 90.0
+    # public float that must tender = 90 - promoter_holding
+    assert d["float_to_tender_pct"] == pytest.approx(90.0 - 62.0)
+    assert d["indicative"] is True
