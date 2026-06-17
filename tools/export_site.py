@@ -155,7 +155,7 @@ def gather(no_fetch: bool):
         print(f"Fetching live market data for {len(tickers)} tickers...")
         market = fetch_market_data(tickers)
         market.to_csv(SNAPSHOT_PATH, index=False)
-        print(f"  cached snapshot → {SNAPSHOT_PATH}")
+        print(f"  cached snapshot -> {SNAPSHOT_PATH}")
 
     results = apply_screen(compute_metrics(fundamentals, market, cfg), cfg)
     return cfg, universe, results
@@ -328,6 +328,13 @@ def build_index_context(results: pd.DataFrame, cfg: dict, data_date: str) -> tup
 
 # ----------------------------------------------------------------- main
 def main(argv: list[str]) -> None:
+    # Console prints below may carry non-ASCII (e.g. ₹); don't let a Windows
+    # cp1252 console abort the build. HTML files are always written utf-8.
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-fetch", action="store_true",
                     help="use data/market_snapshot.csv instead of a live fetch")
