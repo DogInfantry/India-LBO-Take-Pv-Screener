@@ -19,8 +19,8 @@ This is the second of four phases from the parent spec
 ## Decisions (from visual brainstorming)
 
 - **Layout: dense grid.** A KPI band across the top, then a multi-panel grid
-  (IRR leaderboard, premium×exit heatmap, feasibility, Sobol drivers) — all
-  visible at once, Bloomberg-terminal density, minimal scrolling.
+  (IRR leaderboard, iso-IRR frontier, feasibility, Sobol drivers) — all visible
+  at once, Bloomberg-terminal density, minimal scrolling.
 - **Theme: "Midnight terminal."** Deep blue-black ground (`#0b0f17`), panel
   `#121826`, emerald accent (`#34d399`) for returns, violet (`#a78bfa`) for
   feasibility/Sobol, amber/red for the heatmap warm end, muted slate text,
@@ -59,7 +59,7 @@ web-app/public/data/results.json   (emitted by Phase 1 tools/export_data.py)
             │
             ▼
    app/page.tsx (dashboard, server component)
-        └─ <KpiBand> <IrrLeaderboard> <SensitivityHeatmap>
+        └─ <KpiBand> <IrrLeaderboard> <IsoFrontier>
            <FeasibilityPanel> <SobolDrivers>   (each takes typed props)
                          │ all charts go through
                          ▼
@@ -86,7 +86,7 @@ web-app/
     EChart.tsx                  # themed echarts-for-react wrapper
     KpiBand.tsx
     IrrLeaderboard.tsx          # bars; dims degenerate -> "n.m."; row -> /t/[ticker]
-    SensitivityHeatmap.tsx      # premium x exit heatmap (top name)
+    IsoFrontier.tsx             # iso-IRR break-even frontier (from sensitivity.iso_frontier)
     FeasibilityPanel.tsx        # ranked feasibility (violet)
     SobolDrivers.tsx            # variance-share bars
   lib/
@@ -101,14 +101,30 @@ wrapper is the single place the theme is enforced, so charts can't drift.
 
 ### Contract types (`lib/types.ts`)
 
-TypeScript interfaces mirroring the Phase 1 JSON: `Results { as_of, config,
-universe, passers: Passer[], companies: Record<string, CompanyBlock> }`,
-`Passer { ticker, name, irr, moic, degenerate, feasibility, max_bid_premium_pct }`,
-and a `CompanyBlock` covering the 13 `COMPANY_KEYS` (returns, montecarlo,
-downside, sensitivity, solvers, sobol, feasibility, delisting, statements,
-debt_schedule, sources_uses) with **nullable** fields where Phase 1 emits
-`null` (degenerate names, NaN→null). Phase 2 only consumes the dashboard-level
-slices; the rest are typed now so Phase 3 inherits them.
+TypeScript interfaces mirroring the **actual** `results.json` (verified against
+`src/analytics.py::build_results` / `build_company_block`, not the parent spec's
+illustrative JSON — that snippet predates the degenerate flag and used the name
+`max_bid_premium`, which is wrong). The authoritative shapes:
+
+```ts
+interface Results { as_of: string; config: {...}; universe: {...};
+                    passers: Passer[]; companies: Record<string, CompanyBlock> }
+// passer fields are EXACTLY these (confirmed in results.json):
+interface Passer { ticker: string; name: string;
+                   irr: number | null; moic: number | null;
+                   degenerate: boolean;               // <-- present on every passer
+                   feasibility: number;
+                   max_bid_premium_pct: number | null } // <-- _pct suffix, NOT max_bid_premium
+```
+
+`CompanyBlock` covers the 13 `COMPANY_KEYS` (ticker, name, statements,
+debt_schedule, sources_uses, returns, montecarlo, downside, sensitivity,
+solvers, sobol, feasibility, delisting). Fields are **nullable** wherever Phase
+1 emits `null` — a degenerate company has `statements/debt_schedule/montecarlo/
+downside/sensitivity/solvers/sobol = null` and `returns.irr/moic = null,
+returns.degenerate = true`; non-degenerate `sensitivity = { iso_frontier }` only
+(no grid/tornado — those are Phase 3). Phase 2 consumes the dashboard slices;
+the rest are typed now so Phase 3 inherits them.
 
 ### Degenerate handling
 
