@@ -69,3 +69,17 @@ def test_downside_risk_ordering():
     d = analytics.downside_risk(mc)
     assert 0.0 <= d["p_loss"] <= 1.0
     assert d["cvar5_moic"] <= d["var5_moic"]        # tail mean <= the 5% quantile
+
+
+def test_irr_bridge_steps_sum_to_total():
+    cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
+    br = analytics.irr_bridge(inp)
+    total = br["deleveraging"] + br["ebitda_growth"] + br["multiple_rerating"]
+    assert total == pytest.approx(br["total_irr"], abs=1e-6)
+
+def test_value_bridge_reconciles_equity():
+    cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
+    vb = analytics.value_bridge(inp)
+    built = (vb["entry_equity"] + vb["ebitda_growth"] + vb["multiple_change"]
+             + vb["debt_paydown"] + vb["fees_and_other"])
+    assert built == pytest.approx(vb["exit_equity"], rel=1e-6)

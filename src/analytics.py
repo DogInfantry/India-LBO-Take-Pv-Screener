@@ -85,3 +85,41 @@ def downside_risk(mc: dict, hurdle: float = HURDLE_IRR) -> dict:
     return {"p_loss": float((moic < 1.0).mean()),
             "var5_moic": var5,
             "cvar5_moic": float(tail.mean()) if tail.size else var5}
+
+
+def irr_bridge(inp: dict) -> dict:
+    """IRR attributed cumulatively to deleveraging, then growth, then re-rating."""
+    a = inp["assumptions"]; em = _entry_multiple(inp)
+    common = dict(entry_ev=inp["entry_ev"], total_leverage=inp["total_leverage"])
+
+    delever = run_lbo(inp["entry_revenue"], inp["entry_ebitda"],
+                      {**a, "revenue_growth": 0.0}, exit_multiple=em, **common)["irr"]
+    plus_growth = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], a,
+                          exit_multiple=em, **common)["irr"]
+    full = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], a, **common)["irr"]
+    return {"deleveraging": delever,
+            "ebitda_growth": plus_growth - delever,
+            "multiple_rerating": full - plus_growth,
+            "total_irr": full}
+
+
+def value_bridge(inp: dict) -> dict:
+    """Absolute (Rs cr) equity value creation, decomposed."""
+    a = inp["assumptions"]
+    res = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], a,
+                  entry_ev=inp["entry_ev"], total_leverage=inp["total_leverage"])
+    entry_em = res["entry_multiple"]; exit_em = res["exit_multiple"]
+    ebitda_entry = inp["entry_ebitda"]
+    ebitda_exit = res["income_statement"].iloc[-1]["ebitda"]
+    entry_equity = res["sources_uses"]["sponsor_equity"]
+    # entry EV is funded by sponsor equity + entry net debt (+ fees); so the
+    # net-debt-at-entry the bridge pays down is EV minus sponsor equity.
+    entry_net_debt = inp["entry_ev"] - entry_equity
+    ebitda_growth = (ebitda_exit - ebitda_entry) * entry_em
+    multiple_change = ebitda_exit * (exit_em - entry_em)
+    debt_paydown = entry_net_debt - res["exit_net_debt"]
+    exit_equity = res["exit_equity"]
+    fees_and_other = exit_equity - (entry_equity + ebitda_growth + multiple_change + debt_paydown)
+    return {"entry_equity": entry_equity, "ebitda_growth": ebitda_growth,
+            "multiple_change": multiple_change, "debt_paydown": debt_paydown,
+            "fees_and_other": fees_and_other, "exit_equity": exit_equity}
