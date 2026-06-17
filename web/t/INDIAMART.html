@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INDIAMART — LBO tear sheet</title>
+  <meta name="description" content="A screen for NSE mid/small-cap take-private deleveraging candidates with a paper LBO on each — static showcase.">
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/vega@6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
+  
+</head>
+<body>
+  <div class="wrap">
+    
+<div class="crumbs"><a href="../index.html">← All candidates</a></div>
+
+<header class="site">
+  <h1>INDIAMART <span style="color:var(--muted);font-weight:400;font-size:1rem;">· tear sheet</span></h1>
+  <div class="meta"><span class="pill">Passes all screening criteria</span><span class="pill">Data as of 2026-06-17</span></div>
+</header>
+
+<div class="rationale">INDIAMART passes all screening criteria. Net debt/EBITDA of -4.6x against a 2x ceiling implies roughly ₹5,135 cr of unused debt capacity at the modelled leverage level. Interest coverage of 226.5x and 3 consecutive years of positive FCF (latest FCF yield 5.5%) suggest the cash flows could service acquisition debt. Promoter holding of 56.0% with 0.0% pledged is consistent with a promoter-led take-private under the SEBI 75% non-public shareholding ceiling.</div>
+
+<div class="metrics">
+  
+  <div class="metric"><div class="label">LTM EBITDA</div><div class="value">₹679 cr</div></div>
+  
+  <div class="metric"><div class="label">Net debt/EBITDA</div><div class="value">-4.56x</div></div>
+  
+  <div class="metric"><div class="label">Market cap</div><div class="value">₹12,533 cr</div></div>
+  
+  <div class="metric"><div class="label">Unused debt capacity</div><div class="value">₹5,135 cr</div></div>
+  
+</div>
+
+<h2>Paper LBO — market take-private base case</h2>
+<p class="section-note">Implied entry 18.5x EBITDA · equity offer ₹15,667 cr (₹12,533 cr market cap +25%) + net debt ₹-3,097 cr = entry EV ₹12,570 cr.</p>
+
+<div class="panel">
+  <h3>Sources &amp; uses — EV-to-equity bridge (₹ cr)</h3>
+  <div class="chart" data-spec="waterfall"></div>
+  <p class="section-note">Enterprise value plus fees, less each debt tranche, leaves the sponsor equity check — the residual on the right.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+  <div class="panel">
+    <h3>Sources &amp; uses (₹ cr)</h3>
+    <table class="data">
+      <tbody>
+        
+        <tr><td>Senior debt</td><td>1,359</td></tr>
+        
+        <tr><td>Mezzanine debt</td><td>679</td></tr>
+        
+        <tr><td>Total debt</td><td>2,038</td></tr>
+        
+        <tr><td>Transaction fees</td><td>251</td></tr>
+        
+        <tr><td>Financing fees (capitalized)</td><td>51</td></tr>
+        
+        <tr><td>Sponsor equity</td><td>10,834</td></tr>
+        
+        <tr><td>Enterprise value</td><td>12,570</td></tr>
+        
+      </tbody>
+    </table>
+    <p class="section-note">Total debt = 16% of EV (RBI cap: 75% of acquisition value). Equity check includes ₹302 cr of fees (transaction folded into goodwill; financing capitalized &amp; amortized).</p>
+  </div>
+  <div class="panel">
+    <h3>Returns (5-yr hold, flat exit multiple)</h3>
+    <div class="metrics" style="grid-template-columns:repeat(3,1fr);">
+      <div class="metric"><div class="label">MOIC</div><div class="value">1.72x</div></div>
+      <div class="metric"><div class="label">IRR</div><div class="value">11.4%</div></div>
+      <div class="metric"><div class="label">Exit equity</div><div class="value">₹18,607 cr</div></div>
+    </div>
+    <p class="section-note">Exit EV ₹18,469 cr at 18.5x Year-5 EBITDA (entry 18.5x); exit net debt ₹-138 cr.</p>
+    <p class="section-note">Balance sheet ties ✓ (max imbalance ₹1.82e-12 cr)</p>
+  </div>
+</div>
+
+<h2>Debt paydown schedule (₹ cr)</h2>
+<div class="panel scroll-x">
+  <table class="data"><thead><tr><th>Year</th><th>EBITDA</th><th>Interest</th><th>Taxes</th><th>Capex</th><th>ΔNWC</th><th>FCF for debt</th><th>Revolver</th><th>Cash</th><th>Senior repaid</th><th>Senior ending</th><th>Mezzanine repaid</th><th>Mezzanine ending</th><th>Ending debt</th></tr></thead><tbody><tr><td>1.0</td><td>734</td><td>211</td><td>113</td><td>85</td><td>20</td><td>306</td><td>0</td><td>0</td><td>306</td><td>1,053</td><td>0</td><td>679</td><td>1,732</td></tr><tr><td>2.0</td><td>792</td><td>183</td><td>134</td><td>92</td><td>22</td><td>363</td><td>0</td><td>0</td><td>363</td><td>690</td><td>0</td><td>679</td><td>1,370</td></tr><tr><td>3.0</td><td>856</td><td>150</td><td>157</td><td>99</td><td>23</td><td>426</td><td>0</td><td>0</td><td>426</td><td>264</td><td>0</td><td>679</td><td>943</td></tr><tr><td>4.0</td><td>924</td><td>112</td><td>183</td><td>107</td><td>25</td><td>498</td><td>0</td><td>0</td><td>264</td><td>0</td><td>234</td><td>446</td><td>446</td></tr><tr><td>5.0</td><td>998</td><td>58</td><td>214</td><td>115</td><td>27</td><td>584</td><td>0</td><td>138</td><td>0</td><td>0</td><td>446</td><td>0</td><td>0</td></tr></tbody></table>
+</div>
+
+<h2>Three-statement model (₹ cr)</h2>
+<div class="panel" data-tabgroup="stmt">
+  <div class="tabs">
+    
+    <button class="active" onclick="showTab('stmt', 0)">Income statement</button>
+    
+    <button class="" onclick="showTab('stmt', 1)">Balance sheet</button>
+    
+    <button class="" onclick="showTab('stmt', 2)">Cash flow</button>
+    
+  </div>
+  
+  <div class="tabpane active scroll-x"><table class="data"><thead><tr><th>year</th><th>revenue</th><th>ebitda</th><th>da</th><th>dfc_amort</th><th>ebit</th><th>interest</th><th>ebt</th><th>taxes</th><th>net_income</th></tr></thead><tbody><tr><td>1.0</td><td>1,695</td><td>734</td><td>63</td><td>10</td><td>661</td><td>211</td><td>450</td><td>113</td><td>338</td></tr><tr><td>2.0</td><td>1,830</td><td>792</td><td>65</td><td>10</td><td>717</td><td>183</td><td>534</td><td>134</td><td>401</td></tr><tr><td>3.0</td><td>1,976</td><td>856</td><td>68</td><td>10</td><td>778</td><td>150</td><td>628</td><td>157</td><td>471</td></tr><tr><td>4.0</td><td>2,135</td><td>924</td><td>71</td><td>10</td><td>843</td><td>112</td><td>731</td><td>183</td><td>549</td></tr><tr><td>5.0</td><td>2,305</td><td>998</td><td>74</td><td>10</td><td>914</td><td>58</td><td>856</td><td>214</td><td>642</td></tr></tbody></table></div>
+  
+  <div class="tabpane  scroll-x"><table class="data"><thead><tr><th>year</th><th>cash</th><th>ar</th><th>inventory</th><th>ap</th><th>nwc</th><th>ppe</th><th>goodwill</th><th>dfc</th><th>assets</th><th>debt</th><th>equity</th><th>balance_error</th></tr></thead><tbody><tr><td>0.0</td><td>0</td><td>193</td><td>168</td><td>112</td><td>249</td><td>628</td><td>11,944</td><td>51</td><td>12,872</td><td>2,038</td><td>10,834</td><td>-0</td></tr><tr><td>1.0</td><td>0</td><td>209</td><td>181</td><td>121</td><td>269</td><td>650</td><td>11,944</td><td>41</td><td>12,904</td><td>1,732</td><td>11,171</td><td>0</td></tr><tr><td>2.0</td><td>0</td><td>226</td><td>196</td><td>130</td><td>291</td><td>676</td><td>11,944</td><td>31</td><td>12,942</td><td>1,370</td><td>11,572</td><td>0</td></tr><tr><td>3.0</td><td>0</td><td>244</td><td>211</td><td>141</td><td>314</td><td>707</td><td>11,944</td><td>20</td><td>12,986</td><td>943</td><td>12,043</td><td>-0</td></tr><tr><td>4.0</td><td>0</td><td>263</td><td>228</td><td>152</td><td>339</td><td>743</td><td>11,944</td><td>10</td><td>13,037</td><td>446</td><td>12,591</td><td>0</td></tr><tr><td>5.0</td><td>138</td><td>284</td><td>246</td><td>164</td><td>366</td><td>784</td><td>11,944</td><td>0</td><td>13,233</td><td>0</td><td>13,233</td><td>-0</td></tr></tbody></table></div>
+  
+  <div class="tabpane  scroll-x"><table class="data"><thead><tr><th>year</th><th>net_income</th><th>da</th><th>delta_nwc</th><th>cfo</th><th>capex</th><th>fcf_for_debt</th><th>principal_repaid</th><th>revolver_draw</th><th>cff</th><th>ending_cash</th></tr></thead><tbody><tr><td>1.0</td><td>338</td><td>63</td><td>20</td><td>391</td><td>85</td><td>306</td><td>306</td><td>0</td><td>-306</td><td>0</td></tr><tr><td>2.0</td><td>401</td><td>65</td><td>22</td><td>454</td><td>92</td><td>363</td><td>363</td><td>0</td><td>-363</td><td>0</td></tr><tr><td>3.0</td><td>471</td><td>68</td><td>23</td><td>525</td><td>99</td><td>426</td><td>426</td><td>0</td><td>-426</td><td>0</td></tr><tr><td>4.0</td><td>549</td><td>71</td><td>25</td><td>604</td><td>107</td><td>498</td><td>498</td><td>0</td><td>-498</td><td>0</td></tr><tr><td>5.0</td><td>642</td><td>74</td><td>27</td><td>699</td><td>115</td><td>584</td><td>446</td><td>0</td><td>-446</td><td>138</td></tr></tbody></table></div>
+  
+</div>
+
+<h2>Sensitivity — control premium × leverage</h2>
+<div class="panel scroll-x">
+  <h3>IRR</h3>
+  <table class="data heat"><thead><tr><th></th><th>2.0x</th><th>2.5x</th><th>3.0x</th><th>3.5x</th><th>4.0x</th></tr></thead><tbody><tr><td>0%</td><td class="h" style="background:#a9da6c">12.5%</td><td class="h" style="background:#75c465">12.7%</td><td class="h" style="background:#45ad5b">12.9%</td><td class="h" style="background:#15904c">13.1%</td><td class="h" style="background:#006837">13.3%</td></tr><tr><td>10%</td><td class="h" style="background:#fff1a8">11.9%</td><td class="h" style="background:#f7fcb4">12.1%</td><td class="h" style="background:#e5f49b">12.2%</td><td class="h" style="background:#cdea83">12.3%</td><td class="h" style="background:#afdd70">12.5%</td></tr><tr><td>20%</td><td class="h" style="background:#fa9b58">11.4%</td><td class="h" style="background:#fdb96a">11.6%</td><td class="h" style="background:#feca79">11.6%</td><td class="h" style="background:#fede89">11.8%</td><td class="h" style="background:#feeda1">11.9%</td></tr><tr><td>30%</td><td class="h" style="background:#dd3d2d">11.0%</td><td class="h" style="background:#e95538">11.2%</td><td class="h" style="background:#f26841">11.2%</td><td class="h" style="background:#f67c4a">11.3%</td><td class="h" style="background:#f99355">11.4%</td></tr><tr><td>40%</td><td class="h" style="background:#a50026">10.7%</td><td class="h" style="background:#b50f26">10.8%</td><td class="h" style="background:#c01a27">10.9%</td><td class="h" style="background:#ce2827">10.9%</td><td class="h" style="background:#da362a">11.0%</td></tr></tbody></table>
+  <h3>MOIC</h3>
+  <table class="data heat"><thead><tr><th></th><th>2.0x</th><th>2.5x</th><th>3.0x</th><th>3.5x</th><th>4.0x</th></tr></thead><tbody><tr><td>0%</td><td class="h" style="background:#addc6f">1.80x</td><td class="h" style="background:#7ac665">1.82x</td><td class="h" style="background:#4bb05c">1.83x</td><td class="h" style="background:#16914d">1.85x</td><td class="h" style="background:#006837">1.87x</td></tr><tr><td>10%</td><td class="h" style="background:#feeda1">1.75x</td><td class="h" style="background:#fbfdba">1.77x</td><td class="h" style="background:#e9f6a1">1.78x</td><td class="h" style="background:#d3ec87">1.79x</td><td class="h" style="background:#b3df72">1.80x</td></tr><tr><td>20%</td><td class="h" style="background:#f99355">1.72x</td><td class="h" style="background:#fdb365">1.73x</td><td class="h" style="background:#fdc574">1.73x</td><td class="h" style="background:#feda86">1.74x</td><td class="h" style="background:#feeb9d">1.75x</td></tr><tr><td>30%</td><td class="h" style="background:#db382b">1.69x</td><td class="h" style="background:#e75337">1.70x</td><td class="h" style="background:#ef633f">1.70x</td><td class="h" style="background:#f57748">1.71x</td><td class="h" style="background:#f98e52">1.72x</td></tr><tr><td>40%</td><td class="h" style="background:#a50026">1.66x</td><td class="h" style="background:#b50f26">1.67x</td><td class="h" style="background:#c01a27">1.68x</td><td class="h" style="background:#cc2627">1.68x</td><td class="h" style="background:#d93429">1.69x</td></tr></tbody></table>
+  <p class="section-note">Each row prices the take-private at market cap + that premium, exiting at the implied entry multiple — returns come from debt paydown and EBITDA growth, not multiple expansion.</p>
+</div>
+
+    <footer class="site">
+      <p>
+        India LBO &amp; Take-Private Screener — static snapshot generated
+        2026-06-17. Figures are a point-in-time snapshot, not live.
+        For the interactive model (tune leverage, premium, exit re-rating):
+        <a href="https://india-lbo-take-pv-screener-7hv5yfvgmabjk5rnuyqdqj.streamlit.app/">live Streamlit app</a> ·
+        <a href="https://github.com/DogInfantry/India-LBO-Take-Pv-Screener">source</a>.
+      </p>
+      <p class="disclaimer">
+        Educational / portfolio illustration. Not investment advice. Market data
+        via yfinance; promoter pledge via Screener.in / Trendlyne.
+      </p>
+    </footer>
+  </div>
+
+  <script type="application/json" id="chart-specs">{"waterfall": {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-b04ed588bbb4af001814945b7be69d4b"}, "mark": {"type": "bar"}, "encoding": {"color": {"field": "kind", "legend": {"labelExpr": "datum.label == 'total' ? 'EV / equity' : datum.label == 'inc' ? 'Fees (add)' : 'Debt (fund)'", "orient": "top", "title": null}, "scale": {"domain": ["total", "inc", "dec"], "range": ["#3b6ea5", "#c25b5b", "#2e8b57"]}, "type": "nominal"}, "tooltip": [{"field": "label", "title": "Item", "type": "nominal"}, {"field": "amount", "format": ",.0f", "title": "\u20b9 cr", "type": "quantitative"}], "x": {"axis": {"labelAngle": -30}, "field": "label", "sort": ["Enterprise value", "Transaction fees", "Financing fees", "Senior debt", "Mezzanine debt", "Sponsor equity"], "title": null, "type": "nominal"}, "y": {"field": "lo", "title": "\u20b9 cr", "type": "quantitative"}, "y2": {"field": "hi"}}, "height": 360, "width": "container", "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json", "datasets": {"data-b04ed588bbb4af001814945b7be69d4b": [{"label": "Enterprise value", "amount": 12569.672355314455, "kind": "total", "lo": 0.0, "hi": 12569.672355314455}, {"label": "Transaction fees", "amount": 251.3934471062891, "kind": "inc", "lo": 12569.672355314455, "hi": 12821.065802420744}, {"label": "Financing fees", "amount": 50.955, "kind": "inc", "lo": 12821.065802420744, "hi": 12872.020802420744}, {"label": "Senior debt", "amount": -1358.8, "kind": "dec", "lo": 11513.220802420745, "hi": 12872.020802420744}, {"label": "Mezzanine debt", "amount": -679.4, "kind": "dec", "lo": 10833.820802420745, "hi": 11513.220802420745}, {"label": "Sponsor equity", "amount": 10833.820802420745, "kind": "total", "lo": 0.0, "hi": 10833.820802420745}]}}}</script>
+  <script>
+    // Render every embedded Vega-Lite spec into its matching container.
+    (function () {
+      var specs = JSON.parse(document.getElementById("chart-specs").textContent || "{}");
+      var opts = { actions: false, renderer: "svg" };
+      document.querySelectorAll(".chart[data-spec]").forEach(function (el) {
+        var key = el.getAttribute("data-spec");
+        if (specs[key]) {
+          vegaEmbed(el, specs[key], opts).catch(function (e) {
+            el.innerHTML = '<p class="disclaimer">chart failed to render</p>';
+            console.error(key, e);
+          });
+        }
+      });
+    })();
+
+    // Tear-sheet statement tabs.
+    function showTab(group, idx) {
+      document.querySelectorAll('[data-tabgroup="' + group + '"] .tabpane')
+        .forEach(function (p, i) { p.classList.toggle("active", i === idx); });
+      document.querySelectorAll('[data-tabgroup="' + group + '"] .tabs button')
+        .forEach(function (b, i) { b.classList.toggle("active", i === idx); });
+    }
+  </script>
+</body>
+</html>

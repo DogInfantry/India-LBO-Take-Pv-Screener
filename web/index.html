@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>India LBO & Take-Private Screener</title>
+  <meta name="description" content="A screen for NSE mid/small-cap take-private deleveraging candidates with a paper LBO on each — static showcase.">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/vega@6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
+  
+</head>
+<body>
+  <div class="wrap">
+    
+<header class="site">
+  <h1>India LBO &amp; Take-Private Screener</h1>
+  <p class="tagline">
+    Screens NSE mid/small-caps for take-private deleveraging candidates —
+    low-levered, cash-generative, promoter-controlled companies with unused debt
+    capacity under RBI's 2026 acquisition-finance regime — then runs a simplified
+    paper LBO on each.
+  </p>
+  <div class="meta">
+    <span class="pill">6 of 46 names pass all criteria</span>
+    <span class="pill">Data as of 2026-06-17</span>
+    <a href="https://india-lbo-take-pv-screener-7hv5yfvgmabjk5rnuyqdqj.streamlit.app/">Interactive version →</a>
+  </div>
+</header>
+
+<h2>Buyout candidates — ranked by base-case IRR</h2>
+<p class="section-note">Base case: market take-private at 25% control premium, 3.0x leverage, 8% revenue growth, flat exit. Tune any deal on the interactive app.</p>
+
+<div class="candidate-grid">
+  
+  <div class="card">
+    <div class="rank">#1</div>
+    <a class="name" href="t/NATCOPHARM.html">NATCOPHARM →</a>
+    <div class="kpis">
+      <span>IRR <b>15.6%</b></span>
+      <span>MOIC <b>2.07x</b></span>
+      <span>Implied entry <b>9.7x</b></span>
+      <span>Equity check <b>₹12,173 cr</b></span>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="rank">#2</div>
+    <a class="name" href="t/ZENSARTECH.html">ZENSARTECH →</a>
+    <div class="kpis">
+      <span>IRR <b>14.5%</b></span>
+      <span>MOIC <b>1.97x</b></span>
+      <span>Implied entry <b>9.1x</b></span>
+      <span>Equity check <b>₹7,186 cr</b></span>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="rank">#3</div>
+    <a class="name" href="t/TANLA.html">TANLA →</a>
+    <div class="kpis">
+      <span>IRR <b>13.7%</b></span>
+      <span>MOIC <b>1.90x</b></span>
+      <span>Implied entry <b>9.4x</b></span>
+      <span>Equity check <b>₹5,107 cr</b></span>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="rank">#4</div>
+    <a class="name" href="t/INDIAMART.html">INDIAMART →</a>
+    <div class="kpis">
+      <span>IRR <b>11.4%</b></span>
+      <span>MOIC <b>1.72x</b></span>
+      <span>Implied entry <b>18.5x</b></span>
+      <span>Equity check <b>₹10,834 cr</b></span>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="rank">#5</div>
+    <a class="name" href="t/ALKYLAMINE.html">ALKYLAMINE →</a>
+    <div class="kpis">
+      <span>IRR <b>9.1%</b></span>
+      <span>MOIC <b>1.54x</b></span>
+      <span>Implied entry <b>35.4x</b></span>
+      <span>Equity check <b>₹10,483 cr</b></span>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="rank">#6</div>
+    <a class="name" href="t/JUSTDIAL.html">JUSTDIAL →</a>
+    <div class="kpis">
+      <span>IRR <b>n.m.</b></span>
+      <span>MOIC <b>n.m.</b></span>
+      <span>Implied entry <b>0.0x</b></span>
+      <span>Equity check <b>₹0 cr</b></span>
+    </div>
+  </div>
+  
+</div>
+
+<div class="panel">
+  <h3>Best buyouts — base-case IRR</h3>
+  <div class="chart" data-spec="irr"></div>
+  <p class="section-note">Dashed line = 20% IRR (typical PE hurdle). Hover any bar for detail.</p>
+</div>
+
+<div class="panel">
+  <h3>Leaderboard — criteria cleared (of 7)</h3>
+  <div class="chart" data-spec="criteria"></div>
+</div>
+
+
+<div class="panel">
+  <h3>Sweet spot — cheap cash flow × room to lever up</h3>
+  <div class="chart" data-spec="bubble"></div>
+  <p class="section-note">
+    Top-right is the thesis sweet spot: high FCF yield (cheap cash flow) and large
+    unused debt capacity (room to lever up). Bubble size = EBITDA.
+  </p>
+</div>
+
+
+<h2>Full screen results</h2>
+<div class="panel scroll-x">
+  <table class="data">
+    <thead>
+      <tr>
+        <th>Ticker</th><th>Mkt cap (₹cr)</th><th>EBITDA (₹cr)</th>
+        <th>EBITDA margin</th><th>Net debt/EBITDA</th><th>Int. cov.</th>
+        <th>FCF yield</th><th>Unused debt cap (₹cr)</th><th>Promoter %</th>
+        <th>Pledge %</th><th>Cleared</th><th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr class="pass">
+        <td>NATCOPHARM</td><td>15,251</td><td>1,734</td>
+        <td>42.5%</td><td>-1.24x</td><td>47.3x</td>
+        <td>9.0%</td><td>7,359</td><td>51.0</td>
+        <td>0.0</td><td>7/7</td>
+        <td><span class="tag pass">passes</span></td>
+      </tr>
+      
+      <tr class="pass">
+        <td>ZENSARTECH</td><td>10,524</td><td>1,125</td>
+        <td>19.8%</td><td>-2.56x</td><td>93.0x</td>
+        <td>6.8%</td><td>6,259</td><td>50.2</td>
+        <td>0.0</td><td>7/7</td>
+        <td><span class="tag pass">passes</span></td>
+      </tr>
+      
+      <tr class="pass">
+        <td>TANLA</td><td>7,002</td><td>761</td>
+        <td>17.2%</td><td>-2.05x</td><td>173.0x</td>
+        <td>6.8%</td><td>3,847</td><td>57.0</td>
+        <td>0.0</td><td>7/7</td>
+        <td><span class="tag pass">passes</span></td>
+      </tr>
+      
+      <tr class="pass">
+        <td>JUSTDIAL</td><td>4,625</td><td>670</td>
+        <td>55.2%</td><td>-8.62x</td><td>73.7x</td>
+        <td>5.7%</td><td>7,791</td><td>74.2</td>
+        <td>0.0</td><td>7/7</td>
+        <td><span class="tag pass">passes</span></td>
+      </tr>
+      
+      <tr class="pass">
+        <td>INDIAMART</td><td>12,533</td><td>679</td>
+        <td>43.3%</td><td>-4.56x</td><td>226.5x</td>
+        <td>5.5%</td><td>5,135</td><td>56.0</td>
+        <td>0.0</td><td>7/7</td>
+        <td><span class="tag pass">passes</span></td>
+      </tr>
+      
+      <tr class="pass">
+        <td>ALKYLAMINE</td><td>9,146</td><td>316</td>
+        <td>20.9%</td><td>-0.79x</td><td>451.1x</td>
+        <td>1.2%</td><td>1,197</td><td>72.3</td>
+        <td>0.0</td><td>7/7</td>
+        <td><span class="tag pass">passes</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>BAJAJELEC</td><td>3,727</td><td>109</td>
+        <td>2.4%</td><td>-4.58x</td><td>1.9x</td>
+        <td>14.3%</td><td>824</td><td>63.0</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>TEAMLEASE</td><td>2,365</td><td>221</td>
+        <td>1.9%</td><td>-4.29x</td><td>15.4x</td>
+        <td>11.5%</td><td>1,610</td><td>32.5</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>MASTEK</td><td>5,158</td><td>626</td>
+        <td>16.9%</td><td>-0.83x</td><td>19.6x</td>
+        <td>10.0%</td><td>2,395</td><td>49.2</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>CYIENT</td><td>10,027</td><td>984</td>
+        <td>13.5%</td><td>-1.29x</td><td>16.2x</td>
+        <td>6.9%</td><td>4,217</td><td>23.7</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>JAMNAAUTO</td><td>5,137</td><td>394</td>
+        <td>15.1%</td><td>-0.25x</td><td>29.8x</td>
+        <td>4.9%</td><td>1,278</td><td>53.1</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>SONATSOFTW</td><td>8,615</td><td>783</td>
+        <td>7.3%</td><td>0.11x</td><td>15.2x</td>
+        <td>4.9%</td><td>2,260</td><td>43.4</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>BSOFT</td><td>9,062</td><td>890</td>
+        <td>16.8%</td><td>-2.60x</td><td>45.4x</td>
+        <td>4.8%</td><td>4,989</td><td>41.0</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>AARTIIND</td><td>18,013</td><td>1,179</td>
+        <td>14.2%</td><td>3.65x</td><td>3.5x</td>
+        <td>4.3%</td><td>0</td><td>42.4</td>
+        <td>—</td><td>1/7</td>
+        <td><span class="tag fail">1/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>JKPAPER</td><td>6,474</td><td>967</td>
+        <td>13.7%</td><td>1.85x</td><td>4.3x</td>
+        <td>4.2%</td><td>1,116</td><td>57.6</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>DEVYANI</td><td>14,078</td><td>873</td>
+        <td>15.6%</td><td>3.76x</td><td>3.2x</td>
+        <td>3.3%</td><td>0</td><td>64.2</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>GREENLAM</td><td>6,609</td><td>327</td>
+        <td>10.7%</td><td>3.19x</td><td>3.4x</td>
+        <td>3.0%</td><td>0</td><td>78.6</td>
+        <td>—</td><td>2/7</td>
+        <td><span class="tag fail">2/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>GREENPANEL</td><td>2,357</td><td>77</td>
+        <td>5.0%</td><td>1.24x</td><td>4.0x</td>
+        <td>3.0%</td><td>135</td><td>53.3</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>GALAXYSURF</td><td>6,569</td><td>486</td>
+        <td>9.3%</td><td>-1.07x</td><td>15.7x</td>
+        <td>3.0%</td><td>1,976</td><td>72.6</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>KAJARIACER</td><td>18,143</td><td>875</td>
+        <td>18.1%</td><td>-0.61x</td><td>38.7x</td>
+        <td>3.0%</td><td>3,154</td><td>48.2</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>VIPIND</td><td>4,598</td><td>-140</td>
+        <td>-7.6%</td><td>—</td><td>-2.0x</td>
+        <td>2.9%</td><td>0</td><td>12.2</td>
+        <td>—</td><td>1/7</td>
+        <td><span class="tag fail">1/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>INTELLECT</td><td>10,564</td><td>675</td>
+        <td>22.2%</td><td>-2.25x</td><td>107.2x</td>
+        <td>2.8%</td><td>3,544</td><td>44.7</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>SUNDRMFAST</td><td>17,991</td><td>1,062</td>
+        <td>17.4%</td><td>0.49x</td><td>27.9x</td>
+        <td>2.6%</td><td>2,662</td><td>49.6</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>RATNAMANI</td><td>18,215</td><td>869</td>
+        <td>19.3%</td><td>-0.78x</td><td>27.8x</td>
+        <td>2.5%</td><td>3,288</td><td>67.2</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>RELAXO</td><td>8,734</td><td>420</td>
+        <td>15.6%</td><td>0.01x</td><td>19.5x</td>
+        <td>2.4%</td><td>1,256</td><td>71.3</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>CERA</td><td>8,004</td><td>314</td>
+        <td>15.3%</td><td>-2.56x</td><td>48.3x</td>
+        <td>2.4%</td><td>1,748</td><td>57.0</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>KIRLOSENG</td><td>27,891</td><td>1,453</td>
+        <td>18.9%</td><td>2.59x</td><td>2.8x</td>
+        <td>2.1%</td><td>603</td><td>42.9</td>
+        <td>—</td><td>1/7</td>
+        <td><span class="tag fail">1/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>VGUARD</td><td>13,355</td><td>528</td>
+        <td>8.9%</td><td>-0.14x</td><td>42.6x</td>
+        <td>2.1%</td><td>1,661</td><td>55.7</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>GRINDWELL</td><td>22,668</td><td>669</td>
+        <td>21.8%</td><td>-1.68x</td><td>81.5x</td>
+        <td>1.9%</td><td>3,131</td><td>58.3</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>FINEORG</td><td>15,446</td><td>604</td>
+        <td>25.5%</td><td>-2.29x</td><td>147.2x</td>
+        <td>1.9%</td><td>3,195</td><td>75.0</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>SUMICHEM</td><td>23,622</td><td>802</td>
+        <td>24.8%</td><td>-1.61x</td><td>102.8x</td>
+        <td>1.7%</td><td>3,692</td><td>75.5</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>TTKPRESTIG</td><td>7,411</td><td>316</td>
+        <td>10.6%</td><td>—</td><td>21.0x</td>
+        <td>1.6%</td><td>0</td><td>70.9</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>WESTLIFE</td><td>7,136</td><td>411</td>
+        <td>15.8%</td><td>4.35x</td><td>2.8x</td>
+        <td>1.6%</td><td>0</td><td>62.7</td>
+        <td>—</td><td>3/7</td>
+        <td><span class="tag fail">3/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>ELGIEQUIP</td><td>18,955</td><td>689</td>
+        <td>17.4%</td><td>-0.61x</td><td>27.1x</td>
+        <td>1.6%</td><td>2,483</td><td>46.2</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>CAPLIPOINT</td><td>18,074</td><td>876</td>
+        <td>40.1%</td><td>-1.23x</td><td>973.8x</td>
+        <td>1.5%</td><td>3,706</td><td>73.6</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>GRANULES</td><td>18,544</td><td>1,196</td>
+        <td>22.4%</td><td>0.47x</td><td>10.5x</td>
+        <td>1.3%</td><td>3,028</td><td>39.3</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>ERIS</td><td>19,074</td><td>1,111</td>
+        <td>35.7%</td><td>2.05x</td><td>5.8x</td>
+        <td>1.3%</td><td>1,050</td><td>69.7</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>SUPRAJIT</td><td>6,335</td><td>505</td>
+        <td>13.2%</td><td>1.28x</td><td>7.9x</td>
+        <td>0.8%</td><td>868</td><td>50.5</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>GABRIEL</td><td>20,140</td><td>450</td>
+        <td>9.7%</td><td>-0.45x</td><td>31.7x</td>
+        <td>0.5%</td><td>1,554</td><td>46.6</td>
+        <td>—</td><td>2/7</td>
+        <td><span class="tag fail">2/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>CARBORUNIV</td><td>20,297</td><td>547</td>
+        <td>10.6%</td><td>-0.56x</td><td>29.1x</td>
+        <td>0.3%</td><td>1,948</td><td>40.4</td>
+        <td>—</td><td>3/7</td>
+        <td><span class="tag fail">3/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>CENTURYPLY</td><td>16,706</td><td>653</td>
+        <td>12.1%</td><td>2.55x</td><td>5.8x</td>
+        <td>0.3%</td><td>294</td><td>71.9</td>
+        <td>—</td><td>3/7</td>
+        <td><span class="tag fail">3/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>TRITURBINE</td><td>21,053</td><td>510</td>
+        <td>23.4%</td><td>-1.69x</td><td>196.1x</td>
+        <td>0.2%</td><td>2,391</td><td>59.8</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>KSB</td><td>15,062</td><td>422</td>
+        <td>15.7%</td><td>-0.64x</td><td>140.6x</td>
+        <td>-0.0%</td><td>1,533</td><td>70.0</td>
+        <td>—</td><td>5/7</td>
+        <td><span class="tag fail">5/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>SYMPHONY</td><td>4,617</td><td>-23</td>
+        <td>-2.0%</td><td>—</td><td>-1.4x</td>
+        <td>-2.2%</td><td>0</td><td>75.9</td>
+        <td>—</td><td>1/7</td>
+        <td><span class="tag fail">1/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>CRAFTSMAN</td><td>22,248</td><td>1,270</td>
+        <td>15.9%</td><td>2.74x</td><td>4.3x</td>
+        <td>-3.0%</td><td>332</td><td>50.3</td>
+        <td>—</td><td>2/7</td>
+        <td><span class="tag fail">2/7</span></td>
+      </tr>
+      
+      <tr class="">
+        <td>BALAMINES</td><td>6,728</td><td>294</td>
+        <td>20.6%</td><td>-0.47x</td><td>54.5x</td>
+        <td>-5.3%</td><td>1,021</td><td>67.6</td>
+        <td>—</td><td>4/7</td>
+        <td><span class="tag fail">4/7</span></td>
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+
+    <footer class="site">
+      <p>
+        India LBO &amp; Take-Private Screener — static snapshot generated
+        2026-06-17. Figures are a point-in-time snapshot, not live.
+        For the interactive model (tune leverage, premium, exit re-rating):
+        <a href="https://india-lbo-take-pv-screener-7hv5yfvgmabjk5rnuyqdqj.streamlit.app/">live Streamlit app</a> ·
+        <a href="https://github.com/DogInfantry/India-LBO-Take-Pv-Screener">source</a>.
+      </p>
+      <p class="disclaimer">
+        Educational / portfolio illustration. Not investment advice. Market data
+        via yfinance; promoter pledge via Screener.in / Trendlyne.
+      </p>
+    </footer>
+  </div>
+
+  <script type="application/json" id="chart-specs">{"criteria": {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-6048ee0086cbfb9ac468dc0bddd08204"}, "mark": {"type": "bar"}, "encoding": {"color": {"field": "verdict", "scale": {"domain": ["Passes all", "Falls short"], "range": ["#2e8b57", "#b0b7c0"]}, "title": null, "type": "nominal"}, "tooltip": [{"field": "name", "title": "Company", "type": "nominal"}, {"field": "criteria_passed", "title": "Criteria cleared", "type": "quantitative"}, {"field": "net_debt_to_ebitda", "format": ".2f", "title": "Net debt/EBITDA", "type": "quantitative"}, {"field": "fcf_yield", "format": ".1%", "title": "FCF yield", "type": "quantitative"}, {"field": "unused_debt_capacity_cr", "format": ",.0f", "title": "Unused debt cap (\u20b9cr)", "type": "quantitative"}], "x": {"field": "criteria_passed", "scale": {"domain": [0, 7]}, "title": "Criteria cleared (of 7)", "type": "quantitative"}, "y": {"field": "name", "sort": "-x", "title": null, "type": "nominal"}}, "height": 1012, "width": "container", "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json", "datasets": {"data-6048ee0086cbfb9ac468dc0bddd08204": [{"ticker": "NATCOPHARM.NS", "latest_year": "FY26", "revenue_cr": 4078.3, "ebitda_cr": 1734.1, "ebitda_margin": 0.42520167716940876, "net_debt_cr": -2157.0, "net_debt_to_ebitda": -1.2438729023701056, "interest_coverage": 47.25068119891007, "fcf_cr": 1377.2, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 51.0, "promoter_pledge_pct": 0.0, "unused_debt_capacity_cr": 7359.299999999999, "market_cap_cr": 15251.2054305, "fcf_yield": 0.09030105890815802, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": true, "pass_mcap": true, "passes_screen": true, "criteria_passed": 7, "name": "NATCOPHARM", "verdict": "Passes all"}, {"ticker": "ZENSARTECH.NS", "latest_year": "FY26", "revenue_cr": 5687.4, "ebitda_cr": 1125.1, "ebitda_margin": 0.19782325843091747, "net_debt_cr": -2883.9, "net_debt_to_ebitda": -2.5632388232157144, "interest_coverage": 92.98347107438016, "fcf_cr": 717.1, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 50.2, "promoter_pledge_pct": 0.0, "unused_debt_capacity_cr": 6259.2, "market_cap_cr": 10524.082585490973, "fcf_yield": 0.06813895597784742, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": true, "pass_mcap": true, "passes_screen": true, "criteria_passed": 7, "name": "ZENSARTECH", "verdict": "Passes all"}, {"ticker": "TANLA.NS", "latest_year": "FY26", "revenue_cr": 4417.7, "ebitda_cr": 761.0, "ebitda_margin": 0.17226158408221473, "net_debt_cr": -1563.6, "net_debt_to_ebitda": -2.0546649145860707, "interest_coverage": 172.95454545454544, "fcf_cr": 476.5, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 57.0, "promoter_pledge_pct": 0.0, "unused_debt_capacity_cr": 3846.6, "market_cap_cr": 7001.895877275, "fcf_yield": 0.06805299712417952, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": true, "pass_mcap": true, "passes_screen": true, "criteria_passed": 7, "name": "TANLA", "verdict": "Passes all"}, {"ticker": "JUSTDIAL.NS", "latest_year": "FY26", "revenue_cr": 1213.9, "ebitda_cr": 670.3, "ebitda_margin": 0.552187165334871, "net_debt_cr": -5780.1, "net_debt_to_ebitda": -8.623153811726095, "interest_coverage": 73.65934065934066, "fcf_cr": 264.5, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 74.2, "promoter_pledge_pct": 0.0, "unused_debt_capacity_cr": 7791.0, "market_cap_cr": 4624.966256340381, "fcf_yield": 0.05718960644034886, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": true, "pass_mcap": true, "passes_screen": true, "criteria_passed": 7, "name": "JUSTDIAL", "verdict": "Passes all"}, {"ticker": "INDIAMART.NS", "latest_year": "FY26", "revenue_cr": 1569.0, "ebitda_cr": 679.4, "ebitda_margin": 0.4330146590184831, "net_debt_cr": -3097.2, "net_debt_to_ebitda": -4.5587282896673536, "interest_coverage": 226.46666666666667, "fcf_cr": 687.2, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 56.0, "promoter_pledge_pct": 0.0, "unused_debt_capacity_cr": 5135.4, "market_cap_cr": 12533.497884251565, "fcf_yield": 0.05482906737978326, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": true, "pass_mcap": true, "passes_screen": true, "criteria_passed": 7, "name": "INDIAMART", "verdict": "Passes all"}, {"ticker": "ALKYLAMINE.NS", "latest_year": "FY26", "revenue_cr": 1511.9, "ebitda_cr": 315.8, "ebitda_margin": 0.2088762484291289, "net_debt_cr": -249.7, "net_debt_to_ebitda": -0.7906903103229892, "interest_coverage": 451.14285714285717, "fcf_cr": 110.1, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 72.3, "promoter_pledge_pct": 0.0, "unused_debt_capacity_cr": 1197.1000000000001, "market_cap_cr": 9146.091068886815, "fcf_yield": 0.012037929555997789, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": true, "pass_mcap": true, "passes_screen": true, "criteria_passed": 7, "name": "ALKYLAMINE", "verdict": "Passes all"}, {"ticker": "BAJAJELEC.NS", "latest_year": "FY26", "revenue_cr": 4448.3, "ebitda_cr": 108.7, "ebitda_margin": 0.02443630150844143, "net_debt_cr": -497.5, "net_debt_to_ebitda": -4.576816927322907, "interest_coverage": 1.9341637010676156, "fcf_cr": 532.5, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 63.0, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 823.6, "market_cap_cr": 3727.1864387, "fcf_yield": 0.14286916116429366, "pass_leverage": true, "pass_coverage": false, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "BAJAJELEC", "verdict": "Falls short"}, {"ticker": "TEAMLEASE.NS", "latest_year": "FY26", "revenue_cr": 11790.7, "ebitda_cr": 220.9, "ebitda_margin": 0.018735104785975388, "net_debt_cr": -947.1, "net_debt_to_ebitda": -4.287460389316433, "interest_coverage": 15.447552447552447, "fcf_cr": 272.4, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 32.5, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1609.8000000000002, "market_cap_cr": 2364.7393911520994, "fcf_yield": 0.11519239752981274, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "TEAMLEASE", "verdict": "Falls short"}, {"ticker": "MASTEK.NS", "latest_year": "FY26", "revenue_cr": 3698.8, "ebitda_cr": 625.9, "ebitda_margin": 0.1692170433654158, "net_debt_cr": -517.3, "net_debt_to_ebitda": -0.8264898546093625, "interest_coverage": 19.559375, "fcf_cr": 513.7, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 49.2, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 2395.0, "market_cap_cr": 5157.910260531005, "fcf_yield": 0.09959459820984067, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "MASTEK", "verdict": "Falls short"}, {"ticker": "CYIENT.NS", "latest_year": "FY26", "revenue_cr": 7268.2, "ebitda_cr": 983.5, "ebitda_margin": 0.13531548388872072, "net_debt_cr": -1266.8, "net_debt_to_ebitda": -1.2880528723945093, "interest_coverage": 16.175986842105264, "fcf_cr": 689.5, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 23.7, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 4217.3, "market_cap_cr": 10027.24894078396, "fcf_yield": 0.06876262911909843, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "CYIENT", "verdict": "Falls short"}, {"ticker": "JAMNAAUTO.NS", "latest_year": "FY26", "revenue_cr": 2611.6, "ebitda_cr": 393.5, "ebitda_margin": 0.15067391637310462, "net_debt_cr": -97.5, "net_debt_to_ebitda": -0.24777636594663277, "interest_coverage": 29.810606060606062, "fcf_cr": 253.7, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 53.1, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1278.0, "market_cap_cr": 5137.25825975, "fcf_yield": 0.049384318866683964, "pass_leverage": true, "pass_coverage": true, "pass_fcf": false, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "JAMNAAUTO", "verdict": "Falls short"}, {"ticker": "SONATSOFTW.NS", "latest_year": "FY26", "revenue_cr": 10701.2, "ebitda_cr": 782.9, "ebitda_margin": 0.07316001943707247, "net_debt_cr": 88.7, "net_debt_to_ebitda": 0.11329671733299272, "interest_coverage": 15.231517509727626, "fcf_cr": 424.4, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 43.4, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 2260.0, "market_cap_cr": 8615.227847625, "fcf_yield": 0.04926161066268216, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "SONATSOFTW", "verdict": "Falls short"}, {"ticker": "BSOFT.NS", "latest_year": "FY26", "revenue_cr": 5310.0, "ebitda_cr": 890.2, "ebitda_margin": 0.16764595103578156, "net_debt_cr": -2318.6, "net_debt_to_ebitda": -2.6045832397214106, "interest_coverage": 45.41836734693877, "fcf_cr": 436.6, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 41.0, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 4989.200000000001, "market_cap_cr": 9062.3428884, "fcf_yield": 0.04817738694911419, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "BSOFT", "verdict": "Falls short"}, {"ticker": "AARTIIND.NS", "latest_year": "FY26", "revenue_cr": 8286.0, "ebitda_cr": 1179.0, "ebitda_margin": 0.14228819695872555, "net_debt_cr": 4299.0, "net_debt_to_ebitda": 3.6463104325699747, "interest_coverage": 3.4676470588235295, "fcf_cr": 781.0, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 42.4, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 18012.729284865614, "fcf_yield": 0.04335822671005221, "pass_leverage": false, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 1, "name": "AARTIIND", "verdict": "Falls short"}, {"ticker": "JKPAPER.NS", "latest_year": "FY26", "revenue_cr": 7076.0, "ebitda_cr": 966.8, "ebitda_margin": 0.13663086489542114, "net_debt_cr": 1784.1, "net_debt_to_ebitda": 1.8453661563922217, "interest_coverage": 4.291167332445627, "fcf_cr": 269.6, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 57.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1116.2999999999997, "market_cap_cr": 6473.98649721861, "fcf_yield": 0.041643583920946865, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "JKPAPER", "verdict": "Falls short"}, {"ticker": "DEVYANI.NS", "latest_year": "FY26", "revenue_cr": 5611.5, "ebitda_cr": 872.8, "ebitda_margin": 0.15553773500846474, "net_debt_cr": 3277.4, "net_debt_to_ebitda": 3.755041246562787, "interest_coverage": 3.16575988393181, "fcf_cr": 460.2, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 64.2, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 14077.706571264338, "fcf_yield": 0.03268998381734766, "pass_leverage": false, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "DEVYANI", "verdict": "Falls short"}, {"ticker": "GREENLAM.NS", "latest_year": "FY26", "revenue_cr": 3046.1, "ebitda_cr": 327.0, "ebitda_margin": 0.10735038245625554, "net_debt_cr": 1043.2, "net_debt_to_ebitda": 3.1902140672782875, "interest_coverage": 3.399168399168399, "fcf_cr": 201.1, "fcf_positive_years": 1, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 78.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 6608.580878669678, "fcf_yield": 0.030430133744611426, "pass_leverage": false, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 2, "name": "GREENLAM", "verdict": "Falls short"}, {"ticker": "GREENPANEL.NS", "latest_year": "FY26", "revenue_cr": 1539.4, "ebitda_cr": 76.7, "ebitda_margin": 0.04982460698973626, "net_debt_cr": 95.4, "net_debt_to_ebitda": 1.24380704041721, "interest_coverage": 3.994791666666667, "fcf_cr": 70.6, "fcf_positive_years": 1, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 53.3, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 134.70000000000002, "market_cap_cr": 2356.898494477089, "fcf_yield": 0.029954620517360715, "pass_leverage": true, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "GREENPANEL", "verdict": "Falls short"}, {"ticker": "GALAXYSURF.NS", "latest_year": "FY26", "revenue_cr": 5248.3, "ebitda_cr": 485.5, "ebitda_margin": 0.09250614484690281, "net_debt_cr": -519.7, "net_debt_to_ebitda": -1.0704428424304842, "interest_coverage": 15.711974110032363, "fcf_cr": 195.7, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 72.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1976.2, "market_cap_cr": 6568.8328228, "fcf_yield": 0.029792202858434418, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "GALAXYSURF", "verdict": "Falls short"}, {"ticker": "KAJARIACER.NS", "latest_year": "FY26", "revenue_cr": 4830.4, "ebitda_cr": 874.8, "ebitda_margin": 0.18110301424312686, "net_debt_cr": -530.0, "net_debt_to_ebitda": -0.6058527663465936, "interest_coverage": 38.70796460176991, "fcf_cr": 536.3, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 48.2, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3154.3999999999996, "market_cap_cr": 18142.70616505164, "fcf_yield": 0.029560088507252384, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 4, "name": "KAJARIACER", "verdict": "Falls short"}, {"ticker": "VIPIND.NS", "latest_year": "FY26", "revenue_cr": 1858.1, "ebitda_cr": -140.4, "ebitda_margin": -0.07556105699370325, "net_debt_cr": 611.0, "net_debt_to_ebitda": null, "interest_coverage": -1.9971550497866288, "fcf_cr": 133.0, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 12.2, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 4597.507909088434, "fcf_yield": 0.02892871586736877, "pass_leverage": false, "pass_coverage": false, "pass_fcf": false, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 1, "name": "VIPIND", "verdict": "Falls short"}, {"ticker": "INTELLECT.NS", "latest_year": "FY26", "revenue_cr": 3038.2, "ebitda_cr": 675.3, "ebitda_margin": 0.22226976499242973, "net_debt_cr": -1517.8, "net_debt_to_ebitda": -2.2475936620761146, "interest_coverage": 107.19047619047619, "fcf_cr": 291.0, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 44.7, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3543.7, "market_cap_cr": 10563.631450517663, "fcf_yield": 0.027547344998082052, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "INTELLECT", "verdict": "Falls short"}, {"ticker": "SUNDRMFAST.NS", "latest_year": "FY26", "revenue_cr": 6103.2, "ebitda_cr": 1062.2, "ebitda_margin": 0.17403984794861713, "net_debt_cr": 524.8, "net_debt_to_ebitda": 0.49406891357559773, "interest_coverage": 27.879265091863516, "fcf_cr": 465.0, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 49.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 2661.8, "market_cap_cr": 17991.19138152436, "fcf_yield": 0.025845981521686275, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 4, "name": "SUNDRMFAST", "verdict": "Falls short"}, {"ticker": "RATNAMANI.NS", "latest_year": "FY26", "revenue_cr": 4494.0, "ebitda_cr": 869.3, "ebitda_margin": 0.19343569203382285, "net_debt_cr": -679.9, "net_debt_to_ebitda": -0.7821235476820431, "interest_coverage": 27.773162939297123, "fcf_cr": 450.8, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 67.2, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3287.7999999999997, "market_cap_cr": 18214.807697753906, "fcf_yield": 0.024749094664095125, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 5, "name": "RATNAMANI", "verdict": "Falls short"}, {"ticker": "RELAXO.NS", "latest_year": "FY26", "revenue_cr": 2702.2, "ebitda_cr": 420.2, "ebitda_margin": 0.15550292354377915, "net_debt_cr": 4.2, "net_debt_to_ebitda": 0.00999524036173251, "interest_coverage": 19.544186046511626, "fcf_cr": 211.1, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 71.3, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1256.3999999999999, "market_cap_cr": 8734.010441750055, "fcf_yield": 0.024169881798046185, "pass_leverage": true, "pass_coverage": true, "pass_fcf": false, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "RELAXO", "verdict": "Falls short"}, {"ticker": "CERA.NS", "latest_year": "FY26", "revenue_cr": 2050.1, "ebitda_cr": 314.2, "ebitda_margin": 0.15326081654553436, "net_debt_cr": -805.1, "net_debt_to_ebitda": -2.562380649267982, "interest_coverage": 48.33846153846154, "fcf_cr": 190.6, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 57.0, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1747.6999999999998, "market_cap_cr": 8003.952672, "fcf_yield": 0.023813234261962912, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "CERA", "verdict": "Falls short"}, {"ticker": "KIRLOSENG.NS", "latest_year": "FY26", "revenue_cr": 7701.0, "ebitda_cr": 1453.3, "ebitda_margin": 0.1887157512011427, "net_debt_cr": 3757.3, "net_debt_to_ebitda": 2.5853574623271176, "interest_coverage": 2.779839326702372, "fcf_cr": 592.4, "fcf_positive_years": 1, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 42.9, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 602.5999999999995, "market_cap_cr": 27891.1422564, "fcf_yield": 0.021239718135389947, "pass_leverage": false, "pass_coverage": false, "pass_fcf": false, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 1, "name": "KIRLOSENG", "verdict": "Falls short"}, {"ticker": "VGUARD.NS", "latest_year": "FY26", "revenue_cr": 5965.8, "ebitda_cr": 528.2, "ebitda_margin": 0.08853799993295115, "net_debt_cr": -76.5, "net_debt_to_ebitda": -0.14483150321847785, "interest_coverage": 42.59677419354839, "fcf_cr": 278.7, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 55.7, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1661.1000000000001, "market_cap_cr": 13355.2766742, "fcf_yield": 0.020868156220110245, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "VGUARD", "verdict": "Falls short"}, {"ticker": "GRINDWELL.NS", "latest_year": "FY26", "revenue_cr": 3060.4, "ebitda_cr": 668.6, "ebitda_margin": 0.21846817409488956, "net_debt_cr": -1125.2, "net_debt_to_ebitda": -1.6829195333532756, "interest_coverage": 81.53658536585367, "fcf_cr": 423.2, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 58.3, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3131.0, "market_cap_cr": 22667.706140625, "fcf_yield": 0.01866973205734047, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 5, "name": "GRINDWELL", "verdict": "Falls short"}, {"ticker": "FINEORG.NS", "latest_year": "FY26", "revenue_cr": 2365.8, "ebitda_cr": 603.5, "ebitda_margin": 0.25509341448981315, "net_debt_cr": -1384.5, "net_debt_to_ebitda": -2.2941176470588234, "interest_coverage": 147.19512195121953, "fcf_cr": 287.6, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 75.0, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3195.0, "market_cap_cr": 15445.882110452343, "fcf_yield": 0.0186198494811364, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "FINEORG", "verdict": "Falls short"}, {"ticker": "SUMICHEM.NS", "latest_year": "FY26", "revenue_cr": 3238.3, "ebitda_cr": 801.5, "ebitda_margin": 0.24750640768304355, "net_debt_cr": -1288.0, "net_debt_to_ebitda": -1.6069868995633187, "interest_coverage": 102.75641025641026, "fcf_cr": 401.3, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 75.5, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3692.5, "market_cap_cr": 23622.0719562, "fcf_yield": 0.016988348894376823, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 4, "name": "SUMICHEM", "verdict": "Falls short"}, {"ticker": "TTKPRESTIG.NS", "latest_year": "FY26", "revenue_cr": 2973.6, "ebitda_cr": 315.7, "ebitda_margin": 0.10616760828625235, "net_debt_cr": null, "net_debt_to_ebitda": null, "interest_coverage": 21.046666666666667, "fcf_cr": 121.7, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 70.9, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 7411.102833512989, "fcf_yield": 0.016421307696564795, "pass_leverage": false, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "TTKPRESTIG", "verdict": "Falls short"}, {"ticker": "WESTLIFE.NS", "latest_year": "FY26", "revenue_cr": 2600.4, "ebitda_cr": 411.4, "ebitda_margin": 0.15820642978003382, "net_debt_cr": 1787.9, "net_debt_to_ebitda": 4.3458920758386, "interest_coverage": 2.8274914089347076, "fcf_cr": 115.5, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 62.7, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 7136.04465795, "fcf_yield": 0.016185436826173134, "pass_leverage": false, "pass_coverage": false, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 3, "name": "WESTLIFE", "verdict": "Falls short"}, {"ticker": "ELGIEQUIP.NS", "latest_year": "FY26", "revenue_cr": 3950.7, "ebitda_cr": 688.6, "ebitda_margin": 0.17429822563090086, "net_debt_cr": -417.2, "net_debt_to_ebitda": -0.6058669764740052, "interest_coverage": 27.110236220472444, "fcf_cr": 299.1, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 46.2, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 2483.0, "market_cap_cr": 18955.469687323744, "fcf_yield": 0.015779086719229108, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 4, "name": "ELGIEQUIP", "verdict": "Falls short"}, {"ticker": "CAPLIPOINT.NS", "latest_year": "FY26", "revenue_cr": 2187.2, "ebitda_cr": 876.4, "ebitda_margin": 0.4006949524506218, "net_debt_cr": -1076.3, "net_debt_to_ebitda": -1.2280921953445916, "interest_coverage": 973.7777777777777, "fcf_cr": 275.1, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 73.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3705.5, "market_cap_cr": 18074.06144603086, "fcf_yield": 0.015220707355756674, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 5, "name": "CAPLIPOINT", "verdict": "Falls short"}, {"ticker": "GRANULES.NS", "latest_year": "FY26", "revenue_cr": 5338.9, "ebitda_cr": 1195.5, "ebitda_margin": 0.22392253085841654, "net_debt_cr": 558.5, "net_debt_to_ebitda": 0.4671685487243831, "interest_coverage": 10.450174825174825, "fcf_cr": 235.0, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 39.3, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3028.0, "market_cap_cr": 18543.881978062047, "fcf_yield": 0.012672643208040898, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 4, "name": "GRANULES", "verdict": "Falls short"}, {"ticker": "ERIS.NS", "latest_year": "FY26", "revenue_cr": 3114.9, "ebitda_cr": 1110.7, "ebitda_margin": 0.35657645510289254, "net_debt_cr": 2282.2, "net_debt_to_ebitda": 2.0547402538939403, "interest_coverage": 5.763881681370005, "fcf_cr": 241.1, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 69.7, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1049.9000000000005, "market_cap_cr": 19073.7827884, "fcf_yield": 0.012640387209747847, "pass_leverage": false, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 4, "name": "ERIS", "verdict": "Falls short"}, {"ticker": "SUPRAJIT.NS", "latest_year": "FY26", "revenue_cr": 3824.8, "ebitda_cr": 504.6, "ebitda_margin": 0.13192846684793977, "net_debt_cr": 645.9, "net_debt_to_ebitda": 1.2800237812128417, "interest_coverage": 7.946456692913386, "fcf_cr": 53.0, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 50.5, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 867.9000000000002, "market_cap_cr": 6335.249507917624, "fcf_yield": 0.008365889920162108, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "SUPRAJIT", "verdict": "Falls short"}, {"ticker": "GABRIEL.NS", "latest_year": "FY26", "revenue_cr": 4666.9, "ebitda_cr": 450.4, "ebitda_margin": 0.09650946024127366, "net_debt_cr": -202.8, "net_debt_to_ebitda": -0.45026642984014215, "interest_coverage": 31.718309859154928, "fcf_cr": 105.5, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 46.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1553.9999999999998, "market_cap_cr": 20140.42024641049, "fcf_yield": 0.005238222376159339, "pass_leverage": true, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 2, "name": "GABRIEL", "verdict": "Falls short"}, {"ticker": "CARBORUNIV.NS", "latest_year": "FY26", "revenue_cr": 5149.4, "ebitda_cr": 547.2, "ebitda_margin": 0.10626480755039423, "net_debt_cr": -306.0, "net_debt_to_ebitda": -0.5592105263157894, "interest_coverage": 29.106382978723406, "fcf_cr": 57.0, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 40.4, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1947.6000000000001, "market_cap_cr": 20297.0826381, "fcf_yield": 0.002808285358852721, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 3, "name": "CARBORUNIV", "verdict": "Falls short"}, {"ticker": "CENTURYPLY.NS", "latest_year": "FY26", "revenue_cr": 5397.2, "ebitda_cr": 653.0, "ebitda_margin": 0.12098866078707478, "net_debt_cr": 1664.6, "net_debt_to_ebitda": 2.549157733537519, "interest_coverage": 5.753303964757709, "fcf_cr": 45.3, "fcf_positive_years": 1, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 71.9, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 294.4000000000001, "market_cap_cr": 16706.298254257264, "fcf_yield": 0.0027115522128581776, "pass_leverage": false, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 3, "name": "CENTURYPLY", "verdict": "Falls short"}, {"ticker": "TRITURBINE.NS", "latest_year": "FY26", "revenue_cr": 2181.1, "ebitda_cr": 509.8, "ebitda_margin": 0.2337352711934345, "net_debt_cr": -861.2, "net_debt_to_ebitda": -1.689289917614751, "interest_coverage": 196.07692307692307, "fcf_cr": 39.4, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 59.8, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 2390.6000000000004, "market_cap_cr": 21052.594984275, "fcf_yield": 0.0018715032531347981, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 5, "name": "TRITURBINE", "verdict": "Falls short"}, {"ticker": "KSB.NS", "latest_year": "FY25", "revenue_cr": 2679.6, "ebitda_cr": 421.8, "ebitda_margin": 0.1574115539632781, "net_debt_cr": -267.9, "net_debt_to_ebitda": -0.6351351351351351, "interest_coverage": 140.6, "fcf_cr": -0.9, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 70.0, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1533.3000000000002, "market_cap_cr": 15062.22450735022, "fcf_yield": -5.975213020897469e-05, "pass_leverage": true, "pass_coverage": true, "pass_fcf": false, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "KSB", "verdict": "Falls short"}, {"ticker": "SYMPHONY.NS", "latest_year": "FY26", "revenue_cr": 1131.0, "ebitda_cr": -23.0, "ebitda_margin": -0.020335985853227233, "net_debt_cr": 4.0, "net_debt_to_ebitda": null, "interest_coverage": -1.4375, "fcf_cr": -100.0, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 75.9, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 4616.778138172607, "fcf_yield": -0.021660126825930076, "pass_leverage": false, "pass_coverage": false, "pass_fcf": false, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 1, "name": "SYMPHONY", "verdict": "Falls short"}, {"ticker": "CRAFTSMAN.NS", "latest_year": "FY26", "revenue_cr": 8004.4, "ebitda_cr": 1270.0, "ebitda_margin": 0.1586627354954775, "net_debt_cr": 3477.9, "net_debt_to_ebitda": 2.738503937007874, "interest_coverage": 4.328561690524881, "fcf_cr": -666.7, "fcf_positive_years": 0, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 50.3, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 332.0999999999999, "market_cap_cr": 22247.7167058, "fcf_yield": -0.02996712016861446, "pass_leverage": false, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 2, "name": "CRAFTSMAN", "verdict": "Falls short"}, {"ticker": "BALAMINES.NS", "latest_year": "FY26", "revenue_cr": 1425.0, "ebitda_cr": 294.2, "ebitda_margin": 0.2064561403508772, "net_debt_cr": -138.3, "net_debt_to_ebitda": -0.4700883752549287, "interest_coverage": 54.481481481481474, "fcf_cr": -355.9, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 67.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1020.8999999999999, "market_cap_cr": 6728.06765, "fcf_yield": -0.05289780342800209, "pass_leverage": true, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "BALAMINES", "verdict": "Falls short"}]}}, "irr": {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "layer": [{"data": {"name": "data-07a70077ab6fee40612ec9fbc165c11b"}, "mark": {"type": "bar", "color": "#2e8b57"}, "encoding": {"tooltip": [{"field": "name", "title": "Company", "type": "nominal"}, {"field": "irr", "format": ".1%", "title": "IRR", "type": "quantitative"}, {"field": "moic", "format": ".2f", "title": "MOIC", "type": "quantitative"}, {"field": "implied_mult", "format": ".1f", "title": "Implied entry (x)", "type": "quantitative"}, {"field": "equity_cr", "format": ",.0f", "title": "Equity check (\u20b9cr)", "type": "quantitative"}], "x": {"axis": {"format": "%"}, "field": "irr", "title": "Base-case IRR", "type": "quantitative"}, "y": {"field": "name", "sort": "-x", "title": null, "type": "nominal"}}}, {"data": {"name": "data-c5e8595328ccf41cc614b129483a4219"}, "mark": {"type": "rule", "color": "#c25b5b", "strokeDash": [4, 4]}, "encoding": {"x": {"field": "h", "type": "quantitative"}}}], "height": 170, "width": "container", "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json", "datasets": {"data-07a70077ab6fee40612ec9fbc165c11b": [{"name": "NATCOPHARM", "implied_mult": 9.749729997188744, "irr": 0.15634188872958066, "moic": 2.067432274330572, "equity_cr": 12172.9044238875, "entry_ev_cr": 16907.006788125, "degenerate": false}, {"name": "ZENSARTECH", "implied_mult": 9.12914694859454, "irr": 0.14481868149097843, "moic": 1.966452854829484, "equity_cr": 7185.709796500991, "entry_ev_cr": 10271.203231863716, "degenerate": false}, {"name": "TANLA", "implied_mult": 9.446478116417543, "irr": 0.13678501248068864, "moic": 1.8984173565013445, "equity_cr": 5106.620243525625, "entry_ev_cr": 7188.76984659375, "degenerate": false}, {"name": "INDIAMART", "implied_mult": 18.501136819715125, "irr": 0.11424579741539276, "moic": 1.7175327370931555, "equity_cr": 10833.820802420745, "entry_ev_cr": 12569.672355314455, "degenerate": false}, {"name": "ALKYLAMINE", "implied_mult": 35.411380101673586, "irr": 0.09087151294306772, "moic": 1.5447848571803173, "equity_cr": 10482.857112830688, "entry_ev_cr": 11182.913836108519, "degenerate": false}], "data-c5e8595328ccf41cc614b129483a4219": [{"h": 0.2}]}}, "bubble": {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-6048ee0086cbfb9ac468dc0bddd08204"}, "mark": {"type": "circle", "opacity": 0.75, "stroke": "#33373d", "strokeWidth": 0.5}, "encoding": {"color": {"field": "verdict", "scale": {"domain": ["Passes all", "Falls short"], "range": ["#2e8b57", "#b0b7c0"]}, "title": null, "type": "nominal"}, "size": {"field": "ebitda_cr", "scale": {"range": [60, 1200]}, "title": "EBITDA (\u20b9cr)", "type": "quantitative"}, "tooltip": [{"field": "name", "title": "Company", "type": "nominal"}, {"field": "fcf_yield", "format": ".1%", "title": "FCF yield", "type": "quantitative"}, {"field": "unused_debt_capacity_cr", "format": ",.0f", "title": "Unused debt cap (\u20b9cr)", "type": "quantitative"}, {"field": "ebitda_cr", "format": ",.0f", "title": "EBITDA (\u20b9cr)", "type": "quantitative"}, {"field": "net_debt_to_ebitda", "format": ".2f", "title": "Net debt/EBITDA", "type": "quantitative"}], "x": {"field": "unused_debt_capacity_cr", "title": "Unused debt capacity (\u20b9cr)", "type": "quantitative"}, "y": {"axis": {"format": "%"}, "field": "fcf_yield", "title": "FCF yield", "type": "quantitative"}}, "height": 380, "params": [{"name": "param_1e9efca18e7a2868", "select": {"type": "interval", "encodings": ["x", "y"]}, "bind": "scales"}], "width": "container", "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json", "datasets": {"data-6048ee0086cbfb9ac468dc0bddd08204": [{"ticker": "NATCOPHARM.NS", "latest_year": "FY26", "revenue_cr": 4078.3, "ebitda_cr": 1734.1, "ebitda_margin": 0.42520167716940876, "net_debt_cr": -2157.0, "net_debt_to_ebitda": -1.2438729023701056, "interest_coverage": 47.25068119891007, "fcf_cr": 1377.2, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 51.0, "promoter_pledge_pct": 0.0, "unused_debt_capacity_cr": 7359.299999999999, "market_cap_cr": 15251.2054305, "fcf_yield": 0.09030105890815802, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": true, "pass_mcap": true, "passes_screen": true, "criteria_passed": 7, "name": "NATCOPHARM", "verdict": "Passes all"}, {"ticker": "ZENSARTECH.NS", "latest_year": "FY26", "revenue_cr": 5687.4, "ebitda_cr": 1125.1, "ebitda_margin": 0.19782325843091747, "net_debt_cr": -2883.9, "net_debt_to_ebitda": -2.5632388232157144, "interest_coverage": 92.98347107438016, "fcf_cr": 717.1, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 50.2, "promoter_pledge_pct": 0.0, "unused_debt_capacity_cr": 6259.2, "market_cap_cr": 10524.082585490973, "fcf_yield": 0.06813895597784742, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": true, "pass_mcap": true, "passes_screen": true, "criteria_passed": 7, "name": "ZENSARTECH", "verdict": "Passes all"}, {"ticker": "TANLA.NS", "latest_year": "FY26", "revenue_cr": 4417.7, "ebitda_cr": 761.0, "ebitda_margin": 0.17226158408221473, "net_debt_cr": -1563.6, "net_debt_to_ebitda": -2.0546649145860707, "interest_coverage": 172.95454545454544, "fcf_cr": 476.5, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 57.0, "promoter_pledge_pct": 0.0, "unused_debt_capacity_cr": 3846.6, "market_cap_cr": 7001.895877275, "fcf_yield": 0.06805299712417952, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": true, "pass_mcap": true, "passes_screen": true, "criteria_passed": 7, "name": "TANLA", "verdict": "Passes all"}, {"ticker": "JUSTDIAL.NS", "latest_year": "FY26", "revenue_cr": 1213.9, "ebitda_cr": 670.3, "ebitda_margin": 0.552187165334871, "net_debt_cr": -5780.1, "net_debt_to_ebitda": -8.623153811726095, "interest_coverage": 73.65934065934066, "fcf_cr": 264.5, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 74.2, "promoter_pledge_pct": 0.0, "unused_debt_capacity_cr": 7791.0, "market_cap_cr": 4624.966256340381, "fcf_yield": 0.05718960644034886, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": true, "pass_mcap": true, "passes_screen": true, "criteria_passed": 7, "name": "JUSTDIAL", "verdict": "Passes all"}, {"ticker": "INDIAMART.NS", "latest_year": "FY26", "revenue_cr": 1569.0, "ebitda_cr": 679.4, "ebitda_margin": 0.4330146590184831, "net_debt_cr": -3097.2, "net_debt_to_ebitda": -4.5587282896673536, "interest_coverage": 226.46666666666667, "fcf_cr": 687.2, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 56.0, "promoter_pledge_pct": 0.0, "unused_debt_capacity_cr": 5135.4, "market_cap_cr": 12533.497884251565, "fcf_yield": 0.05482906737978326, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": true, "pass_mcap": true, "passes_screen": true, "criteria_passed": 7, "name": "INDIAMART", "verdict": "Passes all"}, {"ticker": "ALKYLAMINE.NS", "latest_year": "FY26", "revenue_cr": 1511.9, "ebitda_cr": 315.8, "ebitda_margin": 0.2088762484291289, "net_debt_cr": -249.7, "net_debt_to_ebitda": -0.7906903103229892, "interest_coverage": 451.14285714285717, "fcf_cr": 110.1, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 72.3, "promoter_pledge_pct": 0.0, "unused_debt_capacity_cr": 1197.1000000000001, "market_cap_cr": 9146.091068886815, "fcf_yield": 0.012037929555997789, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": true, "pass_mcap": true, "passes_screen": true, "criteria_passed": 7, "name": "ALKYLAMINE", "verdict": "Passes all"}, {"ticker": "BAJAJELEC.NS", "latest_year": "FY26", "revenue_cr": 4448.3, "ebitda_cr": 108.7, "ebitda_margin": 0.02443630150844143, "net_debt_cr": -497.5, "net_debt_to_ebitda": -4.576816927322907, "interest_coverage": 1.9341637010676156, "fcf_cr": 532.5, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 63.0, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 823.6, "market_cap_cr": 3727.1864387, "fcf_yield": 0.14286916116429366, "pass_leverage": true, "pass_coverage": false, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "BAJAJELEC", "verdict": "Falls short"}, {"ticker": "TEAMLEASE.NS", "latest_year": "FY26", "revenue_cr": 11790.7, "ebitda_cr": 220.9, "ebitda_margin": 0.018735104785975388, "net_debt_cr": -947.1, "net_debt_to_ebitda": -4.287460389316433, "interest_coverage": 15.447552447552447, "fcf_cr": 272.4, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 32.5, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1609.8000000000002, "market_cap_cr": 2364.7393911520994, "fcf_yield": 0.11519239752981274, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "TEAMLEASE", "verdict": "Falls short"}, {"ticker": "MASTEK.NS", "latest_year": "FY26", "revenue_cr": 3698.8, "ebitda_cr": 625.9, "ebitda_margin": 0.1692170433654158, "net_debt_cr": -517.3, "net_debt_to_ebitda": -0.8264898546093625, "interest_coverage": 19.559375, "fcf_cr": 513.7, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 49.2, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 2395.0, "market_cap_cr": 5157.910260531005, "fcf_yield": 0.09959459820984067, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "MASTEK", "verdict": "Falls short"}, {"ticker": "CYIENT.NS", "latest_year": "FY26", "revenue_cr": 7268.2, "ebitda_cr": 983.5, "ebitda_margin": 0.13531548388872072, "net_debt_cr": -1266.8, "net_debt_to_ebitda": -1.2880528723945093, "interest_coverage": 16.175986842105264, "fcf_cr": 689.5, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 23.7, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 4217.3, "market_cap_cr": 10027.24894078396, "fcf_yield": 0.06876262911909843, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "CYIENT", "verdict": "Falls short"}, {"ticker": "JAMNAAUTO.NS", "latest_year": "FY26", "revenue_cr": 2611.6, "ebitda_cr": 393.5, "ebitda_margin": 0.15067391637310462, "net_debt_cr": -97.5, "net_debt_to_ebitda": -0.24777636594663277, "interest_coverage": 29.810606060606062, "fcf_cr": 253.7, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 53.1, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1278.0, "market_cap_cr": 5137.25825975, "fcf_yield": 0.049384318866683964, "pass_leverage": true, "pass_coverage": true, "pass_fcf": false, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "JAMNAAUTO", "verdict": "Falls short"}, {"ticker": "SONATSOFTW.NS", "latest_year": "FY26", "revenue_cr": 10701.2, "ebitda_cr": 782.9, "ebitda_margin": 0.07316001943707247, "net_debt_cr": 88.7, "net_debt_to_ebitda": 0.11329671733299272, "interest_coverage": 15.231517509727626, "fcf_cr": 424.4, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 43.4, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 2260.0, "market_cap_cr": 8615.227847625, "fcf_yield": 0.04926161066268216, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "SONATSOFTW", "verdict": "Falls short"}, {"ticker": "BSOFT.NS", "latest_year": "FY26", "revenue_cr": 5310.0, "ebitda_cr": 890.2, "ebitda_margin": 0.16764595103578156, "net_debt_cr": -2318.6, "net_debt_to_ebitda": -2.6045832397214106, "interest_coverage": 45.41836734693877, "fcf_cr": 436.6, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 41.0, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 4989.200000000001, "market_cap_cr": 9062.3428884, "fcf_yield": 0.04817738694911419, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "BSOFT", "verdict": "Falls short"}, {"ticker": "AARTIIND.NS", "latest_year": "FY26", "revenue_cr": 8286.0, "ebitda_cr": 1179.0, "ebitda_margin": 0.14228819695872555, "net_debt_cr": 4299.0, "net_debt_to_ebitda": 3.6463104325699747, "interest_coverage": 3.4676470588235295, "fcf_cr": 781.0, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 42.4, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 18012.729284865614, "fcf_yield": 0.04335822671005221, "pass_leverage": false, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 1, "name": "AARTIIND", "verdict": "Falls short"}, {"ticker": "JKPAPER.NS", "latest_year": "FY26", "revenue_cr": 7076.0, "ebitda_cr": 966.8, "ebitda_margin": 0.13663086489542114, "net_debt_cr": 1784.1, "net_debt_to_ebitda": 1.8453661563922217, "interest_coverage": 4.291167332445627, "fcf_cr": 269.6, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 57.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1116.2999999999997, "market_cap_cr": 6473.98649721861, "fcf_yield": 0.041643583920946865, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "JKPAPER", "verdict": "Falls short"}, {"ticker": "DEVYANI.NS", "latest_year": "FY26", "revenue_cr": 5611.5, "ebitda_cr": 872.8, "ebitda_margin": 0.15553773500846474, "net_debt_cr": 3277.4, "net_debt_to_ebitda": 3.755041246562787, "interest_coverage": 3.16575988393181, "fcf_cr": 460.2, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 64.2, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 14077.706571264338, "fcf_yield": 0.03268998381734766, "pass_leverage": false, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "DEVYANI", "verdict": "Falls short"}, {"ticker": "GREENLAM.NS", "latest_year": "FY26", "revenue_cr": 3046.1, "ebitda_cr": 327.0, "ebitda_margin": 0.10735038245625554, "net_debt_cr": 1043.2, "net_debt_to_ebitda": 3.1902140672782875, "interest_coverage": 3.399168399168399, "fcf_cr": 201.1, "fcf_positive_years": 1, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 78.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 6608.580878669678, "fcf_yield": 0.030430133744611426, "pass_leverage": false, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 2, "name": "GREENLAM", "verdict": "Falls short"}, {"ticker": "GREENPANEL.NS", "latest_year": "FY26", "revenue_cr": 1539.4, "ebitda_cr": 76.7, "ebitda_margin": 0.04982460698973626, "net_debt_cr": 95.4, "net_debt_to_ebitda": 1.24380704041721, "interest_coverage": 3.994791666666667, "fcf_cr": 70.6, "fcf_positive_years": 1, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 53.3, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 134.70000000000002, "market_cap_cr": 2356.898494477089, "fcf_yield": 0.029954620517360715, "pass_leverage": true, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "GREENPANEL", "verdict": "Falls short"}, {"ticker": "GALAXYSURF.NS", "latest_year": "FY26", "revenue_cr": 5248.3, "ebitda_cr": 485.5, "ebitda_margin": 0.09250614484690281, "net_debt_cr": -519.7, "net_debt_to_ebitda": -1.0704428424304842, "interest_coverage": 15.711974110032363, "fcf_cr": 195.7, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 72.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1976.2, "market_cap_cr": 6568.8328228, "fcf_yield": 0.029792202858434418, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "GALAXYSURF", "verdict": "Falls short"}, {"ticker": "KAJARIACER.NS", "latest_year": "FY26", "revenue_cr": 4830.4, "ebitda_cr": 874.8, "ebitda_margin": 0.18110301424312686, "net_debt_cr": -530.0, "net_debt_to_ebitda": -0.6058527663465936, "interest_coverage": 38.70796460176991, "fcf_cr": 536.3, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 48.2, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3154.3999999999996, "market_cap_cr": 18142.70616505164, "fcf_yield": 0.029560088507252384, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 4, "name": "KAJARIACER", "verdict": "Falls short"}, {"ticker": "VIPIND.NS", "latest_year": "FY26", "revenue_cr": 1858.1, "ebitda_cr": -140.4, "ebitda_margin": -0.07556105699370325, "net_debt_cr": 611.0, "net_debt_to_ebitda": null, "interest_coverage": -1.9971550497866288, "fcf_cr": 133.0, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 12.2, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 4597.507909088434, "fcf_yield": 0.02892871586736877, "pass_leverage": false, "pass_coverage": false, "pass_fcf": false, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 1, "name": "VIPIND", "verdict": "Falls short"}, {"ticker": "INTELLECT.NS", "latest_year": "FY26", "revenue_cr": 3038.2, "ebitda_cr": 675.3, "ebitda_margin": 0.22226976499242973, "net_debt_cr": -1517.8, "net_debt_to_ebitda": -2.2475936620761146, "interest_coverage": 107.19047619047619, "fcf_cr": 291.0, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 44.7, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3543.7, "market_cap_cr": 10563.631450517663, "fcf_yield": 0.027547344998082052, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "INTELLECT", "verdict": "Falls short"}, {"ticker": "SUNDRMFAST.NS", "latest_year": "FY26", "revenue_cr": 6103.2, "ebitda_cr": 1062.2, "ebitda_margin": 0.17403984794861713, "net_debt_cr": 524.8, "net_debt_to_ebitda": 0.49406891357559773, "interest_coverage": 27.879265091863516, "fcf_cr": 465.0, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 49.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 2661.8, "market_cap_cr": 17991.19138152436, "fcf_yield": 0.025845981521686275, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 4, "name": "SUNDRMFAST", "verdict": "Falls short"}, {"ticker": "RATNAMANI.NS", "latest_year": "FY26", "revenue_cr": 4494.0, "ebitda_cr": 869.3, "ebitda_margin": 0.19343569203382285, "net_debt_cr": -679.9, "net_debt_to_ebitda": -0.7821235476820431, "interest_coverage": 27.773162939297123, "fcf_cr": 450.8, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 67.2, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3287.7999999999997, "market_cap_cr": 18214.807697753906, "fcf_yield": 0.024749094664095125, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 5, "name": "RATNAMANI", "verdict": "Falls short"}, {"ticker": "RELAXO.NS", "latest_year": "FY26", "revenue_cr": 2702.2, "ebitda_cr": 420.2, "ebitda_margin": 0.15550292354377915, "net_debt_cr": 4.2, "net_debt_to_ebitda": 0.00999524036173251, "interest_coverage": 19.544186046511626, "fcf_cr": 211.1, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 71.3, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1256.3999999999999, "market_cap_cr": 8734.010441750055, "fcf_yield": 0.024169881798046185, "pass_leverage": true, "pass_coverage": true, "pass_fcf": false, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "RELAXO", "verdict": "Falls short"}, {"ticker": "CERA.NS", "latest_year": "FY26", "revenue_cr": 2050.1, "ebitda_cr": 314.2, "ebitda_margin": 0.15326081654553436, "net_debt_cr": -805.1, "net_debt_to_ebitda": -2.562380649267982, "interest_coverage": 48.33846153846154, "fcf_cr": 190.6, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 57.0, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1747.6999999999998, "market_cap_cr": 8003.952672, "fcf_yield": 0.023813234261962912, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "CERA", "verdict": "Falls short"}, {"ticker": "KIRLOSENG.NS", "latest_year": "FY26", "revenue_cr": 7701.0, "ebitda_cr": 1453.3, "ebitda_margin": 0.1887157512011427, "net_debt_cr": 3757.3, "net_debt_to_ebitda": 2.5853574623271176, "interest_coverage": 2.779839326702372, "fcf_cr": 592.4, "fcf_positive_years": 1, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 42.9, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 602.5999999999995, "market_cap_cr": 27891.1422564, "fcf_yield": 0.021239718135389947, "pass_leverage": false, "pass_coverage": false, "pass_fcf": false, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 1, "name": "KIRLOSENG", "verdict": "Falls short"}, {"ticker": "VGUARD.NS", "latest_year": "FY26", "revenue_cr": 5965.8, "ebitda_cr": 528.2, "ebitda_margin": 0.08853799993295115, "net_debt_cr": -76.5, "net_debt_to_ebitda": -0.14483150321847785, "interest_coverage": 42.59677419354839, "fcf_cr": 278.7, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 55.7, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1661.1000000000001, "market_cap_cr": 13355.2766742, "fcf_yield": 0.020868156220110245, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "VGUARD", "verdict": "Falls short"}, {"ticker": "GRINDWELL.NS", "latest_year": "FY26", "revenue_cr": 3060.4, "ebitda_cr": 668.6, "ebitda_margin": 0.21846817409488956, "net_debt_cr": -1125.2, "net_debt_to_ebitda": -1.6829195333532756, "interest_coverage": 81.53658536585367, "fcf_cr": 423.2, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 58.3, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3131.0, "market_cap_cr": 22667.706140625, "fcf_yield": 0.01866973205734047, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 5, "name": "GRINDWELL", "verdict": "Falls short"}, {"ticker": "FINEORG.NS", "latest_year": "FY26", "revenue_cr": 2365.8, "ebitda_cr": 603.5, "ebitda_margin": 0.25509341448981315, "net_debt_cr": -1384.5, "net_debt_to_ebitda": -2.2941176470588234, "interest_coverage": 147.19512195121953, "fcf_cr": 287.6, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 75.0, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3195.0, "market_cap_cr": 15445.882110452343, "fcf_yield": 0.0186198494811364, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "FINEORG", "verdict": "Falls short"}, {"ticker": "SUMICHEM.NS", "latest_year": "FY26", "revenue_cr": 3238.3, "ebitda_cr": 801.5, "ebitda_margin": 0.24750640768304355, "net_debt_cr": -1288.0, "net_debt_to_ebitda": -1.6069868995633187, "interest_coverage": 102.75641025641026, "fcf_cr": 401.3, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 75.5, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3692.5, "market_cap_cr": 23622.0719562, "fcf_yield": 0.016988348894376823, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 4, "name": "SUMICHEM", "verdict": "Falls short"}, {"ticker": "TTKPRESTIG.NS", "latest_year": "FY26", "revenue_cr": 2973.6, "ebitda_cr": 315.7, "ebitda_margin": 0.10616760828625235, "net_debt_cr": null, "net_debt_to_ebitda": null, "interest_coverage": 21.046666666666667, "fcf_cr": 121.7, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 70.9, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 7411.102833512989, "fcf_yield": 0.016421307696564795, "pass_leverage": false, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "TTKPRESTIG", "verdict": "Falls short"}, {"ticker": "WESTLIFE.NS", "latest_year": "FY26", "revenue_cr": 2600.4, "ebitda_cr": 411.4, "ebitda_margin": 0.15820642978003382, "net_debt_cr": 1787.9, "net_debt_to_ebitda": 4.3458920758386, "interest_coverage": 2.8274914089347076, "fcf_cr": 115.5, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 62.7, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 7136.04465795, "fcf_yield": 0.016185436826173134, "pass_leverage": false, "pass_coverage": false, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 3, "name": "WESTLIFE", "verdict": "Falls short"}, {"ticker": "ELGIEQUIP.NS", "latest_year": "FY26", "revenue_cr": 3950.7, "ebitda_cr": 688.6, "ebitda_margin": 0.17429822563090086, "net_debt_cr": -417.2, "net_debt_to_ebitda": -0.6058669764740052, "interest_coverage": 27.110236220472444, "fcf_cr": 299.1, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 46.2, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 2483.0, "market_cap_cr": 18955.469687323744, "fcf_yield": 0.015779086719229108, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 4, "name": "ELGIEQUIP", "verdict": "Falls short"}, {"ticker": "CAPLIPOINT.NS", "latest_year": "FY26", "revenue_cr": 2187.2, "ebitda_cr": 876.4, "ebitda_margin": 0.4006949524506218, "net_debt_cr": -1076.3, "net_debt_to_ebitda": -1.2280921953445916, "interest_coverage": 973.7777777777777, "fcf_cr": 275.1, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 73.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3705.5, "market_cap_cr": 18074.06144603086, "fcf_yield": 0.015220707355756674, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 5, "name": "CAPLIPOINT", "verdict": "Falls short"}, {"ticker": "GRANULES.NS", "latest_year": "FY26", "revenue_cr": 5338.9, "ebitda_cr": 1195.5, "ebitda_margin": 0.22392253085841654, "net_debt_cr": 558.5, "net_debt_to_ebitda": 0.4671685487243831, "interest_coverage": 10.450174825174825, "fcf_cr": 235.0, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 39.3, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 3028.0, "market_cap_cr": 18543.881978062047, "fcf_yield": 0.012672643208040898, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 4, "name": "GRANULES", "verdict": "Falls short"}, {"ticker": "ERIS.NS", "latest_year": "FY26", "revenue_cr": 3114.9, "ebitda_cr": 1110.7, "ebitda_margin": 0.35657645510289254, "net_debt_cr": 2282.2, "net_debt_to_ebitda": 2.0547402538939403, "interest_coverage": 5.763881681370005, "fcf_cr": 241.1, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 69.7, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1049.9000000000005, "market_cap_cr": 19073.7827884, "fcf_yield": 0.012640387209747847, "pass_leverage": false, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 4, "name": "ERIS", "verdict": "Falls short"}, {"ticker": "SUPRAJIT.NS", "latest_year": "FY26", "revenue_cr": 3824.8, "ebitda_cr": 504.6, "ebitda_margin": 0.13192846684793977, "net_debt_cr": 645.9, "net_debt_to_ebitda": 1.2800237812128417, "interest_coverage": 7.946456692913386, "fcf_cr": 53.0, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 50.5, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 867.9000000000002, "market_cap_cr": 6335.249507917624, "fcf_yield": 0.008365889920162108, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "SUPRAJIT", "verdict": "Falls short"}, {"ticker": "GABRIEL.NS", "latest_year": "FY26", "revenue_cr": 4666.9, "ebitda_cr": 450.4, "ebitda_margin": 0.09650946024127366, "net_debt_cr": -202.8, "net_debt_to_ebitda": -0.45026642984014215, "interest_coverage": 31.718309859154928, "fcf_cr": 105.5, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 46.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1553.9999999999998, "market_cap_cr": 20140.42024641049, "fcf_yield": 0.005238222376159339, "pass_leverage": true, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 2, "name": "GABRIEL", "verdict": "Falls short"}, {"ticker": "CARBORUNIV.NS", "latest_year": "FY26", "revenue_cr": 5149.4, "ebitda_cr": 547.2, "ebitda_margin": 0.10626480755039423, "net_debt_cr": -306.0, "net_debt_to_ebitda": -0.5592105263157894, "interest_coverage": 29.106382978723406, "fcf_cr": 57.0, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 40.4, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1947.6000000000001, "market_cap_cr": 20297.0826381, "fcf_yield": 0.002808285358852721, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 3, "name": "CARBORUNIV", "verdict": "Falls short"}, {"ticker": "CENTURYPLY.NS", "latest_year": "FY26", "revenue_cr": 5397.2, "ebitda_cr": 653.0, "ebitda_margin": 0.12098866078707478, "net_debt_cr": 1664.6, "net_debt_to_ebitda": 2.549157733537519, "interest_coverage": 5.753303964757709, "fcf_cr": 45.3, "fcf_positive_years": 1, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 71.9, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 294.4000000000001, "market_cap_cr": 16706.298254257264, "fcf_yield": 0.0027115522128581776, "pass_leverage": false, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 3, "name": "CENTURYPLY", "verdict": "Falls short"}, {"ticker": "TRITURBINE.NS", "latest_year": "FY26", "revenue_cr": 2181.1, "ebitda_cr": 509.8, "ebitda_margin": 0.2337352711934345, "net_debt_cr": -861.2, "net_debt_to_ebitda": -1.689289917614751, "interest_coverage": 196.07692307692307, "fcf_cr": 39.4, "fcf_positive_years": 3, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 59.8, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 2390.6000000000004, "market_cap_cr": 21052.594984275, "fcf_yield": 0.0018715032531347981, "pass_leverage": true, "pass_coverage": true, "pass_fcf": true, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 5, "name": "TRITURBINE", "verdict": "Falls short"}, {"ticker": "KSB.NS", "latest_year": "FY25", "revenue_cr": 2679.6, "ebitda_cr": 421.8, "ebitda_margin": 0.1574115539632781, "net_debt_cr": -267.9, "net_debt_to_ebitda": -0.6351351351351351, "interest_coverage": 140.6, "fcf_cr": -0.9, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": true, "promoter_holding_pct": 70.0, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1533.3000000000002, "market_cap_cr": 15062.22450735022, "fcf_yield": -5.975213020897469e-05, "pass_leverage": true, "pass_coverage": true, "pass_fcf": false, "pass_margin": true, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 5, "name": "KSB", "verdict": "Falls short"}, {"ticker": "SYMPHONY.NS", "latest_year": "FY26", "revenue_cr": 1131.0, "ebitda_cr": -23.0, "ebitda_margin": -0.020335985853227233, "net_debt_cr": 4.0, "net_debt_to_ebitda": null, "interest_coverage": -1.4375, "fcf_cr": -100.0, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 75.9, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 0.0, "market_cap_cr": 4616.778138172607, "fcf_yield": -0.021660126825930076, "pass_leverage": false, "pass_coverage": false, "pass_fcf": false, "pass_margin": false, "pass_promoter": false, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 1, "name": "SYMPHONY", "verdict": "Falls short"}, {"ticker": "CRAFTSMAN.NS", "latest_year": "FY26", "revenue_cr": 8004.4, "ebitda_cr": 1270.0, "ebitda_margin": 0.1586627354954775, "net_debt_cr": 3477.9, "net_debt_to_ebitda": 2.738503937007874, "interest_coverage": 4.328561690524881, "fcf_cr": -666.7, "fcf_positive_years": 0, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 50.3, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 332.0999999999999, "market_cap_cr": 22247.7167058, "fcf_yield": -0.02996712016861446, "pass_leverage": false, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": false, "passes_screen": false, "criteria_passed": 2, "name": "CRAFTSMAN", "verdict": "Falls short"}, {"ticker": "BALAMINES.NS", "latest_year": "FY26", "revenue_cr": 1425.0, "ebitda_cr": 294.2, "ebitda_margin": 0.2064561403508772, "net_debt_cr": -138.3, "net_debt_to_ebitda": -0.4700883752549287, "interest_coverage": 54.481481481481474, "fcf_cr": -355.9, "fcf_positive_years": 2, "fcf_years_available": 3, "margin_trend_ok": false, "promoter_holding_pct": 67.6, "promoter_pledge_pct": null, "unused_debt_capacity_cr": 1020.8999999999999, "market_cap_cr": 6728.06765, "fcf_yield": -0.05289780342800209, "pass_leverage": true, "pass_coverage": true, "pass_fcf": false, "pass_margin": false, "pass_promoter": true, "pass_pledge": false, "pass_mcap": true, "passes_screen": false, "criteria_passed": 4, "name": "BALAMINES", "verdict": "Falls short"}]}}}</script>
+  <script>
+    // Render every embedded Vega-Lite spec into its matching container.
+    (function () {
+      var specs = JSON.parse(document.getElementById("chart-specs").textContent || "{}");
+      var opts = { actions: false, renderer: "svg" };
+      document.querySelectorAll(".chart[data-spec]").forEach(function (el) {
+        var key = el.getAttribute("data-spec");
+        if (specs[key]) {
+          vegaEmbed(el, specs[key], opts).catch(function (e) {
+            el.innerHTML = '<p class="disclaimer">chart failed to render</p>';
+            console.error(key, e);
+          });
+        }
+      });
+    })();
+
+    // Tear-sheet statement tabs.
+    function showTab(group, idx) {
+      document.querySelectorAll('[data-tabgroup="' + group + '"] .tabpane')
+        .forEach(function (p, i) { p.classList.toggle("active", i === idx); });
+      document.querySelectorAll('[data-tabgroup="' + group + '"] .tabs button')
+        .forEach(function (b, i) { b.classList.toggle("active", i === idx); });
+    }
+  </script>
+</body>
+</html>
