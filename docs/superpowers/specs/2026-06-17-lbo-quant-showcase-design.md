@@ -124,9 +124,16 @@ live yfinance ──────┘          │  run_lbo(), screener, statement
 ### 1. `src/analytics.py` (new)
 
 The only new Python in `src/`. Pure, importable functions; no Streamlit import
-(must be import-safe for the exporter and for tests). Each function takes the
-same inputs `run_lbo` takes (entry revenue/EBITDA, assumptions, optional
-overrides) and returns plain dicts/arrays.
+(must be import-safe for the exporter and for tests). Functions return plain
+dicts/arrays. Note two input shapes:
+- **Point-evaluation fns** (`monte_carlo`, `irr_bridge`, `value_bridge`,
+  `downside_risk`, `sobol_indices`) take the inputs `run_lbo` takes (entry
+  revenue/EBITDA, assumptions, optional overrides).
+- **Solver/sweep fns** (`max_bid_solver`, `debt_capacity_solver`,
+  `iso_irr_frontier`, `optimal_exit`) take the **pre-EV** inputs (market cap,
+  net debt, premium/leverage range) — same shape as `sensitivity_grid_premium`
+  — because they sweep `entry_ev` / `total_leverage` rather than receive a fixed
+  one.
 
 - numpy for the stochastic and numerical-method pieces.
 - A module-level default RNG seed so Monte Carlo / Sobol output is
@@ -255,4 +262,17 @@ Each phase is independently shippable and reviewable.
 - **Sobol cost** — needs many `run_lbo` evaluations per name; fine given the
   closed-form model, but worth a sample-size cap so the weekly job stays fast.
 - **Single vs per-ticker JSON** — decide in P1 based on observed size.
+
+### P1 must freeze before its tests can be written
+
+- **Canonical JSON key names** — the function names and JSON keys are not 1:1 in
+  spelling (`monte_carlo()` → `"montecarlo"`). P1 freezes the canonical key set
+  in one place so the exporter and frontend can't drift.
+- **MC / Sobol distribution parameters** — the distribution families and spreads
+  for revenue growth, margin, and exit multiple drive every downstream number
+  (fan chart, P(beat hurdle), VaR/CVaR, Sobol indices). They must be pinned (and
+  sourced/justified) before the reproducibility and parity tests can be written.
+- **`optimal_exit` feasibility** — confirm `run_lbo` can be exercised to exit at
+  an arbitrary year 1…N (vs only at `assumptions["hold_years"]`); if not, P1
+  scopes the minimal plumbing to do so **without** changing existing math.
 ```
