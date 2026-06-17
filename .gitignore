@@ -11,3 +11,6 @@ dist/
 logs/
 *.log
 *.offset
+
+# brainstorming visual companion scratch files
+.superpowers/
