@@ -176,3 +176,15 @@ def debt_capacity_solver(inp: dict, min_coverage: float,
             hi = mid
     return {"converged": True, "max_leverage": lo,
             "min_coverage_at_max": _min_coverage(inp, lo)}
+
+
+def optimal_exit(inp: dict) -> dict:
+    a = inp["assumptions"]; n = a["hold_years"]
+    by_year = []
+    for k in range(1, n + 1):
+        res = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], {**a, "hold_years": k},
+                      entry_ev=inp["entry_ev"], total_leverage=inp["total_leverage"])
+        by_year.append({"year": k, "irr": res["irr"], "moic": res["moic"]})
+    valid = [r for r in by_year if r["irr"] is not None and math.isfinite(r["irr"])]
+    best = max(valid, key=lambda r: r["irr"])["year"] if valid else None
+    return {"by_year": by_year, "best_year": best}

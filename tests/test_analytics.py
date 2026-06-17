@@ -112,3 +112,11 @@ def test_debt_capacity_is_binding():
     # one notch higher breaches
     higher = analytics._min_coverage(inp, sol["max_leverage"] + 0.05)
     assert higher < cov
+
+
+def test_optimal_exit_within_range():
+    cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
+    sol = analytics.optimal_exit(inp)
+    years = [r["year"] for r in sol["by_year"]]
+    assert years == [1, 2, 3, 4, 5]
+    assert 1 <= sol["best_year"] <= 5
