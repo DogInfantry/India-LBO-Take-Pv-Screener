@@ -35,16 +35,16 @@ def sample_row():
     return pd.Series({
         "ticker": "TEST.NS", "revenue_cr": 5000.0, "ebitda_cr": 1000.0,
         "ebitda_margin": 0.20, "net_debt_cr": 500.0, "net_debt_to_ebitda": 0.5,
-        "interest_coverage": 8.0, "fcf_cr": 600.0, "fcf_yield": 0.06,
+        "interest_coverage": 8.0, "fcf_cr": 600.0, "fcf_yield": 0.13,
         "promoter_holding_pct": 62.0, "promoter_pledge_pct": 1.0,
-        "market_cap_cr": 9000.0, "unused_debt_capacity_cr": 2500.0, "latest_year": 2025,
+        "market_cap_cr": 4500.0, "unused_debt_capacity_cr": 2500.0, "latest_year": 2025,
     })
 
 
 def test_company_inputs_prices_take_private_ev():
     inp = analytics.company_inputs(sample_row(), base_cfg())
-    # entry_ev = market_cap*(1+prem) + net_debt = 9000*1.25 + 500 = 11750
-    assert inp["entry_ev"] == pytest.approx(11750.0)
+    # entry_ev = market_cap*(1+prem) + net_debt = 4500*1.25 + 500 = 6125
+    assert inp["entry_ev"] == pytest.approx(6125.0)
     assert inp["entry_revenue"] == 5000.0
     assert inp["entry_ebitda"] == 1000.0
     assert inp["total_leverage"] == pytest.approx(3.0)   # 2.0 + 1.0 turns
