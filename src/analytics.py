@@ -123,3 +123,56 @@ def value_bridge(inp: dict) -> dict:
     return {"entry_equity": entry_equity, "ebitda_growth": ebitda_growth,
             "multiple_change": multiple_change, "debt_paydown": debt_paydown,
             "fees_and_other": fees_and_other, "exit_equity": exit_equity}
+
+
+def _irr_at_premium(inp: dict, prem_pct: float) -> float:
+    ev = inp["market_cap"] * (1 + prem_pct / 100.0) + inp["net_debt"]
+    return run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],
+                   entry_ev=ev, total_leverage=inp["total_leverage"])["irr"]
+
+
+def max_bid_solver(inp: dict, target_irr: float = HURDLE_IRR,
+                   lo: float = 0.0, hi: float = 100.0, tol: float = 1e-3) -> dict:
+    """Highest control premium (%) at which IRR still >= target_irr."""
+    f_lo, f_hi = _irr_at_premium(inp, lo), _irr_at_premium(inp, hi)
+    if not math.isfinite(f_lo) or f_lo < target_irr:
+        return {"converged": False, "reason": "cannot clear hurdle at any premium",
+                "max_premium_pct": None, "max_ev": None}
+    if f_hi >= target_irr:                      # clears even at the top of the range
+        return {"converged": True, "max_premium_pct": hi,
+                "max_ev": inp["market_cap"] * (1 + hi / 100.0) + inp["net_debt"]}
+    while hi - lo > tol:
+        mid = (lo + hi) / 2.0
+        if _irr_at_premium(inp, mid) >= target_irr:
+            lo = mid
+        else:
+            hi = mid
+    prem = lo
+    return {"converged": True, "max_premium_pct": prem,
+            "max_ev": inp["market_cap"] * (1 + prem / 100.0) + inp["net_debt"]}
+
+
+def _min_coverage(inp: dict, leverage: float) -> float:
+    sched = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],
+                    entry_ev=inp["entry_ev"], total_leverage=leverage)["schedule"]
+    cov = sched["ebitda"] / sched["interest"].replace(0, np.nan)
+    return float(cov.min())
+
+
+def debt_capacity_solver(inp: dict, min_coverage: float,
+                         lo: float = 0.0, hi: float = 8.0, tol: float = 1e-2) -> dict:
+    """Max total leverage (turns) keeping min annual interest-coverage >= covenant."""
+    if _min_coverage(inp, lo) < min_coverage:
+        return {"converged": False, "reason": "covenant breached even unlevered",
+                "max_leverage": None, "min_coverage_at_max": None}
+    if _min_coverage(inp, hi) >= min_coverage:
+        return {"converged": True, "max_leverage": hi,
+                "min_coverage_at_max": _min_coverage(inp, hi)}
+    while hi - lo > tol:
+        mid = (lo + hi) / 2.0
+        if _min_coverage(inp, mid) >= min_coverage:
+            lo = mid
+        else:
+            hi = mid
+    return {"converged": True, "max_leverage": lo,
+            "min_coverage_at_max": _min_coverage(inp, lo)}

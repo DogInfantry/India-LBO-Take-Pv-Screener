@@ -83,3 +83,32 @@ def test_value_bridge_reconciles_equity():
     built = (vb["entry_equity"] + vb["ebitda_growth"] + vb["multiple_change"]
              + vb["debt_paydown"] + vb["fees_and_other"])
     assert built == pytest.approx(vb["exit_equity"], rel=1e-6)
+
+
+def test_max_bid_lands_on_hurdle():
+    cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
+    sol = analytics.max_bid_solver(inp, target_irr=0.20)
+    assert sol["converged"]
+    # re-price at the solved premium and confirm IRR ~ target
+    from lbo_model import run_lbo
+    ev = inp["market_cap"] * (1 + sol["max_premium_pct"] / 100.0) + inp["net_debt"]
+    irr = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],
+                  entry_ev=ev, total_leverage=inp["total_leverage"])["irr"]
+    assert irr == pytest.approx(0.20, abs=2e-3)
+
+def test_max_bid_no_solution_when_unaffordable():
+    cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
+    sol = analytics.max_bid_solver(inp, target_irr=0.99)  # impossible hurdle
+    assert sol["converged"] is False
+
+
+def test_debt_capacity_is_binding():
+    cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
+    cov = cfg["screening"]["min_interest_coverage"]
+    sol = analytics.debt_capacity_solver(inp, min_coverage=cov)
+    assert sol["converged"]
+    # at the solved leverage, min annual coverage >= covenant
+    assert sol["min_coverage_at_max"] >= cov - 1e-6
+    # one notch higher breaches
+    higher = analytics._min_coverage(inp, sol["max_leverage"] + 0.05)
+    assert higher < cov
