@@ -163,3 +163,11 @@ def test_delisting_model_structure():
     # public float that must tender = 90 - promoter_holding
     assert d["float_to_tender_pct"] == pytest.approx(90.0 - 62.0)
     assert d["indicative"] is True
+
+
+def test_company_block_has_canonical_keys():
+    cfg = base_cfg(); row = sample_row()
+    block = analytics.build_company_block(row, cfg)
+    assert set(block) == set(analytics.COMPANY_KEYS)
+    assert block["returns"]["irr"] is not None
+    assert "income" in block["statements"]

@@ -283,3 +283,37 @@ def delisting_model(inp: dict, row: pd.Series, cfg: dict) -> dict:
         "assumptions": "Premium = config control_premium_pct; assumes full tender of "
                        "required float at the discovered price. Illustrative only.",
     }
+
+
+COMPANY_KEYS = ["ticker", "name", "statements", "debt_schedule", "sources_uses",
+                "returns", "montecarlo", "downside", "sensitivity", "solvers",
+                "sobol", "feasibility", "delisting"]
+
+
+def build_company_block(row: pd.Series, cfg: dict) -> dict:
+    inp = company_inputs(row, cfg)
+    res = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],
+                  entry_ev=inp["entry_ev"], total_leverage=inp["total_leverage"])
+    mc = monte_carlo(inp)
+    return {
+        "ticker": row["ticker"],
+        # screener rows carry no display name; derive it like export_site.py / returns.py
+        "name": str(row["ticker"]).replace(".NS", ""),
+        "statements": {"income": res["income_statement"].to_dict("records"),
+                       "cash_flow": res["cash_flow"].to_dict("records"),
+                       "balance_sheet": res["balance_sheet"].to_dict("records")},
+        "debt_schedule": res["schedule"].to_dict("records"),
+        "sources_uses": res["sources_uses"],
+        "returns": {"irr": res["irr"], "moic": res["moic"],
+                    "irr_bridge": irr_bridge(inp), "value_bridge": value_bridge(inp)},
+        "montecarlo": mc,
+        "downside": downside_risk(mc),
+        "sensitivity": {"iso_frontier": iso_irr_frontier(inp)},
+        "solvers": {"max_bid": max_bid_solver(inp),
+                    "debt_capacity": debt_capacity_solver(
+                        inp, cfg["screening"]["min_interest_coverage"]),
+                    "optimal_exit": optimal_exit(inp)},
+        "sobol": sobol_indices(inp),
+        "feasibility": feasibility_score(row, cfg),
+        "delisting": delisting_model(inp, row, cfg),
+    }
