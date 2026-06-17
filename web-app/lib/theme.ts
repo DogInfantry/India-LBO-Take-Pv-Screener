@@ -11,6 +11,6 @@ export const baseOption = {
   backgroundColor: "transparent",
   textStyle: { color: MIDNIGHT.muted, fontFamily: "ui-monospace, monospace" },
   grid: { left: 8, right: 12, top: 16, bottom: 8, containLabel: true },
-  tooltip: { trigger: "item", backgroundColor: MIDNIGHT.panel,
+  tooltip: { trigger: "item" as const, backgroundColor: MIDNIGHT.panel,
              borderColor: MIDNIGHT.edge, textStyle: { color: MIDNIGHT.ink } },
 };
