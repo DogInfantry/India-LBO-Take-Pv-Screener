@@ -69,7 +69,8 @@ def _size_tranches(entry_ebitda: float, ev: float, tranches: list[dict],
 def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
             entry_multiple: float | None = None,
             total_leverage: float | None = None,
-            entry_ev: float | None = None) -> dict:
+            entry_ev: float | None = None,
+            exit_multiple: float | None = None) -> dict:
     """Run the paper LBO with a full three-statement build.
 
     Entry price is set one of two ways:
@@ -77,8 +78,10 @@ def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
       — equity purchase price (market cap x (1 + control premium)) plus assumed
       net debt — and the entry multiple FALLS OUT as entry_ev / EBITDA.
     - otherwise (fixed multiple): EV = EBITDA x entry_multiple, the legacy path.
-    The exit reuses the (implied or fixed) entry multiple, so returns come from
-    deleveraging and EBITDA growth, never multiple expansion.
+    Exit is at `exit_multiple` x Year-N EBITDA; when omitted it defaults to the
+    (implied or fixed) entry multiple — a flat exit, so returns come purely from
+    deleveraging and EBITDA growth. Supplying a different exit multiple models
+    re-rating (expansion) or de-rating (contraction).
 
     Revenue drives the model; EBITDA = revenue x flat entry margin
     (entry_ebitda / entry_revenue). Each year produces an income statement, the
@@ -94,6 +97,7 @@ def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
     else:
         entry_multiple = entry_multiple if entry_multiple is not None else a["entry_multiple"]
         ev = entry_ebitda * entry_multiple
+    exit_multiple = exit_multiple if exit_multiple is not None else entry_multiple
 
     sized, total_debt = _size_tranches(entry_ebitda, ev, a["tranches"], total_leverage)
     txn_fees = a["txn_fee_pct_of_ev"] * ev
@@ -206,7 +210,7 @@ def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
     max_balance_error = balance_sheet["balance_error"].abs().max()
 
     final_ebitda = is_rows[-1]["ebitda"]
-    exit_ev = final_ebitda * entry_multiple  # flat exit multiple
+    exit_ev = final_ebitda * exit_multiple  # flat exit (= entry) unless overridden
     ending_debt = sum(balances) + revolver
     exit_net_debt = ending_debt - cash
     exit_equity = exit_ev - exit_net_debt
@@ -215,6 +219,7 @@ def run_lbo(entry_revenue: float, entry_ebitda: float, assumptions: dict,
 
     return {
         "entry_multiple": entry_multiple,
+        "exit_multiple": exit_multiple,
         "margin": margin,
         "sources_uses": {
             "enterprise_value": ev,

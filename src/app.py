@@ -346,13 +346,18 @@ else:
                 "Enable live market data in the sidebar for market pricing.")
         mode = "Fixed multiple"
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     lev_mult = col2.number_input("Total leverage (x EBITDA)", 1.0, 6.0,
                                  float(total_turns), 0.5,
                                  help="Scales all debt tranches proportionally.")
     growth = col3.number_input("Revenue growth (%)", -5.0, 25.0,
                                lbo_cfg["revenue_growth"] * 100, 0.5,
                                help="Margin held flat, so EBITDA grows with revenue.")
+    exit_rerate = col4.number_input(
+        "Exit re-rating (± turns)", -5.0, 5.0, 0.0, 0.5,
+        help="Exit multiple vs entry. 0 = flat exit (returns from deleveraging & "
+             "EBITDA growth only); positive models multiple expansion, negative "
+             "contraction.")
     assumptions = {**lbo_cfg, "revenue_growth": growth / 100}
 
     premium = None
@@ -364,8 +369,11 @@ else:
                  "delisting via reverse book-building typically clears 20-40%.")
         equity_offer = row["market_cap_cr"] * (1 + premium / 100)
         entry_ev = equity_offer + row["net_debt_cr"]
+        base_entry_mult = entry_ev / row["ebitda_cr"] if row["ebitda_cr"] else 0.0
+        exit_mult = max(0.5, base_entry_mult + exit_rerate)
         result = run_lbo(row["revenue_cr"], row["ebitda_cr"], assumptions,
-                         entry_ev=entry_ev, total_leverage=lev_mult)
+                         entry_ev=entry_ev, total_leverage=lev_mult,
+                         exit_multiple=exit_mult)
         st.caption(
             f"Implied entry **{result['entry_multiple']:.1f}x** EBITDA  ·  equity "
             f"offer ₹{equity_offer:,.0f} cr (₹{row['market_cap_cr']:,.0f} cr market "
@@ -374,8 +382,10 @@ else:
     else:
         entry_mult = col1.number_input("Entry multiple (x EBITDA)", 4.0, 15.0,
                                        float(lbo_cfg["entry_multiple"]), 0.5)
+        exit_mult = max(0.5, entry_mult + exit_rerate)
         result = run_lbo(row["revenue_cr"], row["ebitda_cr"], assumptions,
-                         entry_multiple=entry_mult, total_leverage=lev_mult)
+                         entry_multiple=entry_mult, total_leverage=lev_mult,
+                         exit_multiple=exit_mult)
 
     degenerate = result["sources_uses"]["enterprise_value"] <= 0.05 * row["ebitda_cr"]
     if degenerate:
@@ -407,14 +417,17 @@ else:
         st.caption(f"Equity check includes ₹{su['txn_fees'] + su['financing_fees']:,.0f} cr "
                    "of fees (transaction folded into goodwill; financing capitalized & amortized).")
     with right:
-        st.markdown("**Returns (5-yr hold, flat exit multiple)**")
+        _exit_label = ("flat exit multiple" if abs(exit_rerate) < 1e-9
+                       else f"exit re-rated {exit_rerate:+.1f}x")
+        st.markdown(f"**Returns (5-yr hold, {_exit_label})**")
         m1, m2, m3 = st.columns(3)
         m1.metric("MOIC", "n.m." if degenerate else f"{result['moic']:.2f}x")
         m2.metric("IRR", "n.m." if degenerate else f"{result['irr']:.1%}")
         m3.metric("Exit equity",
                   "n.m." if degenerate else f"₹{result['exit_equity']:,.0f} cr")
         st.caption(f"Exit EV ₹{result['exit_ev']:,.0f} cr at "
-                   f"{result['entry_multiple']:.1f}x Year-5 EBITDA; exit net "
+                   f"{result['exit_multiple']:.1f}x Year-5 EBITDA "
+                   f"(entry {result['entry_multiple']:.1f}x); exit net "
                    f"debt ₹{result['exit_net_debt']:,.0f} cr.")
 
     if result["max_balance_error"] < 1e-6:
