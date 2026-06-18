@@ -50,3 +50,13 @@ sensitivity:
   entry_multiples: [6.0, 7.0, 8.0, 9.0, 10.0]
   leverage_multiples: [2.0, 2.5, 3.0, 3.5, 4.0]
   premiums_pct: [0.0, 10.0, 20.0, 30.0, 40.0]   # take-private premium axis (market mode)
+
+scenarios:
+  bull:
+    revenue_growth_delta:  0.08   # +8pp above base → ~16% growth
+    margin_delta:          0.05   # +5pp above company entry margin
+    exit_multiple_delta:   2.0    # +2x above entry multiple
+  bear:
+    revenue_growth_delta: -0.05   # -5pp below base → ~3% growth
+    margin_delta:         -0.05   # -5pp below company entry margin
+    exit_multiple_delta:  -2.0    # -2x below entry multiple
