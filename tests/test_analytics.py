@@ -132,6 +132,15 @@ def test_sobol_indices_keys_and_ranges():
         assert s["total_order"][k] >= s["first_order"][k] - 0.05
 
 
+def test_sobol_indices_reproducible():
+    # Seeded SALib sampler => identical indices across calls (deterministic contract).
+    cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
+    s1 = analytics.sobol_indices(inp, n=256)
+    s2 = analytics.sobol_indices(inp, n=256)
+    assert s1["total_order"] == s2["total_order"]
+    assert s1["first_order"] == s2["first_order"]
+
+
 def test_iso_frontier_points_hit_target():
     cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
     fr = analytics.iso_irr_frontier(inp, target_irr=0.20)

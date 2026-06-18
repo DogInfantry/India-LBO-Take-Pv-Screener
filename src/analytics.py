@@ -189,7 +189,7 @@ def sobol_indices(inp: dict, n: int = SOBOL_N) -> dict:
                    [0.85, 1.15],
                    [max(1.0, em - 3), em + 3]],
     }
-    X = sobol_sample.sample(problem, n, calc_second_order=False)
+    X = sobol_sample.sample(problem, n, calc_second_order=False, seed=SEED)
     Y = np.empty(X.shape[0])
     for i, (g, s, xm) in enumerate(X):
         Y[i] = run_lbo(inp["entry_revenue"], inp["entry_ebitda"] * s,
