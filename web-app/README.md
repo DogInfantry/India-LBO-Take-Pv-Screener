@@ -40,9 +40,25 @@ npm run build    # static export -> web-app/out/
 - `components/` — the `EChart` wrapper (drives ECharts core directly; React-19
   safe) and the panel components.
 
+## Deployment
+
+Vercel builds this app from the repo-root `vercel.json` (`installCommand` /
+`buildCommand` / `outputDirectory` all target `web-app/`): it runs
+`npm install && npm run build` in `web-app/` and serves the static export from
+`web-app/out`. The committed `web-app/public/data/results.json` feeds the build —
+**no Python runs on Vercel.**
+
+The data refreshes itself: `.github/workflows/weekly.yml` runs every Monday (and
+on-demand via the Actions tab's "Run workflow"), does a live `yfinance` export,
+validates `universe.passed > 0`, and commits + pushes the new `results.json`.
+Vercel redeploys on that push. A flaky/empty fetch fails the validate step and
+publishes nothing, leaving the last good contract in place.
+
+> Fallback: if the `buildCommand` form ever misbehaves on Vercel, set the
+> project's **Root Directory** to `web-app` in the Vercel dashboard and let
+> Vercel build Next.js natively (it handles `output: 'export'` → serves `out/`).
+
 ## Notes
 
 - Degenerate net-cash names (e.g. JUSTDIAL — net cash > market cap, LBO not
   computable) are flagged by the engine and render dimmed as "n.m." here.
-- Deployment (`vercel.json` repoint) and the weekly refresh are Phase 4; until
-  then the existing `web/` static site remains the deployed one.
