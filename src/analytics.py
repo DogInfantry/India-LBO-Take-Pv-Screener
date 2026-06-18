@@ -331,7 +331,8 @@ def scenario_block(inp: dict, cfg: dict) -> dict:
                       entry_ev=inp["entry_ev"],
                       total_leverage=inp["total_leverage"],
                       exit_multiple=float(sc_exit_mult))
-        irr = res["irr"]; moic = res["moic"]
+        irr = res["irr"]
+        moic = res["moic"]
         return {
             "assumptions": {
                 "revenue_growth": sc_growth,
