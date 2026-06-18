@@ -1,6 +1,6 @@
 # Scenario War Room — Design Spec
 **Date:** 2026-06-19
-**Status:** Approved for implementation
+**Status:** Revised after spec review (v2)
 
 ## Overview
 
@@ -68,46 +68,68 @@ Inputs:
   cfg  — full config dict
 
 For each scenario in [bull, base, bear]:
-  1. Compute scenario revenue_growth = base_growth + delta (base delta = 0)
-  2. Compute scenario entry_ebitda   = entry_revenue × (base_margin + margin_delta)
-     where base_margin = entry_ebitda / entry_revenue
-  3. Compute scenario exit_multiple  = _entry_multiple(inp) + multiple_delta
-  4. Call run_lbo(entry_revenue, sc_ebitda, {**assumptions, "revenue_growth": sc_growth},
-                  entry_ev=inp["entry_ev"], total_leverage=inp["total_leverage"],
+  1. Compute sc_growth       = base_growth + revenue_growth_delta  (base delta = 0)
+  2. Compute sc_margin       = base_margin + margin_delta          (base_margin = entry_ebitda / entry_revenue)
+  3. Compute sc_ebitda       = entry_revenue × sc_margin           (entry_revenue is ALWAYS the as-of-today value
+                                                                     from inp; it does NOT vary across scenarios)
+  4. Compute sc_exit_mult    = _entry_multiple(inp) + exit_multiple_delta
+  5. Clamp: sc_ebitda = max(0.0, sc_ebitda)
+  6. If sc_ebitda == 0 after clamping, skip run_lbo and store this scenario entry as null.
+  7. Call run_lbo(inp["entry_revenue"], sc_ebitda,
+                  {**assumptions, "revenue_growth": sc_growth},
+                  entry_ev=inp["entry_ev"],
+                  total_leverage=inp["total_leverage"],
                   exit_multiple=sc_exit_mult)
-  5. Extract:
-     - assumptions: {revenue_growth, ebitda_margin, exit_multiple}
-     - financials:  {revenue, ebitda, fcf}  ← last year of income_statement / cash_flow
-     - returns:     {irr, moic, exit_equity}
+  8. Extract:
+     - assumptions: {revenue_growth: sc_growth,
+                     ebitda_margin:  sc_ebitda / entry_revenue,  ← absolute margin, not delta
+                     exit_multiple:  sc_exit_mult}
+     - financials:  {revenue: income_statement[-1]["revenue"],
+                     ebitda:  income_statement[-1]["ebitda"],
+                     fcf_for_debt: cash_flow[-1]["fcf_for_debt"]}  ← key name from run_lbo output
+     - returns:     {irr:         None if not finite else res["irr"],
+                     moic:        None if not finite else res["moic"],  ← moic also needs isfinite guard
+                     exit_equity: res["exit_equity"]}
 
 Returns:
-  {"bull": {assumptions, financials, returns},
+  {"bull": {assumptions, financials, returns},   # null if sc_ebitda clamped to 0
    "base": {assumptions, financials, returns},
-   "bear": {assumptions, financials, returns}}
+   "bear": {assumptions, financials, returns}}   # null if sc_ebitda clamped to 0
 ```
 
 Edge cases:
-- `margin_delta` that pushes margin ≤ 0 → clamp `sc_ebitda = max(0, entry_revenue × sc_margin)`
-- Non-finite IRR (degenerate bear case) → store as `null`, same pattern as base case today
-- Missing `scenarios` key in cfg → `scenario_block` returns `None`; `build_company_block` stores `scenarios: null`
+- `sc_ebitda == 0` after clamping → skip `run_lbo`, store that scenario entry as `null` (consistent with degenerate base handling)
+- Non-finite `irr` or `moic` from `run_lbo` (can return `float("nan")`) → apply `isfinite` guard, store as `null`
+- Missing `scenarios` key in cfg → `scenario_block` returns `None`; `build_company_block` stores `"scenarios": None`
 
 ### Changes to `build_company_block(row, cfg)`
 
-Add one key to the returned dict:
+Add one key to the non-degenerate returned dict:
 ```python
 "scenarios": scenario_block(inp, cfg)
 ```
 
+Also add `"scenarios": None` to the **degenerate early-return stub** (the block that exits early for net-cash / negative-EV companies). All keys on CompanyBlock must be present in both paths.
+
+Add `"scenarios"` to the `COMPANY_KEYS` module-level list in `analytics.py` (consistency with existing convention).
+
 ### Changes to `build_results(results_df, cfg, as_of)`
 
-Add `scenario_irrs` to each `Passer` entry:
+Add `scenario_irrs` to each `Passer` entry. Guard against both a null `scenarios` block (degenerate company) AND a null individual scenario (sc_ebitda clamped to zero):
 ```python
 sc = company_blocks[ticker].get("scenarios")
+
+def _sc_irr(sc, name):
+    if not sc:
+        return None
+    s = sc.get(name)          # s is Scenario dict or None
+    return s["returns"]["irr"] if s else None
+
 "scenario_irrs": {
-    "bull": sc["bull"]["returns"]["irr"] if sc else None,
-    "base": sc["base"]["returns"]["irr"] if sc else None,
-    "bear": sc["bear"]["returns"]["irr"] if sc else None,
-} if sc else None
+    "bull": _sc_irr(sc, "bull"),
+    "base": _sc_irr(sc, "base"),
+    "bear": _sc_irr(sc, "bear"),
+}
 ```
 
 ---
@@ -117,17 +139,17 @@ sc = company_blocks[ticker].get("scenarios")
 ```typescript
 export interface ScenarioAssumptions {
   revenue_growth: number;
-  ebitda_margin: number;
+  ebitda_margin: number;   // absolute margin (e.g. 0.22), NOT the delta
   exit_multiple: number;
 }
 export interface ScenarioFinancials {
   revenue: number;
   ebitda: number;
-  fcf: number;
+  fcf_for_debt: number;    // matches run_lbo cash_flow key — displayed as "FCF" in UI
 }
 export interface ScenarioReturns {
-  irr: number | null;
-  moic: number | null;
+  irr: number | null;      // null when non-finite (degenerate scenario)
+  moic: number | null;     // null when non-finite (same guard as irr)
   exit_equity: number;
 }
 export interface Scenario {
@@ -136,15 +158,11 @@ export interface Scenario {
   returns: ScenarioReturns;
 }
 export interface ScenarioBlock {
-  bull: Scenario;
-  base: Scenario;
-  bear: Scenario;
+  bull: Scenario | null;   // null when sc_ebitda clamped to zero for this scenario
+  base: Scenario | null;
+  bear: Scenario | null;
 }
 ```
-
-**Additions to existing interfaces:**
-- `CompanyBlock`: add `scenarios: ScenarioBlock | null`
-- `Passer`: add `scenario_irrs: { bull: number | null; base: number | null; bear: number | null } | null`
 
 ---
 
@@ -164,15 +182,15 @@ Layout: three-column table, rows grouped into three sections separated by a fain
 | **Financials at exit** | Revenue (₹cr), EBITDA (₹cr), FCF (₹cr) |
 | **Returns** | IRR (large, colour-coded), MOIC (x), Exit equity (₹cr) |
 
-Column styling:
-- Bull header + IRR: `text-green-600`; cell background: `bg-green-50`
-- Bear header + IRR: `text-red-600`; cell background: `bg-red-50`
-- Base: neutral
+Column styling — two independent rules:
+- **Column headers** (Bull / Base / Bear labels): always static colour — Bull header `text-green-600`, Bear header `text-red-600`, Base neutral. These never change regardless of IRR value.
+- **IRR value cell**: threshold-driven colour applied to the IRR number itself only:
+  - ≥ 20%: `text-green-600`
+  - 10–19%: neutral / amber
+  - < 10%: `text-red-600`
+- **Cell backgrounds**: Bull column `bg-green-50`, Bear column `bg-red-50`, Base neutral. Static, not threshold-driven.
 
-IRR colour thresholds (consistent with existing tearsheet):
-- ≥ 20%: green
-- 10–19%: neutral/amber
-- < 10%: red
+Example: a bull scenario that produces 8% IRR → bull column header stays green, cell background stays green-50, but the IRR number itself renders red.
 
 No new charts — table is the correct format (pitch-book style).
 
@@ -235,7 +253,8 @@ Insert `<WarRoomTable passers={passers} />` as a new section after the IrrLeader
 
 ## Testing
 
-- `tests/test_analytics.py`: add `test_scenario_block_base_matches_existing()` — verifies base scenario IRR/MOIC matches `run_lbo` direct output
-- `tests/test_analytics.py`: add `test_scenario_block_bull_bear_ordering()` — verifies bull IRR > base IRR > bear IRR for a non-degenerate company
-- `web-app/components/tearsheet/ScenarioWarRoom.test.tsx`: snapshot test with a fixture ScenarioBlock; verify null renders nothing
-- `web-app/components/WarRoomTable.test.tsx`: snapshot test with fixture passers; verify null scenario_irrs renders `—`
+- `tests/test_analytics.py`: `test_scenario_block_base_matches_existing()` — verifies base scenario `irr`, `moic`, and `financials.revenue` each match `run_lbo` direct output (catches accidental `revenue_growth` contamination between scenarios)
+- `tests/test_analytics.py`: `test_scenario_block_bull_bear_ordering()` — verifies bull IRR > base IRR > bear IRR for a non-degenerate company
+- `tests/test_analytics.py`: `test_scenario_block_zero_ebitda_clamp()` — verifies that a margin_delta large enough to zero sc_ebitda returns `null` for that scenario rather than crashing
+- `web-app/components/tearsheet/ScenarioWarRoom.test.tsx`: snapshot with fixture `ScenarioBlock`; verify null prop renders nothing; verify `fcf_for_debt` field is read (not `fcf`)
+- `web-app/components/WarRoomTable.test.tsx`: snapshot with fixture passers; verify null `scenario_irrs` renders `—`
