@@ -360,7 +360,7 @@ def scenario_block(inp: dict, cfg: dict) -> dict:
 
 COMPANY_KEYS = ["ticker", "name", "statements", "debt_schedule", "sources_uses",
                 "returns", "montecarlo", "downside", "sensitivity", "solvers",
-                "sobol", "feasibility", "delisting"]
+                "sobol", "feasibility", "delisting", "scenarios"]
 
 
 def _json_safe(obj):
@@ -377,6 +377,13 @@ def _json_safe(obj):
     return obj
 
 
+def _sc_irr(sc: dict | None, name: str):
+    if not sc:
+        return None
+    s = sc.get(name)
+    return s["returns"]["irr"] if s else None
+
+
 def build_results(results_df: pd.DataFrame, cfg: dict, as_of: str) -> dict:
     passed = results_df[results_df["passes_screen"]]   # apply_screen sets this bool col
     companies, passers = {}, []
@@ -384,11 +391,17 @@ def build_results(results_df: pd.DataFrame, cfg: dict, as_of: str) -> dict:
         block = build_company_block(row, cfg)
         companies[row["ticker"]] = block
         max_bid = (block["solvers"] or {}).get("max_bid") or {}   # None for degenerate names
+        sc = block.get("scenarios")
         passers.append({"ticker": row["ticker"], "name": block["name"],
                         "irr": block["returns"]["irr"], "moic": block["returns"]["moic"],
                         "degenerate": block["returns"]["degenerate"],
                         "feasibility": block["feasibility"]["score"],
-                        "max_bid_premium_pct": max_bid.get("max_premium_pct")})
+                        "max_bid_premium_pct": max_bid.get("max_premium_pct"),
+                        "scenario_irrs": {
+                            "bull": _sc_irr(sc, "bull"),
+                            "base": _sc_irr(sc, "base"),
+                            "bear": _sc_irr(sc, "bear"),
+                        }})
     payload = {"as_of": as_of,
                "config": {"hurdle_irr": HURDLE_IRR, "hold_years": cfg["lbo"]["hold_years"],
                           "control_premium_pct": cfg["lbo"]["control_premium_pct"]},
@@ -429,6 +442,7 @@ def build_company_block(row: pd.Series, cfg: dict) -> dict:
             "sobol": None,
             "feasibility": feasibility_score(row, cfg),
             "delisting": delisting_model(inp, row, cfg),
+            "scenarios": None,
         }
 
     mc = monte_carlo(inp)
@@ -455,4 +469,5 @@ def build_company_block(row: pd.Series, cfg: dict) -> dict:
         "sobol": sobol_indices(inp),
         "feasibility": feasibility_score(row, cfg),
         "delisting": delisting_model(inp, row, cfg),
+        "scenarios": scenario_block(inp, cfg),
     }

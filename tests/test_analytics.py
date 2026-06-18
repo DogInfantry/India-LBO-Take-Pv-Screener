@@ -326,3 +326,42 @@ def test_scenario_block_zero_ebitda_clamp_returns_none():
     block = analytics.scenario_block(inp, cfg)
     assert block["bear"] is None          # clamped -> skipped, not an exception
     assert block["base"] is not None      # base unaffected
+
+
+# ---------------------------------------------------------------------------
+# Task 3: Wire scenario_block into build pipeline
+# ---------------------------------------------------------------------------
+
+
+def test_build_company_block_has_scenarios_key():
+    cfg = scenarios_cfg()
+    block = analytics.build_company_block(sample_row(), cfg)
+    assert "scenarios" in block
+    sc = block["scenarios"]
+    assert sc is not None
+    assert "bull" in sc and "base" in sc and "bear" in sc
+
+
+def test_build_company_block_degenerate_has_scenarios_none():
+    """Degenerate (net-cash) company stub must include scenarios: None."""
+    cfg = scenarios_cfg()
+    # Force a degenerate: entry_ev ≈ 0 by making market_cap tiny and net_debt negative
+    row = sample_row()
+    row["market_cap_cr"] = 10.0     # tiny market cap
+    row["net_debt_cr"] = -9990.0    # large net cash → entry_ev near zero
+    block = analytics.build_company_block(row, cfg)
+    assert block["returns"]["degenerate"] is True
+    assert block["scenarios"] is None
+
+
+def test_build_results_passers_have_scenario_irrs():
+    cfg = scenarios_cfg()
+    row = sample_row()
+    row["passes_screen"] = True
+    df = pd.DataFrame([row])
+    payload = analytics.build_results(df, cfg, "2026-01-01")
+    passer = payload["passers"][0]
+    assert "scenario_irrs" in passer
+    si = passer["scenario_irrs"]
+    assert si is not None
+    assert "bull" in si and "base" in si and "bear" in si
