@@ -1,290 +1,145 @@
-# India LBO & Take-Private Screener
+# India LBO Take-Private Screener
 
-**▶ [Live demo](https://india-lbo-take-pv-screener-7hv5yfvgmabjk5rnuyqdqj.streamlit.app/)** (Streamlit Community Cloud)
+**A data-driven screen for NSE-listed mid-cap take-private candidates** — built around
+India's February 2026 acquisition-finance rule change that made onshore leveraged
+buyouts viable for the first time.
 
-A screening tool for NSE-listed mid/small-cap companies that identifies
-**take-private deleveraging candidates** and runs a simplified paper LBO on
-each. Built as an analyst's screen with an explicit investment thesis, not a
-generic stock screener.
+**▶ [Live dashboard](https://india-lbo-take-pv-screener.vercel.app/)** · refreshed weekly from live market data
+
+---
+
+## What this is
+
+India's RBI raised the acquisition-finance cap to **75% of acquisition value** in
+February 2026, unlocking onshore leveraged take-privates. This tool screens the
+NSE mid/small-cap universe for the companies best positioned to be targets: low
+current leverage, strong and consistent free cash flow, promoter holding in the
+right band, and a market cap that fits realistic sponsor cheque sizes.
+
+For each candidate that clears the screen, it runs a **paper LBO** — a
+revenue-driven three-statement model (IS / BS / CFS that articulate) on a
+multi-tranche cash-sweep waterfall — and surfaces IRR, MOIC, sensitivity grids,
+Monte Carlo distributions, and a delisting feasibility estimate.
+
+The thesis is intentional: find companies with *unused* debt capacity, not companies
+that are already levered. A promoter (or a sponsor partnering with one) levers the
+balance sheet at entry, and the company's own cash flows deleverage it over a
+5-year hold.
+
+---
+
+## Live dashboard
+
+The [Next.js dashboard](https://india-lbo-take-pv-screener.vercel.app/) shows:
+
+- **Screener leaderboard** — passers ranked by base-case IRR with feasibility scores
+- **Iso-IRR frontier** — the premium / exit-multiple combinations that hit a target return
+- **IRR variance decomposition** — Sobol sensitivity indices showing which driver (growth, margin, multiple) explains the most return variance
+- **Per-company tearsheet** — returns bridge, value bridge, Monte Carlo histogram, sensitivity heatmap, three statements, debt waterfall, solver outputs (max bid premium, optimal exit year, debt capacity ceiling), delisting mechanics
+
+The Python model runs locally (or in weekly CI) and writes `results.json`; the
+Next.js app renders it statically. No Python runs on Vercel.
+
+---
 
 ## Thesis: why screen for *unused* debt capacity
 
-This is not a classic 5–7x leveraged buyout screen. Domestic LBOs in India
-were historically near-impossible: RBI rules prevented banks from lending
-against a target's shares to fund acquisitions, so sponsors relied on offshore
-structures or all-equity deals. RBI's **February 2026 Amendment Directions**
-changed this — the acquisition-finance cap was raised to **75% of acquisition
-value, effective April 1, 2026** — opening the door to onshore leveraged
-take-privates for the first time.
+This is not a classic 5–7x LBO screen. Domestic leveraged take-privates in India
+were historically near-impossible — RBI rules prevented lending against a target's
+shares for acquisitions, so sponsors relied on offshore structures or all-equity
+deals. The **February 2026 Amendment Directions** changed this: the cap was raised
+to **75% of acquisition value, effective April 1, 2026**.
 
 The screen therefore inverts the usual logic. Instead of looking for levered
-companies, it looks for companies that are **currently low-levered with
-strong, consistent free cash flow** — i.e., companies with *unused* debt
-capacity. A promoter (or sponsor partnering with one) could take such a
-company private, lever it to a moderate ~3x EBITDA, and let the cash flows
-deleverage the structure over a 5-year hold. The regulatory change is the
-tailwind; the balance-sheet headroom is the opportunity.
+companies, it looks for companies that are **currently low-levered with strong,
+consistent free cash flow** — companies with *unused* debt capacity. A promoter (or
+sponsor partnering with one) could take such a company private, lever it to ~3x
+EBITDA, and let the cash flows deleverage the structure over a 5-year hold.
 
-## Methodology: screening criteria and why
+---
 
-All thresholds live in [config/config.yaml](config/config.yaml) and are easy
-to tweak.
+## Screening criteria
 
-| Criterion | Default | Why |
+All thresholds live in [`config/config.yaml`](config/config.yaml).
+
+| Criterion | Default | Rationale |
 |---|---|---|
-| Net debt / EBITDA | < 2.0x | Low current leverage is the unused debt capacity the thesis depends on. Net-cash names (negative net debt) pass trivially. |
-| Interest coverage (EBITDA / interest) | > 3.0x | The company must already service its obligations comfortably before any acquisition debt is added. |
-| Positive FCF | each of last 3 years | Debt paydown in the LBO comes entirely from FCF; one bad year breaks a 100% cash sweep. FCF yield is computed against live market cap. |
-| EBITDA margin | > 15%, stable or improving | Margin level proxies pricing power; the trend test (recent 2-yr avg vs. earlier years, 1.5pp tolerance) filters structurally deteriorating businesses. |
-| Promoter holding | 50–75% | Below 50%, the promoter lacks the control to drive a take-private. 75% is SEBI's ceiling on non-public shareholding, so holdings above it don't occur in compliant companies. |
-| Promoter pledge | < 5% | High pledge signals a stressed promoter — the wrong counterparty for a leveraged transaction. |
-| Market cap | ₹1,700–17,000 cr (~$200M–2B) | Mid/small-cap band where take-private cheque sizes are feasible for India-focused sponsors. |
+| Net debt / EBITDA | < 2.0x | Headroom is the opportunity |
+| EBITDA / interest | > 3.0x | Must service existing debt comfortably |
+| Positive FCF | last 3 years | Debt paydown comes entirely from FCF |
+| EBITDA margin | > 15%, stable | Margin trend filters structural deterioration |
+| Promoter holding | 50–75% | Control band for a take-private; SEBI cap at 75% |
+| Promoter pledge | < 5% | High pledge signals a stressed counterparty |
+| Market cap | ₹1,700–17,000 cr | Feasible cheque sizes for India-focused sponsors |
 
-Survivors are ranked by **FCF yield** (latest FCF / market cap) — the
-cheapest sustainable cash flow ranks first. The tool also reports **unused
-debt capacity**: `3x EBITDA − current net debt`, the incremental debt the
-balance sheet could absorb at the modelled leverage level.
+Banks and NBFCs are excluded — leverage screens are meaningless for balance-sheet lenders.
 
-Banks and NBFCs are excluded from the universe entirely — leverage and
-coverage screens are meaningless for balance-sheet lenders.
+---
 
-## Paper-LBO assumptions
+## LBO model
 
-The model ([src/lbo_model.py](src/lbo_model.py)) is a **revenue-driven
-three-statement build** — an Income Statement, Balance Sheet, and Cash Flow
-Statement that articulate, with the **balance sheet balancing every year** as
-the integrity check — sitting on top of a **multi-tranche cash-sweep waterfall**.
-It is screening-grade (assumption-driven), not a full underwriting model, but it
-now carries transaction/financing fees and a days-based working-capital build.
-Assumptions, all configurable:
+[`src/lbo_model.py`](src/lbo_model.py) is a **revenue-driven three-statement build**
+with a multi-tranche cash-sweep waterfall. It is screening-grade, not underwriting-grade.
 
-- **Driver:** revenue grows at `revenue_growth`; the entry EBITDA margin
-  (`entry_ebitda / entry_revenue`, read from the fundamentals CSV) is held flat,
-  so EBITDA = revenue × margin.
-- **Entry:** EV = LTM EBITDA × 8.0x entry multiple.
-- **Debt tranches:** an ordered list in [config/config.yaml](config/config.yaml),
-  index 0 = most senior. Each tranche has a size (`turns` × LTM EBITDA), a
-  cash interest `rate`, and a `mandatory_amort_pct` (fraction of original
-  principal repaid contractually each year; 0 = bullet). The default stack is
-  senior (2.0x @ 9.0%, 10% amort) + mezzanine (1.0x @ 13.0%, bullet), totalling
-  3.0x. A revolver (`revolver_rate`) catches funding gaps.
-- **Sources & uses:** total debt = Σ(tranche turns) × EBITDA, **capped at RBI's
-  75% of acquisition value** — if the cap binds, all tranches scale down
-  proportionally. **Fees** are layered on top of the purchase price:
-  - *Transaction fees* (`txn_fee_pct_of_ev` × EV — M&A/legal/diligence) are
-    **equity-funded and folded into goodwill**. Since the model has no Year-0
-    income statement to expense them through, they are capitalized into goodwill
-    as a simplification rather than run through a P&L.
-  - *Financing fees* (`financing_fee_pct_of_debt` × debt — arrangement/OID) are
-    **capitalized as a deferred-financing-cost (DFC) asset** and amortized
-    straight-line over the hold; the amortization is a non-cash IS expense added
-    back in CFO, creating a small tax shield.
+**Default capital structure:** senior tranche (2.0× EBITDA @ 9%, 10% annual amort) +
+mezzanine (1.0× @ 13%, bullet) = 3.0× total, capped at the RBI 75%-of-EV limit.
 
-  Both fees are funded by sponsor equity, so
-  **sponsor equity = EV + transaction fees + financing fees − total debt**.
-- **Opening balance sheet:** cash-free / debt-free. Opening PP&E is synthesized
-  from `ppe_pct_of_revenue` × entry revenue and opening working capital from the
-  days-based build below; the DFC asset is seeded at the financing fee.
-  **Goodwill is the plug**:
-  `goodwill = EV + transaction fees − opening PP&E − opening NWC`, so
-  Assets = Liabilities + Equity on Day 1. Goodwill is held flat. *This opening BS
-  is assumption-driven, not a real purchase-price allocation.*
-- **Income statement:** EBIT = EBITDA − D&A (`da_pct_of_ppe` × opening PP&E) −
-  DFC amortization (financing fee ÷ hold years, a non-cash expense);
-  EBT = EBIT − cash interest (blended across tranches + revolver, on opening
-  balances); taxes = `tax_rate` × max(0, EBT) (floored at zero, no NOL carry);
-  net income = EBT − taxes.
-- **Days-based working capital:** opening and each year's working capital are
-  built from days assumptions rather than a single ratio. AR keys off revenue;
-  inventory and AP key off COGS (= `cogs_pct_of_revenue` × revenue):
-  - AR = `dso_days` ÷ 365 × revenue
-  - inventory = `dio_days` ÷ 365 × COGS
-  - AP = `dpo_days` ÷ 365 × COGS
+**Returns at defaults:** MOIC ≈ 2.07× / IRR ≈ 15.6% for the top screen passer.
+Transaction and financing fees are modelled explicitly (capitalized into goodwill and
+DFC respectively) and drag returns relative to a fee-free build.
 
-  NWC = AR + inventory − AP. (This replaces the older single net-working-capital
-  ratio.)
-- **Cash flow & FCF for debt:** CFO = net income + D&A + DFC amortization − ΔNWC;
-  capex = `capex_pct_of_revenue` × revenue (genuinely separate from D&A);
-  **FCF available for debt = CFO − capex**. PP&E rolls forward:
-  PP&E = prior PP&E + capex − D&A. The DFC asset amortizes straight-line to zero
-  by the end of the hold.
-- **Waterfall:** each year, **mandatory amortization** is paid first on every
-  tranche; remaining FCF is then **swept down the priority stack** — revolver
-  first, then senior, then mezzanine — so a junior tranche's principal cannot
-  fall via the sweep until every senior tranche is retired. A funding shortfall
-  draws the revolver.
-- **Balance check:** the cash line is the cash-flow-statement plug and the
-  balance sheet ties every year (`max_balance_error` ≈ 0). The tear sheet shows a
-  "balance sheet ties ✓" indicator.
-- **Exit:** flat multiple — exit EV = entry multiple × Year-5 EBITDA. No
-  multiple expansion; returns come from deleveraging and EBITDA growth only.
-- **Returns:** MOIC = exit equity / entry equity; exit equity = exit EV − exit
-  net debt (debt − cash). Because there is a single cash flow out at exit,
-  IRR = MOIC^(1/5) − 1 in closed form. At defaults the run now returns
-  **MOIC ≈ 2.09x / IRR ≈ 15.8%**, down from the pre-fee build (~2.18x / ~16.9%):
-  the larger equity cheque from transaction and financing fees drags returns,
-  only partially offset by the DFC amortization tax shield.
-- **Sensitivity:** IRR and MOIC across a 5×5 grid of entry multiple × **total
-  leverage**; each leverage column scales all tranches proportionally.
+**Analytical outputs per company:**
+- IRR / MOIC / returns bridge
+- Monte Carlo (1,024-path) with P(beat hurdle) and downside VaR
+- Sobol variance decomposition across growth, margin shock, exit multiple
+- Iso-IRR frontier (premium % vs. exit multiple contour at target IRR)
+- 5×5 sensitivity grid (entry multiple × total leverage)
+- Max-bid solver, optimal-exit solver, debt-capacity ceiling
 
-## Data sources
+---
 
-- **yfinance** supplies both live market data (price, market cap, shares
-  outstanding) *and* the historical financials. `src/fetch_fundamentals.py`
-  pulls ~4–5 recent fiscal years of revenue, EBITDA, net debt, interest and
-  free cash flow for every universe ticker and writes
-  [data/fundamentals.csv](data/fundamentals.csv). That depth covers the screen's
-  5-year margin-trend and 3-year FCF tests.
-- **Promoter holding & pledge are not in yfinance** (India-specific shareholding
-  filings), so those two columns are left blank and filled by hand from
-  Screener.in. Until they are populated, the promoter and pledge filters fail by
-  design (a blank counts as a fail), so no name clears the *full* screen — every
-  other criterion still computes and shows on the tear sheet.
-- [data/fundamentals_template.csv](data/fundamentals_template.csv) keeps two
-  hand-entered 10-year examples (INFY, TCS) as a format reference and is the
-  fallback the loader uses when `fundamentals.csv` is absent.
+## Data
 
-### Refreshing the financials
+- **Financials:** yfinance (4–5 fiscal years of revenue, EBITDA, net debt, interest, FCF)
+- **Promoter holding / pledge:** hand-filled from [Screener.in](https://www.screener.in) — blank counts as a fail by design
+- **Universe:** ~46 non-financial NSE mid/small-caps across IT services, pharma, chemicals, industrials, consumer durables, auto ancillaries, building materials
+
+Refresh the data:
 
 ```bash
-python src/fetch_fundamentals.py            # all universe tickers
-python src/fetch_fundamentals.py CYIENT.NS  # a subset, for spot checks
+python tools/export_data.py            # live yfinance fetch → results.json
+python tools/export_data.py --no-fetch # rebuild from cached market_snapshot.csv
 ```
 
-This overwrites `data/fundamentals.csv`. Net debt is computed as total debt −
-cash (incl. short-term investments), so a net-cash company is negative; the
-fiscal-year label is the calendar year of the March-end reporting date.
+The weekly GitHub Action (`.github/workflows/weekly.yml`) runs this every Monday
+and pushes the refreshed `results.json` — Vercel redeploys automatically.
 
-### Filling promoter data from Screener.in
+---
 
-For each name, open the company page on [screener.in](https://www.screener.in),
-read the latest **Shareholding pattern**, and fill the two columns in
-`data/fundamentals.csv`:
-
-| Column | Screener.in source |
-|---|---|
-| `promoter_holding_pct` | Shareholding pattern → Promoters (latest quarter) |
-| `promoter_pledge_pct` | Shareholding pattern → pledged % of promoter holding |
-
-3. All ₹ figures are in **crore**; `year` uses `FY16`-style labels;
-   promoter columns can simply repeat the latest values on every row of a
-   company (the screener reads them from the most recent year).
-
-The template ships with two filled examples — **Infosys and TCS** — chosen
-because their figures are public and well known. *The example numbers are
-approximations for format illustration, not audited figures; replace them
-with your own universe.* (Both are also far outside the mid-cap band, so they
-correctly fail the market-cap screen.)
-
-The starter universe ([data/universe.csv](data/universe.csv)) holds ~45
-non-financial NSE mid/small-caps drawn from Nifty Midcap/Smallcap
-constituents across IT services, auto ancillaries, consumer durables,
-building materials, chemicals, pharma, industrials and QSR.
-
-## How to run
-
-```bash
-pip install -r requirements.txt        # runtime deps (what the live app uses)
-streamlit run src/app.py
-```
-
-For tests and dev tooling, install the dev extras instead:
-
-```bash
-pip install -r requirements-dev.txt    # adds pytest + ponytail
-pytest -q                              # 22 tests
-```
-
-`python smoke_test.py` runs an offline sanity check of the full pipeline
-(loader → screen → LBO → sensitivity) against the live fundamentals data.
-
-### Watching the app logs live (ponytail)
-
-Run the app through a thin logger and tail it with
-[ponytail](https://github.com/linsomniac/ponytail) (a rotation-safe `tail -F`):
-
-```bash
-python tools/run_app_logged.py   # terminal 1: runs the app, logs to logs/app.log
-python tools/follow_log.py       # terminal 2: streams the log live
-```
-
-### Live demo / deploying to Streamlit Community Cloud
-
-The app is a single Streamlit entrypoint (`src/app.py`) with a root
-`requirements.txt`, so it deploys to [Streamlit Community
-Cloud](https://share.streamlit.io) with no extra config:
-
-1. Push to GitHub (already done).
-2. On share.streamlit.io, **New app** → pick this repo/branch → main file
-   path `src/app.py` → **Deploy**.
-3. The dark theme in `.streamlit/config.toml` and the universe/fundamentals
-   CSVs are committed, so the deployed app runs the real 46-name screen.
-
-Once deployed, drop the URL here:
-
-> **Live demo:** https://india-lbo-take-pv-screener-7hv5yfvgmabjk5rnuyqdqj.streamlit.app/
-
-The dashboard has two views:
-
-1. **Shortlist** — every company in the fundamentals CSV with its metrics,
-   per-criterion pass/fail detail, ranked with survivors first.
-2. **Company tear sheet** — screening rationale paragraph, sources & uses,
-   year-by-year debt paydown schedule, MOIC/IRR, and the sensitivity grid,
-   with entry multiple / leverage / growth adjustable live.
-
-A sidebar toggle disables yfinance for offline work (market-cap-dependent
-criteria then fail by design rather than erroring).
-
-### Deployment (Vercel) — the `web-app/` dashboard
-
-The deployed site is the **Next.js app in [`web-app/`](web-app/)** — an
-interactive dashboard plus a deep per-company tear sheet (returns bridges, Monte
-Carlo, a premium×exit sensitivity heatmap, three statements, debt waterfall,
-solvers, delisting). The split is: **Python is the engine, React is the
-showroom.** The `src/` model runs *before* Vercel (locally or in CI), emits
-`web-app/public/data/results.json`, and the Next app renders it. No Python runs
-on Vercel.
-
-`vercel.json` builds `web-app/` (`installCommand`/`buildCommand`/
-`outputDirectory`) and serves the static export from `web-app/out`. Refresh the
-data locally with:
+## Running locally
 
 ```bash
 pip install -r requirements-dev.txt
-python tools/export_data.py            # live yfinance fetch -> results.json
-python tools/export_data.py --no-fetch # rebuild from data/market_snapshot.csv
+pytest -q                              # 20 tests
+python tools/export_data.py --no-fetch # build results.json from cached data
+cd web-app && npm install && npm run dev
 ```
 
-`results.json` is committed so Vercel (a Node build) has the data. The weekly
-GitHub Action (`.github/workflows/weekly.yml`) re-runs the export every Monday,
-validates the screen, and pushes the refreshed contract — Vercel redeploys
-automatically. See [`web-app/README.md`](web-app/README.md) for details.
+The Next.js app runs at `localhost:3000`. The Python model and Next.js app are
+fully independent — the handoff is the JSON file.
 
-> **Live dashboard:** https://india-lbo-take-pv-screener.vercel.app/
-
-The legacy Jinja+Vega static export (`tools/export_site.py` → `web/`) remains in
-the repo history but is no longer the served site.
+---
 
 ## Limitations
 
-- **Manual data entry.** Fundamentals are hand-keyed from Screener.in;
-  transcription errors are possible, and the screen only covers companies you
-  have entered. Screener.in's "operating profit" can differ from reported
-  EBITDA for companies with significant other income.
-- **Simplified LBO.** The model is now a revenue-driven three-statement build
-  (IS/BS/CFS that tie out) on a multi-tranche cash-sweep waterfall, with
-  transaction/financing fees and a days-based AR/inventory/AP working-capital
-  build, but it stays screening-grade: the opening balance sheet is
-  assumption-driven (goodwill as a plug, not a real purchase-price allocation),
-  the exit multiple is held flat by construction, and it still omits management
-  rollover, PIK interest, purchase-price write-ups, deferred taxes, and NOL
-  carryforwards. Outputs are screening-grade, not underwriting-grade.
-- **Free-data constraints.** yfinance market caps can be stale or missing for
-  thinly traded names; promoter pledge data on Screener.in lags exchange
-  filings by up to a quarter.
-- **Regulatory simplification.** The RBI 75% cap is applied mechanically;
-  the model ignores end-use restrictions, pricing norms, and the practical
-  pace at which Indian banks will actually write acquisition-finance cheques.
-- **No view on willingness.** The screen finds companies that *could* be
-  taken private, not promoters who *want* to. Delisting in India also
-  requires a reverse book-building process the model does not capture.
+- **Screening-grade model.** No management rollover, PIK interest, purchase-price
+  write-ups, deferred taxes, or NOL carryforwards. Exit multiple is held flat by
+  construction.
+- **Free-data constraints.** yfinance market caps can be stale; promoter pledge on
+  Screener.in lags filings by up to a quarter.
+- **Regulatory simplification.** The 75% RBI cap is applied mechanically; end-use
+  restrictions and the practical pace of Indian acquisition-finance lending are not
+  modelled.
+- **No view on willingness.** The screen finds companies that *could* be taken
+  private, not promoters who *want* to. India's reverse book-building delisting
+  process is estimated but not fully modelled.
