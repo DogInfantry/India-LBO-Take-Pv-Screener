@@ -306,6 +306,57 @@ def delisting_model(inp: dict, row: pd.Series, cfg: dict) -> dict:
     }
 
 
+def scenario_block(inp: dict, cfg: dict) -> dict:
+    """Run Bull / Base / Bear by applying lever deltas to base inputs.
+
+    entry_revenue is ALWAYS the as-of-today value from inp — it never varies
+    across scenarios. Only sc_ebitda, sc_growth, and sc_exit_mult change.
+    """
+    sc_cfg = cfg.get("scenarios", {})
+    a = inp["assumptions"]
+    base_margin = inp["entry_ebitda"] / inp["entry_revenue"] if inp["entry_revenue"] else 0.0
+    base_growth = a["revenue_growth"]
+    base_exit_mult = _entry_multiple(inp)
+
+    def _run_scenario(deltas: dict):
+        sc_growth = base_growth + deltas.get("revenue_growth_delta", 0.0)
+        sc_margin = base_margin + deltas.get("margin_delta", 0.0)
+        sc_ebitda = inp["entry_revenue"] * sc_margin
+        sc_ebitda = max(0.0, sc_ebitda)                    # clamp first
+        if sc_ebitda == 0.0:                               # then check
+            return None
+        sc_exit_mult = base_exit_mult + deltas.get("exit_multiple_delta", 0.0)
+        res = run_lbo(inp["entry_revenue"], sc_ebitda,
+                      {**a, "revenue_growth": float(sc_growth)},
+                      entry_ev=inp["entry_ev"],
+                      total_leverage=inp["total_leverage"],
+                      exit_multiple=float(sc_exit_mult))
+        irr = res["irr"]; moic = res["moic"]
+        return {
+            "assumptions": {
+                "revenue_growth": sc_growth,
+                "ebitda_margin":  sc_ebitda / inp["entry_revenue"],  # absolute, not delta
+                "exit_multiple":  sc_exit_mult,
+            },
+            "financials": {
+                "revenue":      float(res["income_statement"].iloc[-1]["revenue"]),
+                "ebitda":       float(res["income_statement"].iloc[-1]["ebitda"]),
+                "fcf_for_debt": float(res["cash_flow"].iloc[-1]["fcf_for_debt"]),
+            },
+            "returns": {
+                "irr":         None if not math.isfinite(irr)  else float(irr),
+                "moic":        None if not math.isfinite(moic) else float(moic),
+                "exit_equity": float(res["exit_equity"]),
+            },
+        }
+
+    return {
+        "bull": _run_scenario(sc_cfg.get("bull", {})),
+        "base": _run_scenario({}),
+        "bear": _run_scenario(sc_cfg.get("bear", {})),
+    }
+
+
 COMPANY_KEYS = ["ticker", "name", "statements", "debt_schedule", "sources_uses",
                 "returns", "montecarlo", "downside", "sensitivity", "solvers",
                 "sobol", "feasibility", "delisting"]

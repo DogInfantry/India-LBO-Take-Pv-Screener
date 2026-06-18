@@ -263,3 +263,66 @@ def test_company_block_sensitivity_has_grid():
     assert len(g["premiums_pct"]) == len(cfg["sensitivity"]["premiums_pct"])
     assert len(g["exit_multiples"]) == 5
     assert len(g["irr"]) == len(g["premiums_pct"])
+
+
+# ---------------------------------------------------------------------------
+# Task 2: scenario_block() — Bull / Base / Bear
+# ---------------------------------------------------------------------------
+
+
+def scenarios_cfg():
+    """Extend base_cfg with a scenarios block."""
+    cfg = base_cfg()
+    cfg["scenarios"] = {
+        "bull": {"revenue_growth_delta": 0.08, "margin_delta": 0.05, "exit_multiple_delta": 2.0},
+        "bear": {"revenue_growth_delta": -0.05, "margin_delta": -0.05, "exit_multiple_delta": -2.0},
+    }
+    return cfg
+
+
+def test_scenario_block_has_three_keys():
+    block = analytics.scenario_block(
+        analytics.company_inputs(sample_row(), scenarios_cfg()),
+        scenarios_cfg(),
+    )
+    assert set(block.keys()) == {"bull", "base", "bear"}
+
+
+def test_scenario_block_base_matches_run_lbo():
+    """Base scenario (zero deltas) must reproduce the direct run_lbo call exactly."""
+    from lbo_model import run_lbo
+    cfg = scenarios_cfg()
+    inp = analytics.company_inputs(sample_row(), cfg)
+    block = analytics.scenario_block(inp, cfg)
+    base = block["base"]
+    assert base is not None
+    res = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],
+                  entry_ev=inp["entry_ev"], total_leverage=inp["total_leverage"])
+    assert base["returns"]["irr"] == pytest.approx(res["irr"], rel=1e-6)
+    assert base["returns"]["moic"] == pytest.approx(res["moic"], rel=1e-6)
+    assert base["financials"]["revenue"] == pytest.approx(
+        res["income_statement"].iloc[-1]["revenue"], rel=1e-6)
+
+
+def test_scenario_block_bull_gt_base_gt_bear():
+    """For a healthy company, bull IRR > base IRR > bear IRR."""
+    cfg = scenarios_cfg()
+    inp = analytics.company_inputs(sample_row(), cfg)
+    block = analytics.scenario_block(inp, cfg)
+    bull_irr = block["bull"]["returns"]["irr"]
+    base_irr = block["base"]["returns"]["irr"]
+    bear_irr = block["bear"]["returns"]["irr"]
+    assert bull_irr is not None and base_irr is not None
+    assert bull_irr > base_irr
+    if bear_irr is not None:   # bear may be degenerate for some inputs
+        assert base_irr > bear_irr
+
+
+def test_scenario_block_zero_ebitda_clamp_returns_none():
+    """A margin_delta so negative that sc_ebitda clamps to 0 must return None, not crash."""
+    cfg = scenarios_cfg()
+    cfg["scenarios"]["bear"]["margin_delta"] = -99.0   # guaranteed to zero out ebitda
+    inp = analytics.company_inputs(sample_row(), cfg)
+    block = analytics.scenario_block(inp, cfg)
+    assert block["bear"] is None          # clamped -> skipped, not an exception
+    assert block["base"] is not None      # base unaffected
