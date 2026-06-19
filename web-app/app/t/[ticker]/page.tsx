@@ -9,6 +9,7 @@ import { McHistogram } from "@/components/tearsheet/McHistogram";
 import { StatCards } from "@/components/tearsheet/StatCards";
 import { SensitivityHeatmap } from "@/components/tearsheet/SensitivityHeatmap";
 import { SobolDrivers } from "@/components/SobolDrivers";
+import { Tornado } from "@/components/tearsheet/Tornado";
 import { StatementTable } from "@/components/tearsheet/StatementTable";
 import { DebtWaterfall } from "@/components/tearsheet/DebtWaterfall";
 import { DebtSchedule } from "@/components/tearsheet/DebtSchedule";
@@ -75,13 +76,19 @@ export default async function TearSheet({ params }: { params: Promise<{ ticker: 
             )}
           </Section>
 
-          <Section title="Sensitivity — premium × exit (IRR), with break-even frontier">
+          <Section title="Sensitivity — premium × exit, with IRR drivers">
             <div className="grid gap-4 lg:grid-cols-2">
               {co.sensitivity && (
                 <SensitivityHeatmap grid={co.sensitivity.grid} iso={co.sensitivity.iso_frontier} hurdle={hurdle} />
               )}
-              {co.sobol && <SobolDrivers sobol={co.sobol} />}
+              {co.tornado && <Tornado tornado={co.tornado} />}
             </div>
+            {co.sobol && (
+              <div className="mt-4">
+                <p className="mb-1 font-mono text-xs text-faint">Sobol total-order — variance share of IRR</p>
+                <SobolDrivers sobol={co.sobol} />
+              </div>
+            )}
           </Section>
 
           <Section title="Operating model — three statements">

@@ -127,6 +127,53 @@ def value_bridge(inp: dict) -> dict:
             "fees_and_other": fees_and_other, "exit_equity": exit_equity}
 
 
+# P90 of a standard normal: the tornado swings each Monte-Carlo driver across its
+# 10th-90th percentile band, holding the other two at base.
+_Z90 = 1.2815515594457424
+
+
+def _tornado_irr(inp: dict, *, growth: float, shock: float, exit_mult: float):
+    a = inp["assumptions"]
+    res = run_lbo(inp["entry_revenue"], inp["entry_ebitda"] * shock,
+                  {**a, "revenue_growth": float(growth)},
+                  entry_ev=inp["entry_ev"], total_leverage=inp["total_leverage"],
+                  exit_multiple=float(exit_mult))
+    irr = res["irr"]
+    return float(irr) if math.isfinite(irr) else None
+
+
+def tornado(inp: dict) -> dict:
+    """One-at-a-time IRR sensitivity: each MC driver swung from its P10 to its P90.
+
+    Reuses monte_carlo's distributions (growth sd 0.03, EBITDA-shock sd 0.05,
+    exit-multiple sd 1.0) and clips, so the band is the deterministic P10/P90 of
+    the very same draws. Unlike Sobol's normalized variance shares, this reports
+    the actual percentage-point IRR swing — the classic, MD-legible tornado view.
+    """
+    a = inp["assumptions"]
+    base_g = a["revenue_growth"]
+    em = _entry_multiple(inp)
+
+    def _g(z): return float(np.clip(base_g + z * 0.03, 0.0, 2 * base_g))
+    def _s(z): return float(np.clip(1.0 + z * 0.05, 0.7, 1.3))
+    def _x(z): return float(np.clip(em + z * 1.0, max(1.0, em - 3), em + 3))
+
+    base_irr = _tornado_irr(inp, growth=base_g, shock=1.0, exit_mult=em)
+    drivers = [
+        ("Revenue growth",
+         _tornado_irr(inp, growth=_g(-_Z90), shock=1.0, exit_mult=em),
+         _tornado_irr(inp, growth=_g(+_Z90), shock=1.0, exit_mult=em)),
+        ("EBITDA margin",
+         _tornado_irr(inp, growth=base_g, shock=_s(-_Z90), exit_mult=em),
+         _tornado_irr(inp, growth=base_g, shock=_s(+_Z90), exit_mult=em)),
+        ("Exit multiple",
+         _tornado_irr(inp, growth=base_g, shock=1.0, exit_mult=_x(-_Z90)),
+         _tornado_irr(inp, growth=base_g, shock=1.0, exit_mult=_x(+_Z90))),
+    ]
+    return {"base_irr": base_irr,
+            "drivers": [{"name": n, "low": lo, "high": hi} for n, lo, hi in drivers]}
+
+
 def _irr_at_premium(inp: dict, prem_pct: float) -> float:
     ev = inp["market_cap"] * (1 + prem_pct / 100.0) + inp["net_debt"]
     return run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],
@@ -360,7 +407,7 @@ def scenario_block(inp: dict, cfg: dict) -> dict:
 
 COMPANY_KEYS = ["ticker", "name", "statements", "debt_schedule", "sources_uses",
                 "returns", "montecarlo", "downside", "sensitivity", "solvers",
-                "sobol", "feasibility", "delisting", "scenarios"]
+                "sobol", "tornado", "feasibility", "delisting", "scenarios"]
 
 
 def _json_safe(obj):
@@ -439,7 +486,7 @@ def build_company_block(row: pd.Series, cfg: dict) -> dict:
             "returns": {"irr": None, "moic": None, "degenerate": True,
                         "irr_bridge": None, "value_bridge": None},
             "montecarlo": None, "downside": None, "sensitivity": None, "solvers": None,
-            "sobol": None,
+            "sobol": None, "tornado": None,
             "feasibility": feasibility_score(row, cfg),
             "delisting": delisting_model(inp, row, cfg),
             "scenarios": None,
@@ -467,6 +514,7 @@ def build_company_block(row: pd.Series, cfg: dict) -> dict:
                         inp, cfg["screening"]["min_interest_coverage"]),
                     "optimal_exit": optimal_exit(inp)},
         "sobol": sobol_indices(inp),
+        "tornado": tornado(inp),
         "feasibility": feasibility_score(row, cfg),
         "delisting": delisting_model(inp, row, cfg),
         "scenarios": scenario_block(inp, cfg),

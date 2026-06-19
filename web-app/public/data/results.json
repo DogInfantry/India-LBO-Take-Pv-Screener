@@ -10594,6 +10594,26 @@
           "exit_multiple": 0.38997848257142687
         }
       },
+      "tornado": {
+        "base_irr": 0.15634188872958066,
+        "drivers": [
+          {
+            "name": "Revenue growth",
+            "low": 0.10882172258480027,
+            "high": 0.20257318272913372
+          },
+          {
+            "name": "EBITDA margin",
+            "low": 0.13414521190358042,
+            "high": 0.17804448875480716
+          },
+          {
+            "name": "Exit multiple",
+            "low": 0.1246442836710211,
+            "high": 0.18490256447385134
+          }
+        ]
+      },
       "feasibility": {
         "score": 96,
         "components": {
@@ -21169,6 +21189,26 @@
           "ebitda_shock": 0.20427591168732873,
           "exit_multiple": 0.4485248086136967
         }
+      },
+      "tornado": {
+        "base_irr": 0.14481868149097843,
+        "drivers": [
+          {
+            "name": "Revenue growth",
+            "low": 0.09783100271896927,
+            "high": 0.19059218250873733
+          },
+          {
+            "name": "EBITDA margin",
+            "low": 0.12086661529567166,
+            "high": 0.16820317002945906
+          },
+          {
+            "name": "Exit multiple",
+            "low": 0.10822386036429799,
+            "high": 0.177256505321016
+          }
+        ]
       },
       "feasibility": {
         "score": 94,
@@ -31746,6 +31786,26 @@
           "exit_multiple": 0.4434107933860556
         }
       },
+      "tornado": {
+        "base_irr": 0.13678501248068864,
+        "drivers": [
+          {
+            "name": "Revenue growth",
+            "low": 0.09047155759973302,
+            "high": 0.18197933917690512
+          },
+          {
+            "name": "EBITDA margin",
+            "low": 0.11299439143705836,
+            "high": 0.15994822348931237
+          },
+          {
+            "name": "Exit multiple",
+            "low": 0.10099478948580187,
+            "high": 0.16856428542610336
+          }
+        ]
+      },
       "feasibility": {
         "score": 94,
         "components": {
@@ -31861,6 +31921,7 @@
       "sensitivity": null,
       "solvers": null,
       "sobol": null,
+      "tornado": null,
       "feasibility": {
         "score": 92,
         "components": {
@@ -42376,6 +42437,26 @@
           "ebitda_shock": 0.2255629261981604,
           "exit_multiple": 0.17631895103068485
         }
+      },
+      "tornado": {
+        "base_irr": 0.11424579741539276,
+        "drivers": [
+          {
+            "name": "Revenue growth",
+            "low": 0.07134558436553617,
+            "high": 0.1565139281281882
+          },
+          {
+            "name": "EBITDA margin",
+            "low": 0.09652396609354019,
+            "high": 0.13129157854023266
+          },
+          {
+            "name": "Exit multiple",
+            "low": 0.09848454585387945,
+            "high": 0.1291626410459974
+          }
+        ]
       },
       "feasibility": {
         "score": 92,
@@ -52935,6 +53016,26 @@
           "ebitda_shock": 0.24171003495690996,
           "exit_multiple": 0.06259688945628797
         }
+      },
+      "tornado": {
+        "base_irr": 0.09087151294306772,
+        "drivers": [
+          {
+            "name": "Revenue growth",
+            "low": 0.05057410939175355,
+            "high": 0.13090020855821982
+          },
+          {
+            "name": "EBITDA margin",
+            "low": 0.07478188825480814,
+            "high": 0.10623215549187104
+          },
+          {
+            "name": "Exit multiple",
+            "low": 0.08273950424389276,
+            "high": 0.09876802847354438
+          }
+        ]
       },
       "feasibility": {
         "score": 87,

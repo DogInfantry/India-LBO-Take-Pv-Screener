@@ -26,6 +26,8 @@ export interface IrrBridge { deleveraging:number; ebitda_growth:number;
   multiple_rerating:number; total_irr:number; }
 export interface ValueBridge { entry_equity:number; ebitda_growth:number; multiple_change:number;
   debt_paydown:number; fees_and_other:number; exit_equity:number; }
+export interface TornadoBar { name:string; low:number|null; high:number|null; }
+export interface Tornado { base_irr:number|null; drivers:TornadoBar[]; }
 export interface MonteCarlo { irr:(number|null)[]; moic:(number|null)[]; p_beat_hurdle:number; }
 export interface Downside { p_loss:number|null; var5_moic:number|null; cvar5_moic:number|null; }
 export interface Solvers {
@@ -76,6 +78,7 @@ export interface CompanyBlock {
   sensitivity: { iso_frontier:{target_irr:number; points:IsoFrontierPoint[]}; grid:SensitivityGrid } | null;
   solvers: Solvers | null;
   sobol: { first_order:Record<string,number>; total_order:Record<string,number> } | null;
+  tornado: Tornado | null;
   feasibility: { score:number; components:Record<string,number>; weights:Record<string,number> };
   delisting: Delisting;
   scenarios: ScenarioBlock | null;

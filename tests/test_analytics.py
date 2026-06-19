@@ -266,6 +266,53 @@ def test_company_block_sensitivity_has_grid():
 
 
 # ---------------------------------------------------------------------------
+# tornado() — one-at-a-time IRR sensitivity (P10 / P90)
+# ---------------------------------------------------------------------------
+
+_Z90 = 1.2815515594457424   # P90 of a standard normal (same constant analytics uses)
+
+
+def test_tornado_structure_and_base_is_bracketed():
+    cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
+    t = analytics.tornado(inp)
+    assert t["base_irr"] is not None
+    assert [d["name"] for d in t["drivers"]] == ["Revenue growth", "EBITDA margin", "Exit multiple"]
+    for d in t["drivers"]:
+        # IRR rises monotonically with each driver, so high end >= low end ...
+        assert d["high"] >= d["low"]
+        # ... and the base case (driver at its mean) sits inside the P10-P90 band
+        assert d["low"] - 1e-9 <= t["base_irr"] <= d["high"] + 1e-9
+
+
+def test_tornado_exit_multiple_matches_direct_run_lbo():
+    cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
+    t = analytics.tornado(inp)
+    exit_drv = next(d for d in t["drivers"] if d["name"] == "Exit multiple")
+    em = inp["entry_ev"] / inp["entry_ebitda"]
+    from lbo_model import run_lbo
+    hi = run_lbo(inp["entry_revenue"], inp["entry_ebitda"], inp["assumptions"],
+                 entry_ev=inp["entry_ev"], total_leverage=inp["total_leverage"],
+                 exit_multiple=em + _Z90)["irr"]
+    assert exit_drv["high"] == pytest.approx(hi, abs=1e-9)
+
+
+def test_company_block_has_tornado():
+    cfg = base_cfg(); block = analytics.build_company_block(sample_row(), cfg)
+    assert block["tornado"]["base_irr"] is not None
+    assert len(block["tornado"]["drivers"]) == 3
+
+
+def test_degenerate_block_has_tornado_none():
+    cfg = base_cfg()
+    row = sample_row().copy()
+    row["market_cap_cr"] = 10.0
+    row["net_debt_cr"] = -9990.0          # large net cash -> entry_ev ~ 0 -> degenerate
+    block = analytics.build_company_block(row, cfg)
+    assert block["returns"]["degenerate"] is True
+    assert block["tornado"] is None
+
+
+# ---------------------------------------------------------------------------
 # Task 2: scenario_block() — Bull / Base / Bear
 # ---------------------------------------------------------------------------
 
