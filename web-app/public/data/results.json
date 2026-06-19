@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-06-18",
+  "as_of": "2026-06-19",
   "config": {
     "hurdle_irr": 0.2,
     "hold_years": 5,
@@ -17,7 +17,12 @@
       "moic": 2.067432274330572,
       "degenerate": false,
       "feasibility": 96,
-      "max_bid_premium_pct": null
+      "max_bid_premium_pct": null,
+      "scenario_irrs": {
+        "bull": 0.34089322077669637,
+        "base": 0.15634188872958066,
+        "bear": 0.006132357328686222
+      }
     },
     {
       "ticker": "ZENSARTECH.NS",
@@ -26,7 +31,12 @@
       "moic": 1.966452854829484,
       "degenerate": false,
       "feasibility": 94,
-      "max_bid_premium_pct": null
+      "max_bid_premium_pct": null,
+      "scenario_irrs": {
+        "bull": 0.3906481639689843,
+        "base": 0.14481868149097843,
+        "bear": -0.06716550507655039
+      }
     },
     {
       "ticker": "TANLA.NS",
@@ -35,7 +45,12 @@
       "moic": 1.8984173565013445,
       "degenerate": false,
       "feasibility": 94,
-      "max_bid_premium_pct": null
+      "max_bid_premium_pct": null,
+      "scenario_irrs": {
+        "bull": 0.39313901051428646,
+        "base": 0.13678501248068864,
+        "bear": -0.08831764383455265
+      }
     },
     {
       "ticker": "JUSTDIAL.NS",
@@ -44,7 +59,12 @@
       "moic": null,
       "degenerate": true,
       "feasibility": 92,
-      "max_bid_premium_pct": null
+      "max_bid_premium_pct": null,
+      "scenario_irrs": {
+        "bull": null,
+        "base": null,
+        "bear": null
+      }
     },
     {
       "ticker": "INDIAMART.NS",
@@ -53,7 +73,12 @@
       "moic": 1.7175327370931555,
       "degenerate": false,
       "feasibility": 92,
-      "max_bid_premium_pct": null
+      "max_bid_premium_pct": null,
+      "scenario_irrs": {
+        "bull": 0.25918578753990906,
+        "base": 0.11424579741539276,
+        "bear": 0.0038256761855366417
+      }
     },
     {
       "ticker": "ALKYLAMINE.NS",
@@ -62,7 +87,12 @@
       "moic": 1.5447848571803173,
       "degenerate": false,
       "feasibility": 87,
-      "max_bid_premium_pct": null
+      "max_bid_premium_pct": null,
+      "scenario_irrs": {
+        "bull": 0.24603112120400117,
+        "base": 0.09087151294306772,
+        "bear": -0.0347641366502901
+      }
     }
   ],
   "companies": {
@@ -10587,6 +10617,59 @@
         "indicative_premium_pct": 25.0,
         "indicative_discovered_ev_cr": 16907.006788125,
         "assumptions": "Premium = config control_premium_pct; assumes full tender of required float at the discovered price. Illustrative only."
+      },
+      "scenarios": {
+        "bull": {
+          "assumptions": {
+            "revenue_growth": 0.16,
+            "ebitda_margin": 0.47520167716940875,
+            "exit_multiple": 11.749729997188744
+          },
+          "financials": {
+            "revenue": 8565.823382190078,
+            "ebitda": 4070.493637553662,
+            "fcf_for_debt": 2484.460855189943
+          },
+          "returns": {
+            "irr": 0.34089322077669637,
+            "moic": 4.334819072102253,
+            "exit_equity": 50181.82946361381
+          }
+        },
+        "base": {
+          "assumptions": {
+            "revenue_growth": 0.08,
+            "ebitda_margin": 0.42520167716940876,
+            "exit_multiple": 9.749729997188744
+          },
+          "financials": {
+            "revenue": 5992.360695613443,
+            "ebitda": 2547.961817978881,
+            "fcf_for_debt": 1482.7197302884024
+          },
+          "returns": {
+            "irr": 0.15634188872958066,
+            "moic": 2.067432274330572,
+            "exit_equity": 25166.65547828642
+          }
+        },
+        "bear": {
+          "assumptions": {
+            "revenue_growth": 0.03,
+            "ebitda_margin": 0.3752016771694088,
+            "exit_multiple": 7.749729997188744
+          },
+          "financials": {
+            "revenue": 4727.867457217691,
+            "ebitda": 1773.9037993827455,
+            "fcf_for_debt": 972.7847408172909
+          },
+          "returns": {
+            "irr": 0.006132357328686222,
+            "moic": 1.0310401579095785,
+            "exit_equity": 13165.71861928856
+          }
+        }
       }
     },
     "ZENSARTECH.NS": {
@@ -21110,6 +21193,59 @@
         "indicative_premium_pct": 25.0,
         "indicative_discovered_ev_cr": 10271.203231863716,
         "assumptions": "Premium = config control_premium_pct; assumes full tender of required float at the discovered price. Illustrative only."
+      },
+      "scenarios": {
+        "bull": {
+          "assumptions": {
+            "revenue_growth": 0.16,
+            "ebitda_margin": 0.24782325843091746,
+            "exit_multiple": 11.12914694859454
+          },
+          "financials": {
+            "revenue": 11945.483143434234,
+            "ebitda": 2960.3685561374705,
+            "fcf_for_debt": 1321.3567980161502
+          },
+          "returns": {
+            "irr": 0.3906481639689843,
+            "moic": 5.200993772109816,
+            "exit_equity": 33046.737597788655
+          }
+        },
+        "base": {
+          "assumptions": {
+            "revenue_growth": 0.08,
+            "ebitda_margin": 0.19782325843091747,
+            "exit_multiple": 9.12914694859454
+          },
+          "financials": {
+            "revenue": 8356.656503992323,
+            "ebitda": 1653.1410192076805,
+            "fcf_for_debt": 652.5448711197557
+          },
+          "returns": {
+            "irr": 0.14481868149097843,
+            "moic": 1.966452854829484,
+            "exit_equity": 14130.359543305563
+          }
+        },
+        "bear": {
+          "assumptions": {
+            "revenue_growth": 0.03,
+            "ebitda_margin": 0.14782325843091748,
+            "exit_multiple": 7.12914694859454
+          },
+          "financials": {
+            "revenue": 6593.255370173821,
+            "ebitda": 974.6364924862391,
+            "fcf_for_debt": 305.14204805969695
+          },
+          "returns": {
+            "irr": -0.06716550507655039,
+            "moic": 0.7063549396401121,
+            "exit_equity": 5663.195110571285
+          }
+        }
       }
     },
     "TANLA.NS": {
@@ -31633,6 +31769,59 @@
         "indicative_premium_pct": 25.0,
         "indicative_discovered_ev_cr": 7188.76984659375,
         "assumptions": "Premium = config control_premium_pct; assumes full tender of required float at the discovered price. Illustrative only."
+      },
+      "scenarios": {
+        "bull": {
+          "assumptions": {
+            "revenue_growth": 0.16,
+            "ebitda_margin": 0.22226158408221475,
+            "exit_multiple": 11.446478116417543
+          },
+          "financials": {
+            "revenue": 9278.679340779518,
+            "ebitda": 2062.2939684725757,
+            "fcf_for_debt": 840.9254573139394
+          },
+          "returns": {
+            "irr": 0.39313901051428646,
+            "moic": 5.247739487239696,
+            "exit_equity": 23407.707908618115
+          }
+        },
+        "base": {
+          "assumptions": {
+            "revenue_growth": 0.08,
+            "ebitda_margin": 0.17226158408221473,
+            "exit_multiple": 9.446478116417543
+          },
+          "financials": {
+            "revenue": 6491.050644879362,
+            "ebitda": 1118.1586664448005,
+            "fcf_for_debt": 385.39383207229923
+          },
+          "returns": {
+            "irr": 0.13678501248068864,
+            "moic": 1.8984173565013445,
+            "exit_equity": 9694.496503370168
+          }
+        },
+        "bear": {
+          "assumptions": {
+            "revenue_growth": 0.03,
+            "ebitda_margin": 0.12226158408221473,
+            "exit_multiple": 7.446478116417543
+          },
+          "financials": {
+            "revenue": 5121.325078035111,
+            "ebitda": 626.1413166405446,
+            "fcf_for_debt": 145.22139606007835
+          },
+          "returns": {
+            "irr": -0.08831764383455265,
+            "moic": 0.6298218884768527,
+            "exit_equity": 3623.1819634323474
+          }
+        }
       }
     },
     "JUSTDIAL.NS": {
@@ -31695,7 +31884,8 @@
         "indicative_premium_pct": 25.0,
         "indicative_discovered_ev_cr": 1.1078204254754382,
         "assumptions": "Premium = config control_premium_pct; assumes full tender of required float at the discovered price. Illustrative only."
-      }
+      },
+      "scenarios": null
     },
     "INDIAMART.NS": {
       "ticker": "INDIAMART.NS",
@@ -42210,6 +42400,59 @@
         "indicative_premium_pct": 25.0,
         "indicative_discovered_ev_cr": 12569.672355314455,
         "assumptions": "Premium = config control_premium_pct; assumes full tender of required float at the discovered price. Illustrative only."
+      },
+      "scenarios": {
+        "bull": {
+          "assumptions": {
+            "revenue_growth": 0.16,
+            "ebitda_margin": 0.48301465901848306,
+            "exit_multiple": 20.501136819715125
+          },
+          "financials": {
+            "revenue": 3295.4360607743993,
+            "ebitda": 1591.7439252121594,
+            "fcf_for_debt": 976.1371024025734
+          },
+          "returns": {
+            "irr": 0.25918578753990906,
+            "moic": 3.165549184660934,
+            "exit_equity": 33568.605907270954
+          }
+        },
+        "base": {
+          "assumptions": {
+            "revenue_growth": 0.08,
+            "ebitda_margin": 0.4330146590184831,
+            "exit_multiple": 18.501136819715125
+          },
+          "financials": {
+            "revenue": 2305.375752499201,
+            "ebitda": 998.2614953779204,
+            "fcf_for_debt": 583.9846260577233
+          },
+          "returns": {
+            "irr": 0.11424579741539276,
+            "moic": 1.7175327370931555,
+            "exit_equity": 18607.44189595847
+          }
+        },
+        "bear": {
+          "assumptions": {
+            "revenue_growth": 0.03,
+            "ebitda_margin": 0.3830146590184831,
+            "exit_multiple": 16.501136819715125
+          },
+          "financials": {
+            "revenue": 1818.9010225767001,
+            "ebitda": 696.665754950585,
+            "fcf_for_debt": 384.2159752023713
+          },
+          "returns": {
+            "irr": 0.0038256761855366417,
+            "moic": 1.0192752999005512,
+            "exit_equity": 11276.535228242039
+          }
+        }
       }
     },
     "ALKYLAMINE.NS": {
@@ -52716,6 +52959,59 @@
         "indicative_premium_pct": 25.0,
         "indicative_discovered_ev_cr": 11182.913836108519,
         "assumptions": "Premium = config control_premium_pct; assumes full tender of required float at the discovered price. Illustrative only."
+      },
+      "scenarios": {
+        "bull": {
+          "assumptions": {
+            "revenue_growth": 0.16,
+            "ebitda_margin": 0.25887624842912893,
+            "exit_multiple": 37.411380101673586
+          },
+          "financials": {
+            "revenue": 3175.5065521254396,
+            "ebitda": 822.063223076352,
+            "fcf_for_debt": 378.95760657287906
+          },
+          "returns": {
+            "irr": 0.24603112120400117,
+            "moic": 3.0036162659478185,
+            "exit_equity": 30822.334400703894
+          }
+        },
+        "base": {
+          "assumptions": {
+            "revenue_growth": 0.08,
+            "ebitda_margin": 0.2088762484291289,
+            "exit_multiple": 35.411380101673586
+          },
+          "financials": {
+            "revenue": 2221.4771193139213,
+            "ebitda": 464.01380665344027,
+            "fcf_for_debt": 191.4441067639333
+          },
+          "returns": {
+            "irr": 0.09087151294306772,
+            "moic": 1.5447848571803173,
+            "exit_equity": 16193.758927885829
+          }
+        },
+        "bear": {
+          "assumptions": {
+            "revenue_growth": 0.03,
+            "ebitda_margin": 0.1588762484291289,
+            "exit_multiple": 33.411380101673586
+          },
+          "financials": {
+            "revenue": 1752.7064729341705,
+            "ebitda": 278.46342901723153,
+            "fcf_for_debt": 94.70413780999307
+          },
+          "returns": {
+            "irr": -0.0347641366502901,
+            "moic": 0.8378518805467823,
+            "exit_equity": 8968.343478249963
+          }
+        }
       }
     }
   }
