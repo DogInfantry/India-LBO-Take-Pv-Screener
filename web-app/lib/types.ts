@@ -4,6 +4,7 @@ export interface Passer {
   irr: number | null; moic: number | null;
   degenerate: boolean; feasibility: number;
   max_bid_premium_pct: number | null;
+  scenario_irrs?: { bull: number | null; base: number | null; bear: number | null } | null;
 }
 
 export interface IncomeRow { year:number; revenue:number; ebitda:number; da:number;
@@ -37,6 +38,32 @@ export interface Delisting { indicative:boolean; acceptance_threshold_pct:number
   indicative_discovered_ev_cr:number; assumptions:string; }
 export interface SensitivityGrid { premiums_pct:number[]; exit_multiples:number[]; irr:(number|null)[][]; }
 
+export interface ScenarioAssumptions {
+  revenue_growth: number;
+  ebitda_margin: number;
+  exit_multiple: number;
+}
+export interface ScenarioFinancials {
+  revenue: number;
+  ebitda: number;
+  fcf_for_debt: number;
+}
+export interface ScenarioReturns {
+  irr: number | null;
+  moic: number | null;
+  exit_equity: number;
+}
+export interface Scenario {
+  assumptions: ScenarioAssumptions;
+  financials: ScenarioFinancials;
+  returns: ScenarioReturns;
+}
+export interface ScenarioBlock {
+  bull: Scenario | null;
+  base: Scenario | null;
+  bear: Scenario | null;
+}
+
 export interface CompanyBlock {
   ticker:string; name:string;
   statements: { income:IncomeRow[]; cash_flow:CashFlowRow[]; balance_sheet:BalanceRow[] } | null;
@@ -51,6 +78,7 @@ export interface CompanyBlock {
   sobol: { first_order:Record<string,number>; total_order:Record<string,number> } | null;
   feasibility: { score:number; components:Record<string,number>; weights:Record<string,number> };
   delisting: Delisting;
+  scenarios: ScenarioBlock | null;
 }
 
 export interface Results {
