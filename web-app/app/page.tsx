@@ -4,6 +4,7 @@ import { IrrLeaderboard } from "@/components/IrrLeaderboard";
 import { IsoFrontier } from "@/components/IsoFrontier";
 import { FeasibilityPanel } from "@/components/FeasibilityPanel";
 import { SobolDrivers } from "@/components/SobolDrivers";
+import { WarRoomTable } from "@/components/WarRoomTable";
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -28,6 +29,11 @@ export default function Page() {
         </h1>
       </header>
       <KpiBand results={r} />
+      <div className="mt-3">
+        <Panel title="Scenario war room — Bull / Base / Bear">
+          <WarRoomTable passers={r.passers} />
+        </Panel>
+      </div>
       <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
         <Panel title="Base-case IRR — ranked"><IrrLeaderboard passers={r.passers} hurdle={r.config.hurdle_irr} /></Panel>
         <Panel title={`Iso-IRR frontier · ${top.name}`}>

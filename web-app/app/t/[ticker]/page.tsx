@@ -16,6 +16,7 @@ import { SolverCards } from "@/components/tearsheet/SolverCards";
 import { DelistingCard } from "@/components/tearsheet/DelistingCard";
 import { FeasibilityBreakdown } from "@/components/tearsheet/FeasibilityBreakdown";
 import { DegenerateNotice } from "@/components/tearsheet/DegenerateNotice";
+import { ScenarioWarRoom } from "@/components/tearsheet/ScenarioWarRoom";
 import { pct, mult } from "@/lib/format";
 
 export function generateStaticParams() {
@@ -53,6 +54,12 @@ export default async function TearSheet({ params }: { params: Promise<{ ticker: 
               {co.returns.value_bridge && <ValueBridge bridge={co.returns.value_bridge} />}
             </div>
           </Section>
+
+          {co.scenarios && (
+            <Section title="Scenario war room — Bull / Base / Bear">
+              <ScenarioWarRoom scenarios={co.scenarios} />
+            </Section>
+          )}
 
           <Section title="Risk — Monte Carlo (5,000 sims)">
             {co.montecarlo && <McHistogram samples={co.montecarlo.irr} hurdle={hurdle} />}
