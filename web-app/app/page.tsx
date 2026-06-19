@@ -5,6 +5,7 @@ import { IsoFrontier } from "@/components/IsoFrontier";
 import { FeasibilityPanel } from "@/components/FeasibilityPanel";
 import { SobolDrivers } from "@/components/SobolDrivers";
 import { WarRoomTable } from "@/components/WarRoomTable";
+import { HoldPeriodCurves } from "@/components/HoldPeriodCurves";
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -23,15 +24,23 @@ export default function Page() {
   const topCo = r.companies[top.ticker];
   return (
     <main className="mx-auto max-w-6xl p-6">
-      <header className="mb-4">
+      <header className="mb-4 flex items-baseline justify-between">
         <h1 className="font-mono text-sm tracking-[0.2em] text-faint">
           INDIA LBO TAKE-PRIVATE SCREENER · AS OF {r.as_of.toUpperCase()}
         </h1>
+        <a href="/compare" className="font-mono text-xs text-faint hover:text-emerald">
+          compare all →
+        </a>
       </header>
       <KpiBand results={r} />
       <div className="mt-3">
         <Panel title="Scenario war room — Bull / Base / Bear">
           <WarRoomTable passers={r.passers} />
+        </Panel>
+      </div>
+      <div className="mt-3">
+        <Panel title="Hold-period return curves — IRR by exit year">
+          <HoldPeriodCurves results={r} />
         </Panel>
       </div>
       <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">

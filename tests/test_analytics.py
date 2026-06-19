@@ -272,6 +272,31 @@ def test_company_block_sensitivity_has_grid():
 _Z90 = 1.2815515594457424   # P90 of a standard normal (same constant analytics uses)
 
 
+def test_screener_metrics_in_company_block():
+    cfg = base_cfg(); block = analytics.build_company_block(sample_row(), cfg)
+    sm = block["screener_metrics"]
+    assert sm["revenue_cr"] == 5000.0
+    assert sm["unused_debt_capacity_cr"] == 2500.0
+    assert sm["fcf_yield"] == pytest.approx(0.13)
+    assert sm["latest_year"] == 2025
+
+
+def test_parse_year_handles_fy_string():
+    assert analytics._parse_year("FY26") == 2026
+    assert analytics._parse_year("FY23") == 2023
+    assert analytics._parse_year(2025) == 2025
+    assert analytics._parse_year("garbage") == 0
+
+
+def test_screener_metrics_in_degenerate_block():
+    cfg = base_cfg(); row = sample_row().copy()
+    row["market_cap_cr"] = 10.0; row["net_debt_cr"] = -9990.0
+    block = analytics.build_company_block(row, cfg)
+    assert block["returns"]["degenerate"] is True
+    # screener metrics present even for degenerate names (used in compare table)
+    assert block["screener_metrics"]["revenue_cr"] == 5000.0
+
+
 def test_tornado_structure_and_base_is_bracketed():
     cfg = base_cfg(); inp = analytics.company_inputs(sample_row(), cfg)
     t = analytics.tornado(inp)

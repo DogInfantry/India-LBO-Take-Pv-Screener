@@ -10,6 +10,7 @@ import { StatCards } from "@/components/tearsheet/StatCards";
 import { SensitivityHeatmap } from "@/components/tearsheet/SensitivityHeatmap";
 import { SobolDrivers } from "@/components/SobolDrivers";
 import { Tornado } from "@/components/tearsheet/Tornado";
+import { ThesisCard } from "@/components/tearsheet/ThesisCard";
 import { StatementTable } from "@/components/tearsheet/StatementTable";
 import { DebtWaterfall } from "@/components/tearsheet/DebtWaterfall";
 import { DebtSchedule } from "@/components/tearsheet/DebtSchedule";
@@ -42,6 +43,7 @@ export default async function TearSheet({ params }: { params: Promise<{ ticker: 
     <main className="mx-auto max-w-5xl space-y-4 p-6">
       <a href="/" className="font-mono text-xs text-faint hover:text-ink">← dashboard</a>
       <Summary co={co} asOf={r.as_of} />
+      <ThesisCard co={co} />
 
       <Section title="Capital structure — sources &amp; uses">
         <SourcesUses su={co.sources_uses} />

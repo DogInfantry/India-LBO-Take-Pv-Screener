@@ -26,6 +26,12 @@ export interface IrrBridge { deleveraging:number; ebitda_growth:number;
   multiple_rerating:number; total_irr:number; }
 export interface ValueBridge { entry_equity:number; ebitda_growth:number; multiple_change:number;
   debt_paydown:number; fees_and_other:number; exit_equity:number; }
+export interface ScreenerMetrics {
+  revenue_cr:number; ebitda_cr:number; ebitda_margin:number;
+  net_debt_cr:number; fcf_cr:number; fcf_yield:number;
+  interest_coverage:number; market_cap_cr:number;
+  unused_debt_capacity_cr:number; latest_year:number;
+}
 export interface TornadoBar { name:string; low:number|null; high:number|null; }
 export interface Tornado { base_irr:number|null; drivers:TornadoBar[]; }
 export interface MonteCarlo { irr:(number|null)[]; moic:(number|null)[]; p_beat_hurdle:number; }
@@ -79,6 +85,7 @@ export interface CompanyBlock {
   solvers: Solvers | null;
   sobol: { first_order:Record<string,number>; total_order:Record<string,number> } | null;
   tornado: Tornado | null;
+  screener_metrics: ScreenerMetrics;
   feasibility: { score:number; components:Record<string,number>; weights:Record<string,number> };
   delisting: Delisting;
   scenarios: ScenarioBlock | null;

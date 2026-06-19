@@ -36,6 +36,9 @@ The [Next.js dashboard](https://india-lbo-take-pv-screener.vercel.app/) shows:
 - **Scenario war room** — cross-company Bull / Base / Bear IRR table on the dashboard; full P&L bridge (assumptions → financials → returns) on each tearsheet, pre-computed at build time from explicit lever deltas in config
 - **Iso-IRR frontier** — the premium / exit-multiple combinations that hit a target return
 - **IRR driver tornado** — one-at-a-time P10/P90 swing of each driver (growth, margin, exit multiple) in actual percentage-point IRR terms, alongside the Sobol variance decomposition that shows which driver explains the most return variance
+- **Hold-period return curves** — IRR vs. exit year (Year 1–5) for all survivors on one chart, with 20% hurdle line — makes the optimal-exit trade-off visible at a glance
+- **Side-by-side compare** — all passers in one table (`/compare`), 12 metrics with green/red best-worst coding per row; linked from the dashboard header
+- **LBO thesis card** — auto-generated per tearsheet: unused debt headroom, FCF debt-payback, promoter cap headroom, and entry financials in four bullets
 - **Per-company tearsheet** — returns bridge, value bridge, Monte Carlo histogram, sensitivity heatmap, IRR tornado, three statements, debt waterfall, solver outputs (max bid premium, optimal exit year, debt capacity ceiling), delisting mechanics
 
 The Python model runs locally (or in weekly CI) and writes `results.json`; the
@@ -123,7 +126,7 @@ and pushes the refreshed `results.json` — Vercel redeploys automatically.
 
 ```bash
 pip install -r requirements-dev.txt
-pytest -q                              # 60 tests
+pytest -q                              # 63 tests
 python tools/export_data.py --no-fetch # build results.json from cached data
 cd web-app && npm install && npm run dev
 ```

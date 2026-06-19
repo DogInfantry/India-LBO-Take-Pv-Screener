@@ -127,6 +127,32 @@ def value_bridge(inp: dict) -> dict:
             "fees_and_other": fees_and_other, "exit_equity": exit_equity}
 
 
+def _parse_year(val) -> int:
+    """Parse year from screener row — handles int 2025 or string 'FY26'."""
+    s = str(val).strip().lstrip("FY")
+    try:
+        y = int(s)
+        return y if y > 2000 else 2000 + y
+    except (ValueError, TypeError):
+        return 0
+
+
+def screener_metrics(row: pd.Series) -> dict:
+    """Key screener ratios preserved for the frontend — not derivable from the LBO block alone."""
+    return {
+        "revenue_cr":              float(row["revenue_cr"]),
+        "ebitda_cr":               float(row["ebitda_cr"]),
+        "ebitda_margin":           float(row["ebitda_margin"]),
+        "net_debt_cr":             float(row["net_debt_cr"]),
+        "fcf_cr":                  float(row["fcf_cr"]),
+        "fcf_yield":               float(row["fcf_yield"]),
+        "interest_coverage":       float(row["interest_coverage"]),
+        "market_cap_cr":           float(row["market_cap_cr"]),
+        "unused_debt_capacity_cr": float(row["unused_debt_capacity_cr"]),
+        "latest_year":             _parse_year(row.get("latest_year", 0)),
+    }
+
+
 # P90 of a standard normal: the tornado swings each Monte-Carlo driver across its
 # 10th-90th percentile band, holding the other two at base.
 _Z90 = 1.2815515594457424
@@ -407,7 +433,7 @@ def scenario_block(inp: dict, cfg: dict) -> dict:
 
 COMPANY_KEYS = ["ticker", "name", "statements", "debt_schedule", "sources_uses",
                 "returns", "montecarlo", "downside", "sensitivity", "solvers",
-                "sobol", "tornado", "feasibility", "delisting", "scenarios"]
+                "sobol", "tornado", "screener_metrics", "feasibility", "delisting", "scenarios"]
 
 
 def _json_safe(obj):
@@ -487,6 +513,7 @@ def build_company_block(row: pd.Series, cfg: dict) -> dict:
                         "irr_bridge": None, "value_bridge": None},
             "montecarlo": None, "downside": None, "sensitivity": None, "solvers": None,
             "sobol": None, "tornado": None,
+            "screener_metrics": screener_metrics(row),
             "feasibility": feasibility_score(row, cfg),
             "delisting": delisting_model(inp, row, cfg),
             "scenarios": None,
@@ -515,6 +542,7 @@ def build_company_block(row: pd.Series, cfg: dict) -> dict:
                     "optimal_exit": optimal_exit(inp)},
         "sobol": sobol_indices(inp),
         "tornado": tornado(inp),
+        "screener_metrics": screener_metrics(row),
         "feasibility": feasibility_score(row, cfg),
         "delisting": delisting_model(inp, row, cfg),
         "scenarios": scenario_block(inp, cfg),

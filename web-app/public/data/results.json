@@ -10614,6 +10614,18 @@
           }
         ]
       },
+      "screener_metrics": {
+        "revenue_cr": 4078.3,
+        "ebitda_cr": 1734.1,
+        "ebitda_margin": 0.42520167716940876,
+        "net_debt_cr": -2157.0,
+        "fcf_cr": 1377.2,
+        "fcf_yield": 0.09030105890815802,
+        "interest_coverage": 47.25068119891007,
+        "market_cap_cr": 15251.2054305,
+        "unused_debt_capacity_cr": 7359.299999999999,
+        "latest_year": 2026
+      },
       "feasibility": {
         "score": 96,
         "components": {
@@ -21209,6 +21221,18 @@
             "high": 0.177256505321016
           }
         ]
+      },
+      "screener_metrics": {
+        "revenue_cr": 5687.4,
+        "ebitda_cr": 1125.1,
+        "ebitda_margin": 0.19782325843091747,
+        "net_debt_cr": -2883.9,
+        "fcf_cr": 717.1,
+        "fcf_yield": 0.06813895597784742,
+        "interest_coverage": 92.98347107438016,
+        "market_cap_cr": 10524.082585490973,
+        "unused_debt_capacity_cr": 6259.2,
+        "latest_year": 2026
       },
       "feasibility": {
         "score": 94,
@@ -31806,6 +31830,18 @@
           }
         ]
       },
+      "screener_metrics": {
+        "revenue_cr": 4417.7,
+        "ebitda_cr": 761.0,
+        "ebitda_margin": 0.17226158408221473,
+        "net_debt_cr": -1563.6,
+        "fcf_cr": 476.5,
+        "fcf_yield": 0.06805299712417952,
+        "interest_coverage": 172.95454545454544,
+        "market_cap_cr": 7001.895877275,
+        "unused_debt_capacity_cr": 3846.6,
+        "latest_year": 2026
+      },
       "feasibility": {
         "score": 94,
         "components": {
@@ -31922,6 +31958,18 @@
       "solvers": null,
       "sobol": null,
       "tornado": null,
+      "screener_metrics": {
+        "revenue_cr": 1213.9,
+        "ebitda_cr": 670.3,
+        "ebitda_margin": 0.552187165334871,
+        "net_debt_cr": -5780.1,
+        "fcf_cr": 264.5,
+        "fcf_yield": 0.05718960644034886,
+        "interest_coverage": 73.65934065934066,
+        "market_cap_cr": 4624.966256340381,
+        "unused_debt_capacity_cr": 7791.0,
+        "latest_year": 2026
+      },
       "feasibility": {
         "score": 92,
         "components": {
@@ -42457,6 +42505,18 @@
             "high": 0.1291626410459974
           }
         ]
+      },
+      "screener_metrics": {
+        "revenue_cr": 1569.0,
+        "ebitda_cr": 679.4,
+        "ebitda_margin": 0.4330146590184831,
+        "net_debt_cr": -3097.2,
+        "fcf_cr": 687.2,
+        "fcf_yield": 0.05482906737978326,
+        "interest_coverage": 226.46666666666667,
+        "market_cap_cr": 12533.497884251565,
+        "unused_debt_capacity_cr": 5135.4,
+        "latest_year": 2026
       },
       "feasibility": {
         "score": 92,
@@ -53036,6 +53096,18 @@
             "high": 0.09876802847354438
           }
         ]
+      },
+      "screener_metrics": {
+        "revenue_cr": 1511.9,
+        "ebitda_cr": 315.8,
+        "ebitda_margin": 0.2088762484291289,
+        "net_debt_cr": -249.7,
+        "fcf_cr": 110.1,
+        "fcf_yield": 0.012037929555997789,
+        "interest_coverage": 451.14285714285717,
+        "market_cap_cr": 9146.091068886815,
+        "unused_debt_capacity_cr": 1197.1000000000001,
+        "latest_year": 2026
       },
       "feasibility": {
         "score": 87,
