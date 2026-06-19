@@ -3,9 +3,9 @@ import { buildLeaderboardOption } from "@/lib/charts/leaderboard";
 import type { Passer } from "@/lib/types";
 
 const passers: Passer[] = [
-  { ticker: "A.NS", name: "A", irr: 0.15, moic: 2, degenerate: false, feasibility: 90, max_bid_premium_pct: null },
-  { ticker: "B.NS", name: "B", irr: 0.09, moic: 1.5, degenerate: false, feasibility: 80, max_bid_premium_pct: null },
-  { ticker: "JD.NS", name: "JD", irr: null, moic: null, degenerate: true, feasibility: 70, max_bid_premium_pct: null },
+  { ticker: "A.NS", name: "A", irr: 0.15, moic: 2, degenerate: false, feasibility: 90, max_bid_premium_pct: null, scenario_irrs: null },
+  { ticker: "B.NS", name: "B", irr: 0.09, moic: 1.5, degenerate: false, feasibility: 80, max_bid_premium_pct: null, scenario_irrs: null },
+  { ticker: "JD.NS", name: "JD", irr: null, moic: null, degenerate: true, feasibility: 70, max_bid_premium_pct: null, scenario_irrs: null },
 ];
 
 it("ranks live names by IRR descending and excludes degenerate from the bars", () => {

@@ -4,7 +4,7 @@ export interface Passer {
   irr: number | null; moic: number | null;
   degenerate: boolean; feasibility: number;
   max_bid_premium_pct: number | null;
-  scenario_irrs?: { bull: number | null; base: number | null; bear: number | null } | null;
+  scenario_irrs: { bull: number | null; base: number | null; bear: number | null } | null;
 }
 
 export interface IncomeRow { year:number; revenue:number; ebitda:number; da:number;
