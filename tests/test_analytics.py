@@ -365,3 +365,4 @@ def test_build_results_passers_have_scenario_irrs():
     si = passer["scenario_irrs"]
     assert si is not None
     assert "bull" in si and "base" in si and "bear" in si
+    assert si["base"] is not None and si["base"] > 0
