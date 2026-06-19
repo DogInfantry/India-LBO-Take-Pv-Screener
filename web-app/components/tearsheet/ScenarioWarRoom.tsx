@@ -79,9 +79,9 @@ export function ScenarioWarRoom({ scenarios }: Props) {
 
         <SectionHeader label="Returns" />
         <Row label="IRR"
-          bull={fmt(bull, s => pct(s.returns.irr, 1))}
-          base={fmt(base, s => pct(s.returns.irr, 1))}
-          bear={fmt(bear, s => pct(s.returns.irr, 1))}
+          bull={fmt(bull, s => s.returns.irr == null ? "—" : pct(s.returns.irr, 1))}
+          base={fmt(base, s => s.returns.irr == null ? "—" : pct(s.returns.irr, 1))}
+          bear={fmt(bear, s => s.returns.irr == null ? "—" : pct(s.returns.irr, 1))}
           bullClass={bull ? irrColor(bull.returns.irr) + " font-bold text-sm" : ""}
           baseClass={base ? irrColor(base.returns.irr) + " font-bold text-sm" : ""}
           bearClass={bear ? irrColor(bear.returns.irr) + " font-bold text-sm" : ""} />

@@ -36,3 +36,12 @@ it("renders nothing when no passer has scenario_irrs", () => {
   const { container } = render(<WarRoomTable passers={noScenPassers} />);
   expect(container.firstChild).toBeNull();
 });
+
+it("renders — for scenario_irrs with all-null IRRs (degenerate passer)", () => {
+  const degeneratePassers = [
+    { ...passers[0], scenario_irrs: { bull: null, base: null, bear: null } },
+  ];
+  const { getAllByText } = render(<WarRoomTable passers={degeneratePassers} />);
+  // Three em-dashes: one per scenario column
+  expect(getAllByText("—").length).toBeGreaterThanOrEqual(3);
+});
